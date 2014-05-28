@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{38D2F0BC-C44C-4146-8C31-9F8162782541}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DocumentServices.Modules.Extractors.OfficeExtractor</RootNamespace>
+    <AssemblyName>DocumentServices.Modules.Extractors.OfficeExtractor</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CompoundFileStorage\BinaryTree\BinarySearchTree.cs" />
+    <Compile Include="CompoundFileStorage\BinaryTree\BinaryTreeNode.cs" />
+    <Compile Include="CompoundFileStorage\BinaryTree\Exceptions\BSTDuplicatedException.cs" />
+    <Compile Include="CompoundFileStorage\BinaryTree\Node.cs" />
+    <Compile Include="CompoundFileStorage\BinaryTree\NodeList.cs" />
+    <Compile Include="CompoundFileStorage\BinaryTree\TraversalMethods.cs" />
+    <Compile Include="CompoundFileStorage\Exceptions\CFInvalidOperation.cs" />
+    <Compile Include="CompoundFileStorage\CFItem.cs" />
+    <Compile Include="CompoundFileStorage\CFMock.cs" />
+    <Compile Include="CompoundFileStorage\CFStorage.cs" />
+    <Compile Include="CompoundFileStorage\CFStream.cs" />
+    <Compile Include="CompoundFileStorage\CompoundFile.cs" />
+    <Compile Include="CompoundFileStorage\DirectoryEntry.cs" />
+    <Compile Include="CompoundFileStorage\Exceptions\CFCorruptedFileException.cs" />
+    <Compile Include="CompoundFileStorage\Exceptions\CFDisposedException.cs" />
+    <Compile Include="CompoundFileStorage\Exceptions\CFDuplicatedItemException.cs" />
+    <Compile Include="CompoundFileStorage\Exceptions\CFException.cs" />
+    <Compile Include="CompoundFileStorage\Exceptions\CFFormatException.cs" />
+    <Compile Include="CompoundFileStorage\Exceptions\CFItemNotFound.cs" />
+    <Compile Include="CompoundFileStorage\Header.cs" />
+    <Compile Include="CompoundFileStorage\ICFItem.cs" />
+    <Compile Include="CompoundFileStorage\ICFStorage.cs" />
+    <Compile Include="CompoundFileStorage\ICFStream.cs" />
+    <Compile Include="CompoundFileStorage\ICompoundFile.cs" />
+    <Compile Include="CompoundFileStorage\IDirectoryEntry.cs" />
+    <Compile Include="CompoundFileStorage\RBTree\RedBlack.cs" />
+    <Compile Include="CompoundFileStorage\RBTree\RedBlackEnumerator.cs" />
+    <Compile Include="CompoundFileStorage\RBTree\Exceptions\RedBlackException.cs" />
+    <Compile Include="CompoundFileStorage\RBTree\RedBlackNode.cs" />
+    <Compile Include="CompoundFileStorage\Sector.cs" />
+    <Compile Include="CompoundFileStorage\SectorCollection.cs" />
+    <Compile Include="CompoundFileStorage\StreamRW.cs" />
+    <Compile Include="CompoundFileStorage\StreamView.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
