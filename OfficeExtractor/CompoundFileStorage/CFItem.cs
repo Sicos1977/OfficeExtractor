@@ -4,28 +4,28 @@ using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Ex
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
     /// <summary>
-    /// Abstract base class for Structured Storage entities.
+    ///     Abstract base class for Structured Storage entities.
     /// </summary>
     /// <example>
-    /// <code>
+    ///     <code>
+    ///  
+    ///  const String STORAGE_NAME = "report.xls";
+    ///  CompoundFile cf = new CompoundFile(STORAGE_NAME);
     /// 
-    /// const String STORAGE_NAME = "report.xls";
-    /// CompoundFile cf = new CompoundFile(STORAGE_NAME);
-    ///
-    /// FileStream output = new FileStream("LogEntries.txt", FileMode.Create);
-    /// TextWriter tw = new StreamWriter(output);
-    ///
-    /// // CFItem represents both storage and stream items
-    /// VisitedEntryAction va = delegate(CFItem item)
-    /// {
-    ///      tw.WriteLine(item.Name);
-    /// };
-    ///
-    /// cf.RootStorage.VisitEntries(va, true);
-    ///
-    /// tw.Close();
+    ///  FileStream output = new FileStream("LogEntries.txt", FileMode.Create);
+    ///  TextWriter tw = new StreamWriter(output);
     /// 
-    /// </code>
+    ///  // CFItem represents both storage and stream items
+    ///  VisitedEntryAction va = delegate(CFItem item)
+    ///  {
+    ///       tw.WriteLine(item.Name);
+    ///  };
+    /// 
+    ///  cf.RootStorage.VisitEntries(va, true);
+    /// 
+    ///  tw.Close();
+    ///  
+    ///  </code>
     /// </example>
     public abstract class CFItem : IComparable, ICFItem
     {
@@ -40,7 +40,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
 
         /// <summary>
-        /// Get entity name
+        ///     Get entity name
         /// </summary>
         public string Name
         {
@@ -52,8 +52,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
 
         /// <summary>
-        /// Size in bytes of the item. It has a valid value 
-        /// only if entity is a stream, otherwise it is setted to zero.
+        ///     Size in bytes of the item. It has a valid value
+        ///     only if entity is a stream, otherwise it is setted to zero.
         /// </summary>
         public long Size
         {
@@ -62,11 +62,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
 
         /// <summary>
-        /// Returns true if item is Storage
+        ///     Returns true if item is Storage
         /// </summary>
         /// <remarks>
-        /// This check doesn't use reflection or runtime type information
-        /// and doesn't suffer related performance penalties.
+        ///     This check doesn't use reflection or runtime type information
+        ///     and doesn't suffer related performance penalties.
         /// </remarks>
         public bool IsStorage
         {
@@ -74,11 +74,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
 
         /// <summary>
-        /// Returns true if item is a Stream
+        ///     Returns true if item is a Stream
         /// </summary>
         /// <remarks>
-        /// This check doesn't use reflection or runtime type information
-        /// and doesn't suffer related performance penalties.
+        ///     This check doesn't use reflection or runtime type information
+        ///     and doesn't suffer related performance penalties.
         /// </remarks>
         public bool IsStream
         {
@@ -86,11 +86,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
 
         /// <summary>
-        /// Returnstrue if item is the Root Storage
+        ///     Returnstrue if item is the Root Storage
         /// </summary>
         /// <remarks>
-        /// This check doesn't use reflection or runtime type information
-        /// and doesn't suffer related performance penalties.
+        ///     This check doesn't use reflection or runtime type information
+        ///     and doesn't suffer related performance penalties.
         /// </remarks>
         public bool IsRoot
         {
@@ -98,7 +98,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
 
         /// <summary>
-        /// Get/Set the Creation Date of the current item
+        ///     Get/Set the Creation Date of the current item
         /// </summary>
         public DateTime CreationDate
         {
@@ -114,14 +114,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
 
         /// <summary>
-        /// Get/Set the Modify Date of the current item
+        ///     Get/Set the Modify Date of the current item
         /// </summary>
         public DateTime ModifyDate
         {
-            get
-            {
-                return DateTime.FromFileTime(BitConverter.ToInt64(DirEntry.ModifyDate, 0));
-            }
+            get { return DateTime.FromFileTime(BitConverter.ToInt64(DirEntry.ModifyDate, 0)); }
 
             set
             {
@@ -133,14 +130,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
 
         /// <summary>
-        /// Get/Set Object class Guid for Root and Storage entries.
+        ///     Get/Set Object class Guid for Root and Storage entries.
         /// </summary>
         public Guid CLSID
         {
-            get
-            {
-                return DirEntry.StorageCLSID;
-            }
+            get { return DirEntry.StorageCLSID; }
             set
             {
                 if (DirEntry.StgType != StgType.StgStream)
@@ -181,23 +175,21 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         #endregion
 
         #region IComparable Members
-
         public int CompareTo(object obj)
         {
-            return DirEntry.CompareTo(((CFItem)obj).DirEntry);
+            return DirEntry.CompareTo(((CFItem) obj).DirEntry);
         }
-
         #endregion
 
         #region Operators
-        public static bool operator == (CFItem leftItem, CFItem rightItem)
+        public static bool operator ==(CFItem leftItem, CFItem rightItem)
         {
             // If both are null, or both are same instance, return true.
             if (ReferenceEquals(leftItem, rightItem))
                 return true;
 
             // If one is null, but not both, return false.
-            if (((object)leftItem == null) || ((object)rightItem == null))
+            if (((object) leftItem == null) || ((object) rightItem == null))
                 return false;
 
             // Return true if the fields match:

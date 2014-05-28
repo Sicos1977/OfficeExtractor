@@ -5,6 +5,7 @@ using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Ex
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
+
     #region Delegates
     /// <summary>
     ///     Action to apply to visited items in the OLE structured storage
@@ -127,9 +128,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             CFItem outDe;
 
             if (Children.TryFind(tmp, out outDe) && outDe.DirEntry.StgType == StgType.StgStream)
-            {
                 return outDe as CFStream;
-            }
+
             throw new CFItemNotFound("Cannot find item [" + streamName + "] within the current storage");
         }
         #endregion
@@ -293,7 +293,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 {
                     action(targetNode.Value);
 
-                    if (targetNode.Value.DirEntry.Child != DirectoryEntry.NOSTREAM)
+                    if (targetNode.Value.DirEntry.Child != DirectoryEntry.Nostream)
                         subStorages.Add(targetNode);
                 };
 
@@ -331,12 +331,12 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// 
         /// VisitedEntryParamsAction va = delegate(CFItem item, object[] args)
         /// {
-        ///     var castList = (List<string/>
+        ///     var castList = (List<string />
         ///             )args[0];
         ///             castList.Add(item.Name);
         ///             };
         ///             var list = new List
-        ///             <string/>
+        ///             <string />
         ///                 ();
         ///                 cf.RootStorage.VisitEntries(va, true, list);
         ///                 list.ForEach(tw.WriteLine);

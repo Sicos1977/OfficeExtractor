@@ -1,13 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Exceptions;
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
-    public enum StgType : int
+
+    #region Enum StgType
+    public enum StgType
     {
         StgInvalid = 0,
         StgStorage = 1,
@@ -16,385 +18,228 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         StgProperty = 4,
         StgRoot = 5
     }
+    #endregion
 
-    public enum StgColor : int
+    #region Enum StgColor
+    public enum StgColor
     {
         Red = 0,
         Black = 1
     }
+    #endregion
 
-    internal class DirectoryEntry : IComparable, IDirectoryEntry
+    internal class DirectoryEntry : IDirectoryEntry
     {
+        #region Fields
+        internal static Int32 Nostream = unchecked((int) 0xFFFFFFFF);
+        private byte[] _entryName = new byte[64];
+        private ushort _nameLength;
+        #endregion
 
-        private int sid = -1;
-        public int SID
+        #region Properties
+        public int SID { get; set; }
+
+        public byte[] EntryName
         {
-            get { return sid; }
-            set { sid = value; }
+            get { return _entryName; }
         }
 
-        internal static Int32 NOSTREAM
-            = unchecked((int)0xFFFFFFFF);
+        public ushort NameLength
+        {
+            get { return _nameLength; }
+            set { throw new NotImplementedException(); }
+        }
 
+        public StgType StgType { get; set; }
+
+        public StgColor StgColor { get; set; }
+
+        public int LeftSibling { get; set; }
+
+        public int RightSibling { get; set; }
+
+        public int Child { get; set; }
+
+        public Guid StorageCLSID { get; set; }
+
+        public int StateBits { get; set; }
+
+        public byte[] CreationDate { get; set; }
+
+        public byte[] ModifyDate { get; set; }
+
+        public int StartSector { get; set; }
+
+        public long Size { get; set; }
+
+        public string Name
+        {
+            get { return GetEntryName(); }
+        }
+        #endregion
+
+        #region Constructor
         public DirectoryEntry(StgType stgType)
         {
-            this.stgType = stgType;
+            SID = -1;
+            StartSector = Sector.ENDOFCHAIN;
+            ModifyDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+            CreationDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+            StorageCLSID = Guid.NewGuid();
+            Child = Nostream;
+            LeftSibling = Nostream;
+            RightSibling = Nostream;
+            StgColor = StgColor.Black;
+            StgType = stgType;
 
             switch (stgType)
             {
                 case StgType.StgStream:
 
-                    this.storageCLSID = new Guid("00000000000000000000000000000000");
-                    this.creationDate = new byte[8] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-                    this.modifyDate = new byte[8] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                    StorageCLSID = new Guid("00000000000000000000000000000000");
+                    CreationDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                    ModifyDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
                     break;
 
                 case StgType.StgStorage:
-                    this.creationDate = BitConverter.GetBytes((DateTime.Now.ToFileTime()));
+                    CreationDate = BitConverter.GetBytes((DateTime.Now.ToFileTime()));
                     break;
 
                 case StgType.StgRoot:
-                    this.creationDate = new byte[8] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-                    this.modifyDate = new byte[8] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                    CreationDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                    ModifyDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
                     break;
             }
-
         }
+        #endregion
 
-        private byte[] entryName = new byte[64];
-
-        public byte[] EntryName
+        #region GetEntryName
+        public string GetEntryName()
         {
-            get
-            {
-                return entryName;
-            }
-            //set
-            //{
-            //    entryName = value;
-            //}
-        }
+            if (_entryName != null && _entryName.Length > 0)
+                return Encoding.Unicode.GetString(_entryName).Remove((_nameLength - 1)/2);
 
-        public String GetEntryName()
-        {
-            if (entryName != null && entryName.Length > 0)
-            {
-                return Encoding.Unicode.GetString(entryName).Remove((this.nameLength - 1) / 2);
-            }
-            else
-                return String.Empty;
+            return string.Empty;
         }
+        #endregion
 
+        #region SetEntryName
         public void SetEntryName(String entryName)
         {
-            if (
-                entryName.Contains(@"\") ||
+            if (entryName.Contains(@"\") ||
                 entryName.Contains(@"/") ||
                 entryName.Contains(@":") ||
-                entryName.Contains(@"!")
-
-                )
-                throw new CFException("Invalid character in entry: the characters '\\', '/', ':','!' cannot be used in entry name");
+                entryName.Contains(@"!"))
+                throw new CFException(
+                    "Invalid character in entry: the characters '\\', '/', ':','!' cannot be used in entry name");
 
             if (entryName.Length > 31)
                 throw new CFException("Entry name MUST be smaller than 31 characters");
 
-
-
-            byte[] newName = null;
-            byte[] temp = Encoding.Unicode.GetBytes(entryName);
-            newName = new byte[64];
+            var temp = Encoding.Unicode.GetBytes(entryName);
+            var newName = new byte[64];
             Buffer.BlockCopy(temp, 0, newName, 0, temp.Length);
             newName[temp.Length] = 0x00;
             newName[temp.Length + 1] = 0x00;
 
-            this.entryName = newName;
-            this.nameLength = (ushort)(temp.Length + 2);
-
+            _entryName = newName;
+            _nameLength = (ushort) (temp.Length + 2);
         }
+        #endregion
 
-        private ushort nameLength;
-        public ushort NameLength
+        #region Equals
+        public override bool Equals(object obj)
         {
-            get
-            {
-                return nameLength;
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            return CompareTo(obj) == 0;
         }
+        #endregion
 
-        private StgType stgType = StgType.StgInvalid;
-        public StgType StgType
-        {
-            get
-            {
-                return stgType;
-            }
-            set
-            {
-                stgType = value;
-            }
-        }
-        private StgColor stgColor = StgColor.Black;
-        public StgColor StgColor
-        {
-            get
-            {
-                return stgColor;
-            }
-            set
-            {
-                stgColor = value;
-            }
-        }
-
-        private Int32 leftSibling = NOSTREAM;
-        public Int32 LeftSibling
-        {
-            get { return leftSibling; }
-            set { leftSibling = value; }
-        }
-
-        private Int32 rightSibling = NOSTREAM;
-        public Int32 RightSibling
-        {
-            get { return rightSibling; }
-            set { rightSibling = value; }
-        }
-
-        private Int32 child = NOSTREAM;
-        public Int32 Child
-        {
-            get { return child; }
-            set { child = value; }
-        }
-
-        private Guid storageCLSID
-            = Guid.NewGuid();
-
-        public Guid StorageCLSID
-        {
-            get
-            {
-                return storageCLSID;
-            }
-            set
-            {
-                this.storageCLSID = value;
-            }
-        }
-
-
-        private Int32 stateBits;
-
-        public Int32 StateBits
-        {
-            get { return stateBits; }
-            set { stateBits = value; }
-        }
-
-        private byte[] creationDate = new byte[8] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-
-        public byte[] CreationDate
-        {
-            get
-            {
-                return creationDate;
-            }
-            set
-            {
-                creationDate = value;
-            }
-        }
-
-        private byte[] modifyDate = new byte[8] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-
-        public byte[] ModifyDate
-        {
-            get
-            {
-                return modifyDate;
-            }
-            set
-            {
-                modifyDate = value;
-            }
-        }
-
-        private Int32 startSetc = Sector.ENDOFCHAIN;
-        public Int32 StartSetc
-        {
-            get
-            {
-                return startSetc;
-            }
-            set
-            {
-                startSetc = value;
-            }
-        }
-        private long size;
-        public long Size
-        {
-            get
-            {
-                return size;
-            }
-            set
-            {
-                size = value;
-            }
-        }
-
-
+        #region CompareTo
         public int CompareTo(object obj)
         {
-            const int THIS_IS_GREATER = 1;
-            const int OTHER_IS_GREATER = -1;
-            IDirectoryEntry otherDir = obj as IDirectoryEntry;
+            const int thisIsGreater = 1;
+            const int otherIsGreater = -1;
+            var otherDir = obj as IDirectoryEntry;
 
             if (otherDir == null)
                 throw new CFException("Invalid casting: compared object does not implement IDirectorEntry interface");
 
-            if (this.NameLength > otherDir.NameLength)
-            {
-                return THIS_IS_GREATER;
-            }
-            else if (this.NameLength < otherDir.NameLength)
-            {
-                return OTHER_IS_GREATER;
-            }
-            else
-            {
-                String thisName = Encoding.Unicode.GetString(this.EntryName, 0, this.NameLength).ToUpper(CultureInfo.InvariantCulture);
-                String otherName = Encoding.Unicode.GetString(otherDir.EntryName, 0, otherDir.NameLength).ToUpper(CultureInfo.InvariantCulture);
+            if (NameLength > otherDir.NameLength)
+                return thisIsGreater;
 
-                for (int z = 0; z < thisName.Length; z++)
-                {
-                    if (BitConverter.ToInt16(BitConverter.GetBytes(thisName[z]), 0) > BitConverter.ToInt16(BitConverter.GetBytes(otherName[z]), 0))
-                        return THIS_IS_GREATER;
-                    else if (BitConverter.ToInt16(BitConverter.GetBytes(thisName[z]), 0) < BitConverter.ToInt16(BitConverter.GetBytes(otherName[z]), 0))
-                        return OTHER_IS_GREATER;
-                }
+            if (NameLength < otherDir.NameLength)
+                return otherIsGreater;
 
-                return 0;
+            var thisName = Encoding.Unicode.GetString(EntryName, 0, NameLength).ToUpper(CultureInfo.InvariantCulture);
+            var otherName =
+                Encoding.Unicode.GetString(otherDir.EntryName, 0, otherDir.NameLength)
+                    .ToUpper(CultureInfo.InvariantCulture);
 
+            for (var z = 0; z < thisName.Length; z++)
+            {
+                if (BitConverter.ToInt16(BitConverter.GetBytes(thisName[z]), 0) >
+                    BitConverter.ToInt16(BitConverter.GetBytes(otherName[z]), 0))
+                    return thisIsGreater;
+                if (BitConverter.ToInt16(BitConverter.GetBytes(thisName[z]), 0) <
+                    BitConverter.ToInt16(BitConverter.GetBytes(otherName[z]), 0))
+                    return otherIsGreater;
             }
 
-            //   return String.Compare(Encoding.Unicode.GetString(this.EntryName).ToUpper(), Encoding.Unicode.GetString(other.EntryName).ToUpper());
+            return 0;
         }
+        #endregion
 
-        public override bool Equals(object obj)
+        #region Read
+        public void Read(Stream stream)
         {
-            return this.CompareTo(obj) == 0;
-        }
+            var rw = new StreamRW(stream);
 
+            _entryName = rw.ReadBytes(64);
+            _nameLength = rw.ReadUInt16();
+            StgType = (StgType) rw.ReadByte();
+            rw.ReadByte(); //Ignore color, only black tree
+            LeftSibling = rw.ReadInt32();
+            RightSibling = rw.ReadInt32();
+            Child = rw.ReadInt32();
+
+            if (StgType == StgType.StgInvalid)
+            {
+                LeftSibling = Nostream;
+                RightSibling = Nostream;
+                Child = Nostream;
+            }
+
+            StorageCLSID = new Guid(rw.ReadBytes(16));
+            StateBits = rw.ReadInt32();
+            CreationDate = rw.ReadBytes(8);
+            ModifyDate = rw.ReadBytes(8);
+            StartSector = rw.ReadInt32();
+            Size = rw.ReadInt64();
+        }
+        #endregion
+
+        #region GetHashCode
         /// <summary>
-        /// FNV hash, short for Fowler/Noll/Vo
+        ///     FNV hash, short for Fowler/Noll/Vo
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns>(not warranted) unique hash for byte array</returns>
-        private static ulong fnv_hash(byte[] buffer)
+        private static ulong FnvHash(IList<byte> buffer)
         {
-
             ulong h = 2166136261;
             int i;
 
-            for (i = 0; i < buffer.Length; i++)
-                h = (h * 16777619) ^ buffer[i];
+            for (i = 0; i < buffer.Count; i++)
+                h = (h*16777619) ^ buffer[i];
 
             return h;
         }
 
         public override int GetHashCode()
         {
-            return (int)fnv_hash(this.entryName);
+            // ReSharper disable once NonReadonlyFieldInGetHashCode
+            return (int) FnvHash(_entryName);
         }
-
-        public void Write(Stream stream)
-        {
-            StreamRW rw = new StreamRW(stream);
-
-            rw.Write(entryName);
-            rw.Write(nameLength);
-            rw.Write((byte)stgType);
-            rw.Write((byte)stgColor);
-            rw.Write(leftSibling);
-            rw.Write(rightSibling);
-            rw.Write(child);
-            rw.Write(storageCLSID.ToByteArray());
-            rw.Write(stateBits);
-            rw.Write(creationDate);
-            rw.Write(modifyDate);
-            rw.Write(startSetc);
-            rw.Write(size);
-
-            rw.Close();
-        }
-
-        //public Byte[] ToByteArray()
-        //{
-        //    MemoryStream ms
-        //        = new MemoryStream(128);
-
-        //    BinaryWriter bw = new BinaryWriter(ms);
-
-        //    byte[] paddedName = new byte[64];
-        //    Array.Copy(entryName, paddedName, entryName.Length);
-
-        //    bw.Write(paddedName);
-        //    bw.Write(nameLength);
-        //    bw.Write((byte)stgType);
-        //    bw.Write((byte)stgColor);
-        //    bw.Write(leftSibling);
-        //    bw.Write(rightSibling);
-        //    bw.Write(child);
-        //    bw.Write(storageCLSID.ToByteArray());
-        //    bw.Write(stateBits);
-        //    bw.Write(creationDate);
-        //    bw.Write(modifyDate);
-        //    bw.Write(startSetc);
-        //    bw.Write(size);
-
-        //    return ms.ToArray();
-        //}
-
-        public void Read(Stream stream)
-        {
-            StreamRW rw = new StreamRW(stream);
-
-            entryName = rw.ReadBytes(64);
-            nameLength = rw.ReadUInt16();
-            stgType = (StgType)rw.ReadByte();
-            rw.ReadByte();//Ignore color, only black tree
-            //stgColor = (StgColor)br.ReadByte();
-            leftSibling = rw.ReadInt32();
-            rightSibling = rw.ReadInt32();
-            child = rw.ReadInt32();
-
-            // Thank you to bugaccount (BugTrack id 3519554)
-            if (stgType == StgType.StgInvalid)
-            {
-                leftSibling = NOSTREAM;
-                rightSibling = NOSTREAM;
-                child = NOSTREAM;
-            }
-
-            storageCLSID = new Guid(rw.ReadBytes(16));
-            stateBits = rw.ReadInt32();
-            creationDate = rw.ReadBytes(8);
-            modifyDate = rw.ReadBytes(8);
-            startSetc = rw.ReadInt32();
-            size = rw.ReadInt64();
-        }
-
-        public string Name
-        {
-            get { return GetEntryName(); }
-        }
-
+        #endregion
     }
 }

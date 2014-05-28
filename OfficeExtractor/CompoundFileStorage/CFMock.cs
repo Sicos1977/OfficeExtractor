@@ -2,11 +2,10 @@
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
-
     /// <summary>
-    /// Used as internal template object for binary tree searches.
+    ///     Used as internal template object for binary tree searches.
     /// </summary>
-    internal class CFMock: CFItem
+    internal class CFMock : CFItem
     {
         internal CFMock(String dirName, StgType dirType)
         {

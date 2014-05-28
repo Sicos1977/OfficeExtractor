@@ -304,10 +304,10 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             foundObject = default(T);
 
             // search the tree for a node that contains data
-            BinaryTreeNode<T> current = Root;
+            var current = Root;
             while (current != null)
             {
-                int result = _comparer.Compare(current.Value, data);
+                var result = _comparer.Compare(current.Value, data);
                 if (result == 0)
                 {
                     // we found data

@@ -19,6 +19,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
     }
 
+    #region Enum CFSVersion
     /// <summary>
     ///     Binary File Format Version. Sector size  is 512 byte for version 3,
     ///     4096 for version 4
@@ -28,14 +29,16 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// <summary>
         ///     Compound file version 3 - The default and most common version available. Sector size 512 bytes, 2GB max file size.
         /// </summary>
-        Ver_3 = 3,
+        Ver3 = 3,
 
         /// <summary>
         ///     Compound file version 4 - Sector size is 4096 bytes. Using this version could bring some compatibility problem with
         ///     existing applications.
         /// </summary>
-        Ver_4 = 4
+        Ver4 = 4
     }
+    #endregion
+
 
     /// <summary>
     ///     Update mode of the compound file.
@@ -62,7 +65,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
     }
 
     /// <summary>
-    ///     Standard Microsoft&#169; Compound File implementation.
+    ///     Standard Microsoft's; Compound File implementation.
     ///     It is also known as OLE/COM structured storage
     ///     and contains a hierarchy of storage and stream objects providing
     ///     efficent storage of multiple kinds of documents in a single file.
@@ -134,51 +137,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// </summary>
         internal Stream sourceStream = null;
 
-
-        /// <summary>
-        ///     Create a blank, version 3 compound file.
-        ///     Sector recycle is turned off to achieve the best reading/writing
-        ///     performance in most common scenarios.
-        /// </summary>
-        /// <example>
-        ///     <code>
-        ///  
-        ///      byte[] b = new byte[10000];
-        ///      for (int i = 0; i &lt; 10000; i++)
-        ///      {
-        ///          b[i % 120] = (byte)i;
-        ///      }
-        /// 
-        ///      CompoundFile cf = new CompoundFile();
-        ///      CFStream myStream = cf.RootStorage.AddStream("MyStream");
-        /// 
-        ///      Assert.IsNotNull(myStream);
-        ///      myStream.SetData(b);
-        ///      cf.Save("MyCompoundFile.cfs");
-        ///      cf.Close();
-        ///      
-        ///  </code>
-        /// </example>
-        public CompoundFile()
-        {
-            header = new Header();
-            sectorRecycle = false;
-
-            sectors.OnVer3SizeLimitReached += OnSizeLimitReached;
-
-            DIFAT_SECTOR_FAT_ENTRIES_COUNT = (GetSectorSize()/4) - 1;
-            FAT_SECTOR_ENTRIES_COUNT = (GetSectorSize()/4);
-
-            //Root -- 
-            rootStorage = new CFStorage(this);
-
-            rootStorage.DirEntry.SetEntryName("Root Entry");
-            rootStorage.DirEntry.StgType = StgType.StgRoot;
-            rootStorage.DirEntry.StgColor = StgColor.Black;
-
-            //this.InsertNewDirectoryEntry(rootStorage.DirEntry);
-        }
-
         private void OnSizeLimitReached()
         {
             var rangeLockSector = new Sector(GetSectorSize(), sourceStream);
@@ -189,55 +147,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             _transactionLockAdded = true;
             _lockSectorId = rangeLockSector.Id;
         }
-
-        /// <summary>
-        ///     Create a new, blank, compound file.
-        /// </summary>
-        /// <param name="cfsVersion">Use a specific Compound File Version to set 512 or 4096 bytes sectors</param>
-        /// <param name="sectorRecycle">If true, recycle unused sectors</param>
-        /// <param name="eraseFreeSectors">If true, unallocated sectors will be overwritten with zeros</param>
-        /// <example>
-        ///     <code>
-        ///  
-        ///      byte[] b = new byte[10000];
-        ///      for (int i = 0; i &lt; 10000; i++)
-        ///      {
-        ///          b[i % 120] = (byte)i;
-        ///      }
-        /// 
-        ///      CompoundFile cf = new CompoundFile(CFSVersion.Ver_4, true, true);
-        ///      CFStream myStream = cf.RootStorage.AddStream("MyStream");
-        /// 
-        ///      Assert.IsNotNull(myStream);
-        ///      myStream.SetData(b);
-        ///      cf.Save("MyCompoundFile.cfs");
-        ///      cf.Close();
-        ///      
-        ///  </code>
-        /// </example>
-        /// <remarks>
-        ///     Sector recycling reduces data writing performances but avoids space wasting in scenarios with frequently
-        ///     data manipulation of the same streams. The new compound file is open in Update mode.
-        /// </remarks>
-        public CompoundFile(CFSVersion cfsVersion, bool sectorRecycle, bool eraseFreeSectors)
-        {
-            header = new Header((ushort) cfsVersion);
-            this.sectorRecycle = sectorRecycle;
-
-
-            DIFAT_SECTOR_FAT_ENTRIES_COUNT = (GetSectorSize()/4) - 1;
-            FAT_SECTOR_ENTRIES_COUNT = (GetSectorSize()/4);
-
-            //Root -- 
-            rootStorage = new CFStorage(this);
-
-            rootStorage.DirEntry.SetEntryName("Root Entry");
-            rootStorage.DirEntry.StgType = StgType.StgRoot;
-            rootStorage.DirEntry.StgColor = StgColor.Black;
-
-            //this.InsertNewDirectoryEntry(rootStorage.DirEntry);
-        }
-
 
         /// <summary>
         ///     Load an existing compound file.
@@ -259,11 +168,9 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         ///  </code>
         /// </example>
         /// <remarks>
-        ///     File will be open in read-only mode: it has to be saved
-        ///     with a different filename. A wrapping implementation has to be provided
-        ///     in order to remove/substitute an existing file. Version will be
-        ///     automatically recognized from the file. Sector recycle is turned off
-        ///     to achieve the best reading/writing performance in most common scenarios.
+        ///     File will be open in read-only mode. Version will be automatically recognized 
+        ///     from the file. Sector recycle is turned off to achieve the best reading
+        ///     performance in most common scenarios.
         /// </remarks>
         public CompoundFile(String fileName)
         {
@@ -277,196 +184,13 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             FAT_SECTOR_ENTRIES_COUNT = (GetSectorSize()/4);
         }
 
-        /// <summary>
-        ///     Load an existing compound file.
-        /// </summary>
-        /// <param name="fileName">Compound file to read from</param>
-        /// <param name="sectorRecycle">If true, recycle unused sectors</param>
-        /// <param name="updateMode">Select the update mode of the underlying data file</param>
-        /// <param name="eraseFreeSectors">If true, overwrite with zeros unallocated sectors</param>
-        /// <example>
-        ///     <code>
-        ///  String srcFilename = "data_YOU_CAN_CHANGE.xls";
-        ///  
-        ///  CompoundFile cf = new CompoundFile(srcFilename, UpdateMode.Update, true, true);
-        /// 
-        ///  Random r = new Random();
-        /// 
-        ///  byte[] buffer = GetBuffer(r.Next(3, 4095), 0x0A);
-        /// 
-        ///  cf.RootStorage.AddStream("MyStream").SetData(buffer);
-        ///  
-        ///  //This will persist data to the underlying media.
-        ///  cf.Commit();
-        ///  cf.Close();
-        /// 
-        ///  </code>
-        /// </example>
-        public CompoundFile(String fileName, UpdateMode updateMode, bool sectorRecycle, bool eraseFreeSectors)
-        {
-            this.sectorRecycle = sectorRecycle;
-            this.updateMode = updateMode;
-            this.eraseFreeSectors = eraseFreeSectors;
-
-            LoadFile(fileName);
-
-            DIFAT_SECTOR_FAT_ENTRIES_COUNT = (GetSectorSize()/4) - 1;
-            FAT_SECTOR_ENTRIES_COUNT = (GetSectorSize()/4);
-        }
-
-        /// <summary>
-        ///     Load an existing compound file.
-        /// </summary>
-        /// <param name="fileName">Compound file to read from</param>
-        /// <param name="sectorRecycle">If true, recycle unused sectors</param>
-        /// <param name="updateMode">Select the update mode of the underlying data file</param>
-        /// <param name="eraseFreeSectors">If true, overwrite with zeros unallocated sectors</param>
-        /// <param name="noValidationException">
-        ///     If true, no
-        ///     <see cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.CFCorruptedFileException">CFCorruptedFileException</see>
-        ///     will be thrown even if corrupted file is loaded. Please note that this option is could pose a potential security
-        ///     threat
-        /// </param>
-        /// <example>
-        ///     <code>
-        ///  String srcFilename = "data_YOU_CAN_CHANGE.xls";
-        ///  
-        ///  CompoundFile cf = new CompoundFile(srcFilename, UpdateMode.Update, true, true, true);
-        /// 
-        ///  
-        ///  Random r = new Random();
-        /// 
-        ///  byte[] buffer = GetBuffer(r.Next(3, 4095), 0x0A);
-        /// 
-        ///  cf.RootStorage.AddStream("MyStream").SetData(buffer);
-        ///  
-        ///  //This will persist data to the underlying media.
-        ///  cf.Commit();
-        ///  cf.Close();
-        /// 
-        ///  </code>
-        /// </example>
-        public CompoundFile(String fileName, UpdateMode updateMode, bool sectorRecycle, bool eraseFreeSectors,
-            bool noValidationException)
-        {
-            validationExceptionEnabled = !noValidationException;
-
-            this.sectorRecycle = sectorRecycle;
-            this.updateMode = updateMode;
-            this.eraseFreeSectors = eraseFreeSectors;
-
-            LoadFile(fileName);
-
-            DIFAT_SECTOR_FAT_ENTRIES_COUNT = (GetSectorSize()/4) - 1;
-            FAT_SECTOR_ENTRIES_COUNT = (GetSectorSize()/4);
-        }
-
-        private readonly bool validationExceptionEnabled = true;
+        private const bool validationExceptionEnabled = true;
 
         public bool ValidationExceptionEnabled
         {
             get { return validationExceptionEnabled; }
         }
 
-
-        /// <summary>
-        ///     Load an existing compound file.
-        /// </summary>
-        /// <param name="stream">A stream containing a compound file to read</param>
-        /// <param name="sectorRecycle">If true, recycle unused sectors</param>
-        /// <param name="updateMode">Select the update mode of the underlying data file</param>
-        /// <param name="eraseFreeSectors">If true, overwrite with zeros unallocated sectors</param>
-        /// <example>
-        ///     <code>
-        ///  
-        ///  String filename = "reportREAD.xls";
-        ///    
-        ///  FileStream fs = new FileStream(filename, FileMode.Open);
-        ///  CompoundFile cf = new CompoundFile(fs, UpdateMode.ReadOnly, false, false);
-        ///  CFStream foundStream = cf.RootStorage.GetStream("Workbook");
-        /// 
-        ///  byte[] temp = foundStream.GetData();
-        /// 
-        ///  Assert.IsNotNull(temp);
-        /// 
-        ///  cf.Close();
-        /// 
-        ///  </code>
-        /// </example>
-        /// <exception cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.CFException">
-        ///     Raised when
-        ///     trying to open a non-seekable stream
-        /// </exception>
-        /// <exception cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.CFException">
-        ///     Raised
-        ///     stream is null
-        /// </exception>
-        public CompoundFile(Stream stream, UpdateMode updateMode, bool sectorRecycle, bool eraseFreeSectors)
-        {
-            this.sectorRecycle = sectorRecycle;
-            this.updateMode = updateMode;
-            this.eraseFreeSectors = eraseFreeSectors;
-
-            LoadStream(stream);
-
-            DIFAT_SECTOR_FAT_ENTRIES_COUNT = (GetSectorSize()/4) - 1;
-            FAT_SECTOR_ENTRIES_COUNT = (GetSectorSize()/4);
-        }
-
-        /// <summary>
-        ///     Load an existing compound file.
-        /// </summary>
-        /// <param name="stream">A stream containing a compound file to read</param>
-        /// <param name="sectorRecycle">If true, recycle unused sectors</param>
-        /// <param name="updateMode">Select the update mode of the underlying data file</param>
-        /// <param name="eraseFreeSectors">If true, overwrite with zeros unallocated sectors</param>
-        /// <param name="noValidationException">
-        ///     If true, openMcdf will try to ignore invalid references or format in order to load
-        ///     a possibly corrupted file anyway
-        /// </param>
-        /// <remarks>
-        ///     The 'noValidationEcxception' parameter could possibly lead to security issues so it's recommanded to use it
-        ///     only on trusted sources
-        /// </remarks>
-        /// <example>
-        ///     <code>
-        ///  
-        ///  String filename = "reportREAD.xls";
-        ///    
-        ///  FileStream fs = new FileStream(filename, FileMode.Open);
-        ///  CompoundFile cf = new CompoundFile(fs, UpdateMode.ReadOnly, false, false, false, true);
-        ///  CFStream foundStream = cf.RootStorage.GetStream("Workbook");
-        /// 
-        ///  byte[] temp = foundStream.GetData(); //if 'reportRead.xls' is corrupted, openMcdf will try to lad it anyway [noValidationException set true]
-        /// 
-        ///  Assert.IsNotNull(temp);
-        /// 
-        ///  cf.Close();
-        /// 
-        ///  </code>
-        /// </example>
-        /// <exception cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.CFException">
-        ///     Raised when
-        ///     trying to open a non-seekable stream
-        /// </exception>
-        /// <exception cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.CFException">
-        ///     Raised
-        ///     stream is null
-        /// </exception>
-        public CompoundFile(Stream stream, UpdateMode updateMode, bool sectorRecycle, bool eraseFreeSectors,
-            bool noValidationException)
-        {
-            validationExceptionEnabled = !noValidationException;
-
-            this.sectorRecycle = sectorRecycle;
-            this.updateMode = updateMode;
-            this.eraseFreeSectors = eraseFreeSectors;
-
-            LoadStream(stream);
-
-            DIFAT_SECTOR_FAT_ENTRIES_COUNT = (GetSectorSize()/4) - 1;
-            FAT_SECTOR_ENTRIES_COUNT = (GetSectorSize()/4);
-        }
 
         /// <summary>
         ///     Load an existing compound file from a stream.
@@ -508,203 +232,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         private readonly UpdateMode updateMode = UpdateMode.ReadOnly;
         private String fileName = String.Empty;
 
-
-        /// <summary>
-        ///     Commit data changes since the previously commit operation
-        ///     to the underlying supporting stream or file on the disk.
-        /// </summary>
-        /// <remarks>
-        ///     This method can be used
-        ///     only if the supporting stream has been opened in
-        ///     <see cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.UpdateMode">Update mode</see>
-        ///     .
-        /// </remarks>
-        public void Commit()
-        {
-            Commit(false);
-        }
-
-#if !FLAT_WRITE
-        private byte[] buffer = new byte[FLUSHING_BUFFER_MAX_SIZE];
-        private Queue<Sector> flushingQueue = new Queue<Sector>(FLUSHING_QUEUE_SIZE);
-#endif
-
-
-        /// <summary>
-        ///     Commit data changes since the previously commit operation
-        ///     to the underlying supporting stream or file on the disk.
-        /// </summary>
-        /// <param name="releaseMemory">
-        ///     If true, release loaded sectors to limit memory usage but reduces following read operations
-        ///     performance
-        /// </param>
-        /// <remarks>
-        ///     This method can be used only if
-        ///     the supporting stream has been opened in
-        ///     <see cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.UpdateMode">Update mode</see>
-        ///     .
-        /// </remarks>
-        public void Commit(bool releaseMemory)
-        {
-            if (_disposed)
-                throw new CFDisposedException("Compound File closed: cannot commit data");
-
-            if (updateMode != UpdateMode.Update)
-                throw new CFInvalidOperation("Cannot commit data in Read-Only update mode");
-
-            //try
-            //{
-#if !FLAT_WRITE
-
-            int sId = -1;
-            int sCount = 0;
-            int bufOffset = 0;
-#endif
-            int sSize = GetSectorSize();
-
-            if (header.MajorVersion != (ushort) CFSVersion.Ver_3)
-                CheckForLockSector();
-
-            sourceStream.Seek(0, SeekOrigin.Begin);
-            sourceStream.Write((byte[]) Array.CreateInstance(typeof (byte), GetSectorSize()), 0, sSize);
-
-            CommitDirectory();
-
-            bool gap = true;
-
-
-            for (int i = 0; i < sectors.Count; i++)
-            {
-#if FLAT_WRITE
-
-                //Note:
-                //Here sectors should not be loaded dynamically because
-                //if they are null it means that no change has involved them;
-
-                Sector s = sectors[i];
-
-                if (s != null && s.DirtyFlag)
-                {
-                    if (gap)
-                        sourceStream.Seek(sSize + i*(long) sSize, SeekOrigin.Begin);
-
-                    sourceStream.Write(s.GetData(), 0, sSize);
-                    sourceStream.Flush();
-                    s.DirtyFlag = false;
-                    gap = false;
-                }
-                else
-                {
-                    gap = true;
-                    continue;
-                }
-                if (releaseMemory)
-                {
-                    s.ReleaseData();
-                    s = null;
-                    sectors[i] = null;
-
-                    //GC.Collect();
-                }
-
-
-#else
-               
-
-                Sector s = sectors[i] as Sector;
-
-
-                if (s != null && s.DirtyFlag && flushingQueue.Count < (int)(buffer.Length / sSize))
-                {
-                    //First of a block of contiguous sectors, mark id, start enqueuing
-
-                    if (gap)
-                    {
-                        sId = s.Id;
-                        gap = false;
-                    }
-
-                    flushingQueue.Enqueue(s);
-
-
-                }
-                else
-                {
-                    //Found a gap, stop enqueuing, flush a write operation
-
-                    gap = true;
-                    sCount = flushingQueue.Count;
-
-                    if (sCount == 0) continue;
-
-                    bufOffset = 0;
-                    while (flushingQueue.Count > 0)
-                    {
-                        Sector r = flushingQueue.Dequeue();
-                        Buffer.BlockCopy(r.GetData(), 0, buffer, bufOffset, sSize);
-                        r.DirtyFlag = false;
-
-                        if (releaseMemory)
-                        {
-                            r.ReleaseData();
-                        }
-
-                        bufOffset += sSize;
-                    }
-
-                    sourceStream.Seek(((long)sSize + (long)sId * (long)sSize), SeekOrigin.Begin);
-                    sourceStream.Write(buffer, 0, sCount * sSize);
-
-               
-
-                    //Console.WriteLine("W - " + (int)(sCount * sSize ));
-
-                }
-#endif
-            }
-
-#if !FLAT_WRITE
-            sCount = flushingQueue.Count;
-            bufOffset = 0;
-
-            while (flushingQueue.Count > 0)
-            {
-                Sector r = flushingQueue.Dequeue();
-                Buffer.BlockCopy(r.GetData(), 0, buffer, bufOffset, sSize);
-                r.DirtyFlag = false;
-
-                if (releaseMemory)
-                {
-                    r.ReleaseData();
-                    r = null;
-                }
-
-                bufOffset += sSize;
-            }
-
-            if (sCount != 0)
-            {
-                sourceStream.Seek((long)sSize + (long)sId * (long)sSize, SeekOrigin.Begin);
-                sourceStream.Write(buffer, 0, sCount * sSize);
-                //Console.WriteLine("W - " + (int)(sCount * sSize));
-            }
-
-#endif
-
-            // Seek to beginning position and save header (first 512 or 4096 bytes)
-            sourceStream.Seek(0, SeekOrigin.Begin);
-            header.Write(sourceStream);
-
-            sourceStream.Flush();
-
-
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw new CFException("Internal error while committing data", ex);
-            //}
-        }
-
         /// <summary>
         ///     Load compound file from an existing stream.
         /// </summary>
@@ -714,7 +241,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             try
             {
                 header = new Header();
-                directoryEntries = new List<IDirectoryEntry>();
+                _directoryEntries = new List<IDirectoryEntry>();
 
                 sourceStream = stream;
 
@@ -736,7 +263,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 LoadDirectories();
 
                 rootStorage
-                    = new CFStorage(this, directoryEntries[0]);
+                    = new CFStorage(this, _directoryEntries[0]);
             }
             catch (Exception)
             {
@@ -808,10 +335,10 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         private void SetMiniSectorChain(List<Sector> sectorChain)
         {
             List<Sector> miniFAT
-                = GetSectorChain(header.FirstMiniFATSectorID, SectorType.Normal);
+                = GetSectorChain(header.FirstMiniFATSectorId, SectorType.Normal);
 
             List<Sector> miniStream
-                = GetSectorChain(RootEntry.StartSetc, SectorType.Normal);
+                = GetSectorChain(RootEntry.StartSector, SectorType.Normal);
 
             var miniFATView
                 = new StreamView(
@@ -878,9 +405,9 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             //Update HEADER and root storage when ministream changes
             if (miniFAT.Count > 0)
             {
-                rootStorage.DirEntry.StartSetc = miniStream[0].Id;
+                rootStorage.DirEntry.StartSector = miniStream[0].Id;
                 header.MiniFATSectorsNumber = (uint) miniFAT.Count;
-                header.FirstMiniFATSectorID = miniFAT[0].Id;
+                header.FirstMiniFATSectorId = miniFAT[0].Id;
             }
         }
 
@@ -923,10 +450,10 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             var ZEROED_MINI_SECTOR = new byte[Sector.MINISECTOR_SIZE];
 
             List<Sector> miniFAT
-                = GetSectorChain(header.FirstMiniFATSectorID, SectorType.Normal);
+                = GetSectorChain(header.FirstMiniFATSectorId, SectorType.Normal);
 
             List<Sector> miniStream
-                = GetSectorChain(RootEntry.StartSetc, SectorType.Normal);
+                = GetSectorChain(RootEntry.StartSector, SectorType.Normal);
 
             var miniFATView
                 = new StreamView(miniFAT, GetSectorSize(), header.MiniFATSectorsNumber*Sector.MINISECTOR_SIZE,
@@ -976,9 +503,9 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             //Update HEADER and root storage when ministream changes
             if (miniFAT.Count > 0)
             {
-                rootStorage.DirEntry.StartSetc = miniStream[0].Id;
+                rootStorage.DirEntry.StartSector = miniStream[0].Id;
                 header.MiniFATSectorsNumber = (uint) miniFAT.Count;
-                header.FirstMiniFATSectorID = miniFAT[0].Id;
+                header.FirstMiniFATSectorId = miniFAT[0].Id;
             }
         }
 
@@ -1163,7 +690,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             // Chain first sector
             if (difatStream.BaseSectorChain != null && difatStream.BaseSectorChain.Count > 0)
             {
-                header.FirstDIFATSectorID = difatStream.BaseSectorChain[0].Id;
+                header.FirstDIFATSectorId = difatStream.BaseSectorChain[0].Id;
 
                 // Update header information
                 header.DIFATSectorsNumber = (uint) difatStream.BaseSectorChain.Count;
@@ -1188,7 +715,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                     );
             }
             else
-                header.FirstDIFATSectorID = Sector.ENDOFCHAIN;
+                header.FirstDIFATSectorId = Sector.ENDOFCHAIN;
 
             // Mark DIFAT Sectors in FAT
             var fatSv =
@@ -1232,14 +759,14 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             {
                 validationCount = (int) header.DIFATSectorsNumber;
 
-                Sector s = sectors[header.FirstDIFATSectorID];
+                Sector s = sectors[header.FirstDIFATSectorId];
 
                 if (s == null) //Lazy loading
                 {
                     s = new Sector(GetSectorSize(), sourceStream);
                     s.Type = SectorType.DIFAT;
-                    s.Id = header.FirstDIFATSectorID;
-                    sectors[header.FirstDIFATSectorID] = s;
+                    s.Id = header.FirstDIFATSectorId;
+                    sectors[header.FirstDIFATSectorId] = s;
                 }
 
                 result.Add(s);
@@ -1432,8 +959,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             {
                 int nextSecID = secID;
 
-                List<Sector> miniFAT = GetNormalSectorChain(header.FirstMiniFATSectorID);
-                List<Sector> miniStream = GetNormalSectorChain(RootEntry.StartSetc);
+                List<Sector> miniFAT = GetNormalSectorChain(header.FirstMiniFATSectorId);
+                List<Sector> miniStream = GetNormalSectorChain(RootEntry.StartSector);
 
                 var miniFATView
                     = new StreamView(miniFAT, GetSectorSize(), header.MiniFATSectorsNumber*Sector.MINISECTOR_SIZE,
@@ -1542,11 +1069,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             if (de != null)
             {
                 // Find first available invalid slot (if any) to reuse it
-                for (int i = 0; i < directoryEntries.Count; i++)
+                for (int i = 0; i < _directoryEntries.Count; i++)
                 {
-                    if (directoryEntries[i].StgType == StgType.StgInvalid)
+                    if (_directoryEntries[i].StgType == StgType.StgInvalid)
                     {
-                        directoryEntries[i] = de;
+                        _directoryEntries[i] = de;
                         de.SID = i;
                         return;
                     }
@@ -1554,8 +1081,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             }
 
             // No invalid directory entry found
-            directoryEntries.Add(de);
-            de.SID = directoryEntries.Count - 1;
+            _directoryEntries.Add(de);
+            de.SID = _directoryEntries.Count - 1;
         }
 
         /// <summary>
@@ -1564,7 +1091,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// <param name="sid">Sid of the directory to invalidate</param>
         internal void ResetDirectoryEntry(int sid)
         {
-            directoryEntries[sid] = new DirectoryEntry(StgType.StgInvalid);
+            _directoryEntries[sid] = new DirectoryEntry(StgType.StgInvalid);
         }
 
 
@@ -1574,7 +1101,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 = new BinarySearchTree<CFItem>(new CFItemComparer());
 
             // Load children from their original tree.
-            DoLoadChildren(bst, directoryEntries[sid]);
+            DoLoadChildren(bst, _directoryEntries[sid]);
 
             // Rebuild of (Red)-Black tree of entry children.
             bst.VisitTreeInOrder(RefreshSIDs);
@@ -1584,16 +1111,16 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         private void DoLoadChildren(BinarySearchTree<CFItem> bst, IDirectoryEntry de)
         {
-            if (de.Child != DirectoryEntry.NOSTREAM)
+            if (de.Child != DirectoryEntry.Nostream)
             {
-                if (directoryEntries[de.Child].StgType == StgType.StgInvalid) return;
+                if (_directoryEntries[de.Child].StgType == StgType.StgInvalid) return;
 
-                if (directoryEntries[de.Child].StgType == StgType.StgStream)
-                    bst.Add(new CFStream(this, directoryEntries[de.Child]));
+                if (_directoryEntries[de.Child].StgType == StgType.StgStream)
+                    bst.Add(new CFStream(this, _directoryEntries[de.Child]));
                 else
-                    bst.Add(new CFStorage(this, directoryEntries[de.Child]));
+                    bst.Add(new CFStorage(this, _directoryEntries[de.Child]));
 
-                LoadSiblings(bst, directoryEntries[de.Child]);
+                LoadSiblings(bst, _directoryEntries[de.Child]);
             }
         }
 
@@ -1601,16 +1128,16 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         // to insert duplicate items
         private void LoadSiblings(BinarySearchTree<CFItem> bst, IDirectoryEntry de)
         {
-            if (de.LeftSibling != DirectoryEntry.NOSTREAM)
+            if (de.LeftSibling != DirectoryEntry.Nostream)
             {
                 // If there're more left siblings load them...
-                DoLoadSiblings(bst, directoryEntries[de.LeftSibling]);
+                DoLoadSiblings(bst, _directoryEntries[de.LeftSibling]);
             }
 
-            if (de.RightSibling != DirectoryEntry.NOSTREAM)
+            if (de.RightSibling != DirectoryEntry.Nostream)
             {
                 // If there're more right siblings load them...
-                DoLoadSiblings(bst, directoryEntries[de.RightSibling]);
+                DoLoadSiblings(bst, _directoryEntries[de.RightSibling]);
             }
         }
 
@@ -1619,28 +1146,28 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             if (ValidateSibling(de.LeftSibling))
             {
                 // If there're more left siblings load them...
-                DoLoadSiblings(bst, directoryEntries[de.LeftSibling]);
+                DoLoadSiblings(bst, _directoryEntries[de.LeftSibling]);
             }
 
-            if (directoryEntries[de.SID].StgType == StgType.StgStream)
-                bst.Add(new CFStream(this, directoryEntries[de.SID]));
-            else if (directoryEntries[de.SID].StgType == StgType.StgStorage)
-                bst.Add(new CFStorage(this, directoryEntries[de.SID]));
+            if (_directoryEntries[de.SID].StgType == StgType.StgStream)
+                bst.Add(new CFStream(this, _directoryEntries[de.SID]));
+            else if (_directoryEntries[de.SID].StgType == StgType.StgStorage)
+                bst.Add(new CFStorage(this, _directoryEntries[de.SID]));
 
 
             if (ValidateSibling(de.RightSibling))
             {
                 // If there're more right siblings load them...
-                DoLoadSiblings(bst, directoryEntries[de.RightSibling]);
+                DoLoadSiblings(bst, _directoryEntries[de.RightSibling]);
             }
         }
 
         private bool ValidateSibling(int sid)
         {
-            if (sid != DirectoryEntry.NOSTREAM)
+            if (sid != DirectoryEntry.Nostream)
             {
                 // if this siblings id does not overflow current list
-                if (sid >= directoryEntries.Count)
+                if (sid >= _directoryEntries.Count)
                 {
                     if (validationExceptionEnabled)
                     {
@@ -1652,7 +1179,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 }
 
                 //if this sibling is valid...
-                if (directoryEntries[sid].StgType == StgType.StgInvalid)
+                if (_directoryEntries[sid].StgType == StgType.StgInvalid)
                 {
                     if (validationExceptionEnabled)
                     {
@@ -1663,7 +1190,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                     return false;
                 }
 
-                if (!Enum.IsDefined(typeof (StgType), directoryEntries[sid].StgType))
+                if (!Enum.IsDefined(typeof (StgType), _directoryEntries[sid].StgType))
                 {
                     if (validationExceptionEnabled)
                     {
@@ -1686,10 +1213,10 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         private void LoadDirectories()
         {
             List<Sector> directoryChain
-                = GetSectorChain(header.FirstDirectorySectorID, SectorType.Normal);
+                = GetSectorChain(header.FirstDirectorySectorId, SectorType.Normal);
 
-            if (header.FirstDirectorySectorID == Sector.ENDOFCHAIN)
-                header.FirstDirectorySectorID = directoryChain[0].Id;
+            if (header.FirstDirectorySectorId == Sector.ENDOFCHAIN)
+                header.FirstDirectorySectorId = directoryChain[0].Id;
 
             var dirReader
                 = new StreamView(directoryChain, GetSectorSize(), directoryChain.Count*GetSectorSize(), sourceStream);
@@ -1702,8 +1229,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
                 //We are not inserting dirs. Do not use 'InsertNewDirectoryEntry'
                 de.Read(dirReader);
-                directoryEntries.Add(de);
-                de.SID = directoryEntries.Count - 1;
+                _directoryEntries.Add(de);
+                de.SID = _directoryEntries.Count - 1;
             }
         }
 
@@ -1717,7 +1244,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 }
                 else
                 {
-                    Node.Value.DirEntry.LeftSibling = DirectoryEntry.NOSTREAM;
+                    Node.Value.DirEntry.LeftSibling = DirectoryEntry.Nostream;
                 }
 
                 if (Node.Right != null && (Node.Right.Value.DirEntry.StgType != StgType.StgInvalid))
@@ -1726,7 +1253,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 }
                 else
                 {
-                    Node.Value.DirEntry.RightSibling = DirectoryEntry.NOSTREAM;
+                    Node.Value.DirEntry.RightSibling = DirectoryEntry.Nostream;
                 }
             }
         }
@@ -1738,168 +1265,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             RefreshIterative(node.Left);
             RefreshIterative(node.Right);
         }
-
-        /// <summary>
-        ///     Commit directory entries change on the Current Source stream
-        /// </summary>
-        private void CommitDirectory()
-        {
-            const int DIRECTORY_SIZE = 128;
-
-            List<Sector> directorySectors
-                = GetSectorChain(header.FirstDirectorySectorID, SectorType.Normal);
-
-            var sv = new StreamView(directorySectors, GetSectorSize(), 0, sourceStream);
-
-            foreach (var di in directoryEntries)
-            {
-                di.Write(sv);
-            }
-
-            int delta = directoryEntries.Count;
-
-            while (delta%(GetSectorSize()/DIRECTORY_SIZE) != 0)
-            {
-                var dummy = new DirectoryEntry(StgType.StgInvalid);
-                dummy.Write(sv);
-                delta++;
-            }
-
-            foreach (var s in directorySectors)
-            {
-                s.Type = SectorType.Directory;
-            }
-
-            SetNormalSectorChain(directorySectors);
-
-            header.FirstDirectorySectorID = directorySectors[0].Id;
-
-            //Version 4 supports directory sectors count
-            if (header.MajorVersion == 3)
-            {
-                header.DirectorySectorsNumber = 0;
-            }
-            else
-            {
-                header.DirectorySectorsNumber = directorySectors.Count;
-            }
-        }
-
-
-        /// <summary>
-        ///     Saves the in-memory image of Compound File to a file.
-        /// </summary>
-        /// <param name="fileName">File name to write the compound file to</param>
-        /// <exception cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.CFException">
-        ///     Raised if
-        ///     destination file is not seekable
-        /// </exception>
-        public void Save(String fileName)
-        {
-            if (_disposed)
-                throw new CFException("Compound File closed: cannot save data");
-
-            FileStream fs = null;
-
-            try
-            {
-                fs = new FileStream(fileName, FileMode.Create);
-                Save(fs);
-            }
-            catch (Exception ex)
-            {
-                throw new CFException("Error saving file [" + fileName + "]", ex);
-            }
-            finally
-            {
-                if (fs != null)
-                    fs.Flush();
-
-                if (fs != null)
-                    fs.Close();
-            }
-        }
-
-        /// <summary>
-        ///     Saves the in-memory image of Compound File to a stream.
-        /// </summary>
-        /// <remarks>
-        ///     Destination Stream must be seekable.
-        /// </remarks>
-        /// <param name="stream">The stream to save compound File to</param>
-        /// <exception cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.CFException">
-        ///     Raised if
-        ///     destination stream is not seekable
-        /// </exception>
-        /// <exception cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.CFDisposedException">
-        ///     Raised
-        ///     if Compound File Storage has been already disposed
-        /// </exception>
-        /// <example>
-        ///     <code>
-        ///     MemoryStream ms = new MemoryStream(size);
-        /// 
-        ///     CompoundFile cf = new CompoundFile();
-        ///     CFStorage st = cf.RootStorage.AddStorage("MyStorage");
-        ///     CFStream sm = st.AddStream("MyStream");
-        /// 
-        ///     byte[] b = new byte[]{0x00,0x01,0x02,0x03};
-        /// 
-        ///     sm.SetData(b);
-        ///     cf.Save(ms);
-        ///     cf.Close();
-        ///  </code>
-        /// </example>
-        public void Save(Stream stream)
-        {
-            if (_disposed)
-                throw new CFDisposedException("Compound File closed: cannot save data");
-
-            if (!stream.CanSeek)
-                throw new CFException("Cannot save on a non-seekable stream");
-
-            CheckForLockSector();
-            int sSize = GetSectorSize();
-
-            try
-            {
-                stream.Write((byte[]) Array.CreateInstance(typeof (byte), sSize), 0, sSize);
-
-                CommitDirectory();
-
-                for (int i = 0; i < sectors.Count; i++)
-                {
-                    Sector s = sectors[i];
-
-
-                    if (s == null)
-                    {
-                        // Load source (unmodified) sectors
-                        // Here we have to ignore "Dirty flag" of 
-                        // sectors because we are NOT modifying the source
-                        // in a differential way but ALL sectors need to be 
-                        // persisted on the destination stream
-                        s = new Sector(sSize, sourceStream);
-                        s.Id = i;
-
-                        //sectors[i] = s;
-                    }
-
-
-                    stream.Write(s.GetData(), 0, sSize);
-
-                    //s.ReleaseData();
-                }
-
-                stream.Seek(0, SeekOrigin.Begin);
-                header.Write(stream);
-            }
-            catch (Exception ex)
-            {
-                throw new CFException("Internal error while saving compound file to stream ", ex);
-            }
-        }
-
 
         /// <summary>
         ///     Scan FAT o miniFAT for free sectors to reuse.
@@ -1940,14 +1305,14 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             else
             {
                 List<Sector> miniFAT
-                    = GetSectorChain(header.FirstMiniFATSectorID, SectorType.Normal);
+                    = GetSectorChain(header.FirstMiniFATSectorId, SectorType.Normal);
 
                 var miniFATView
                     = new StreamView(miniFAT, GetSectorSize(), header.MiniFATSectorsNumber*Sector.MINISECTOR_SIZE,
                         sourceStream);
 
                 List<Sector> miniStream
-                    = GetSectorChain(RootEntry.StartSetc, SectorType.Normal);
+                    = GetSectorChain(RootEntry.StartSector, SectorType.Normal);
 
                 var miniStreamView
                     = new StreamView(miniStream, GetSectorSize(), rootStorage.Size, sourceStream);
@@ -2019,7 +1384,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
             byte[] tempMini = null;
 
-            if (directoryEntry.StartSetc != Sector.ENDOFCHAIN)
+            if (directoryEntry.StartSector != Sector.ENDOFCHAIN)
             {
                 if ((directoryEntry.Size + buffer.Length) > header.MinSizeStandardStream &&
                     directoryEntry.Size < header.MinSizeStandardStream)
@@ -2027,19 +1392,19 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                     tempMini = new byte[directoryEntry.Size];
 
                     var miniData
-                        = new StreamView(GetMiniSectorChain(directoryEntry.StartSetc), Sector.MINISECTOR_SIZE,
+                        = new StreamView(GetMiniSectorChain(directoryEntry.StartSector), Sector.MINISECTOR_SIZE,
                             sourceStream);
 
                     miniData.Read(tempMini, 0, (int) directoryEntry.Size);
-                    FreeMiniChain(GetMiniSectorChain(directoryEntry.StartSetc), eraseFreeSectors);
+                    FreeMiniChain(GetMiniSectorChain(directoryEntry.StartSector), eraseFreeSectors);
 
-                    directoryEntry.StartSetc = Sector.ENDOFCHAIN;
+                    directoryEntry.StartSector = Sector.ENDOFCHAIN;
                     directoryEntry.Size = 0;
                 }
             }
 
             List<Sector> sectorChain
-                = GetSectorChain(directoryEntry.StartSetc, _st);
+                = GetSectorChain(directoryEntry.StartSector, _st);
 
             Queue<Sector> freeList = FindFreeSectors(_st); // Collect available free sectors
 
@@ -2075,7 +1440,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
             if (sv.BaseSectorChain.Count > 0)
             {
-                directoryEntry.StartSetc = sv.BaseSectorChain[0].Id;
+                directoryEntry.StartSector = sv.BaseSectorChain[0].Id;
                 directoryEntry.Size = buffer.Length + directoryEntry.Size;
 
                 if (tempMini != null)
@@ -2083,7 +1448,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             }
             else
             {
-                directoryEntry.StartSetc = Sector.ENDOFCHAIN;
+                directoryEntry.StartSector = Sector.ENDOFCHAIN;
                 directoryEntry.Size = 0;
             }
         }
@@ -2118,7 +1483,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             // Only in this case we need to free old sectors,
             // otherwise they will be overwritten.
 
-            if (directoryEntry.StartSetc != Sector.ENDOFCHAIN)
+            if (directoryEntry.StartSector != Sector.ENDOFCHAIN)
             {
                 if (
                     (buffer.Length < header.MinSizeStandardStream && directoryEntry.Size > header.MinSizeStandardStream)
@@ -2128,20 +1493,20 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 {
                     if (directoryEntry.Size < header.MinSizeStandardStream)
                     {
-                        FreeMiniChain(GetMiniSectorChain(directoryEntry.StartSetc), eraseFreeSectors);
+                        FreeMiniChain(GetMiniSectorChain(directoryEntry.StartSector), eraseFreeSectors);
                     }
                     else
                     {
-                        FreeChain(GetNormalSectorChain(directoryEntry.StartSetc), eraseFreeSectors);
+                        FreeChain(GetNormalSectorChain(directoryEntry.StartSector), eraseFreeSectors);
                     }
 
                     directoryEntry.Size = 0;
-                    directoryEntry.StartSetc = Sector.ENDOFCHAIN;
+                    directoryEntry.StartSector = Sector.ENDOFCHAIN;
                 }
             }
 
             List<Sector> sectorChain
-                = GetSectorChain(directoryEntry.StartSetc, _st);
+                = GetSectorChain(directoryEntry.StartSector, _st);
 
             Queue<Sector> freeList = null;
 
@@ -2166,12 +1531,12 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
             if (sv.BaseSectorChain.Count > 0)
             {
-                directoryEntry.StartSetc = sv.BaseSectorChain[0].Id;
+                directoryEntry.StartSector = sv.BaseSectorChain[0].Id;
                 directoryEntry.Size = buffer.Length;
             }
             else
             {
-                directoryEntry.StartSetc = Sector.ENDOFCHAIN;
+                directoryEntry.StartSector = Sector.ENDOFCHAIN;
                 directoryEntry.Size = 0;
             }
         }
@@ -2198,12 +1563,12 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             if (de.Size < header.MinSizeStandardStream)
             {
                 sView
-                    = new StreamView(GetSectorChain(de.StartSetc, SectorType.Mini), Sector.MINISECTOR_SIZE, de.Size,
+                    = new StreamView(GetSectorChain(de.StartSector, SectorType.Mini), Sector.MINISECTOR_SIZE, de.Size,
                         sourceStream);
             }
             else
             {
-                sView = new StreamView(GetSectorChain(de.StartSetc, SectorType.Normal), GetSectorSize(), de.Size,
+                sView = new StreamView(GetSectorChain(de.StartSector, SectorType.Normal), GetSectorSize(), de.Size,
                     sourceStream);
             }
 
@@ -2232,7 +1597,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             if (de.Size < header.MinSizeStandardStream)
             {
                 var miniView
-                    = new StreamView(GetSectorChain(de.StartSetc, SectorType.Mini), Sector.MINISECTOR_SIZE, de.Size,
+                    = new StreamView(GetSectorChain(de.StartSector, SectorType.Mini), Sector.MINISECTOR_SIZE, de.Size,
                         sourceStream);
 
                 var br = new BinaryReader(miniView);
@@ -2243,7 +1608,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             else
             {
                 var sView
-                    = new StreamView(GetSectorChain(de.StartSetc, SectorType.Normal), GetSectorSize(), de.Size,
+                    = new StreamView(GetSectorChain(de.StartSector, SectorType.Normal), GetSectorSize(), de.Size,
                         sourceStream);
 
                 result = new byte[(int) de.Size];
@@ -2264,38 +1629,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             return i > 0 ? i : 0;
         }
 
-
-        internal void RemoveDirectoryEntry(int sid)
-        {
-            if (sid >= directoryEntries.Count)
-                throw new CFException("Invalid SID of the directory entry to remove");
-
-            if (directoryEntries[sid].StgType == StgType.StgStream)
-            {
-                // Clear the associated stream (or ministream) if required
-                if (directoryEntries[sid].Size > 0) //thanks to Mark Bosold for this !
-                {
-                    if (directoryEntries[sid].Size < header.MinSizeStandardStream)
-                    {
-                        List<Sector> miniChain
-                            = GetSectorChain(directoryEntries[sid].StartSetc, SectorType.Mini);
-                        FreeMiniChain(miniChain, eraseFreeSectors);
-                    }
-                    else
-                    {
-                        List<Sector> chain
-                            = GetSectorChain(directoryEntries[sid].StartSetc, SectorType.Normal);
-                        FreeChain(chain, eraseFreeSectors);
-                    }
-                }
-            }
-
-
-            var r = new Random();
-            directoryEntries[sid].SetEntryName("_DELETED_NAME_" + r.Next(short.MaxValue));
-            directoryEntries[sid].StgType = StgType.StgInvalid;
-        }
-
+        
         /// <summary>
         ///     Close the Compound File object <see cref="T:OpenMcdf.CompoundFile">CompoundFile</see> and
         ///     free all associated resources (e.g. open file handle and allocated memory).
@@ -2376,8 +1710,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
                             rootStorage = null; // Some problem releasing resources...
                             header = null;
-                            directoryEntries.Clear();
-                            directoryEntries = null;
+                            _directoryEntries.Clear();
+                            _directoryEntries = null;
                             fileName = null;
                             lockObject = null;
 #if !FLAT_WRITE
@@ -2401,34 +1735,37 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             get { return _disposed; }
         }
 
-        private List<IDirectoryEntry> directoryEntries
-            = new List<IDirectoryEntry>();
+        private List<IDirectoryEntry> _directoryEntries = new List<IDirectoryEntry>();
 
-        //internal List<IDirectoryEntry> DirectoryEntries
-        //{
-        //    get { return directoryEntries; }
-        //}
-
-
+        /// <summary>
+        /// Gets the root entry of the compound file
+        /// </summary>
         internal IDirectoryEntry RootEntry
         {
-            get { return directoryEntries[0]; }
+            get { return _directoryEntries[0]; }
         }
 
-        private IList<IDirectoryEntry> FindDirectoryEntries(String entryName)
+        #region FindDirectoryEntries
+        /// <summary>
+        /// Returns all the directory entries in the compound file that correspond to the <see cref="entryName"/>
+        /// </summary>
+        /// <param name="entryName"></param>
+        /// <returns></returns>
+        private IEnumerable<IDirectoryEntry> FindDirectoryEntries(String entryName)
         {
             var result = new List<IDirectoryEntry>();
 
-            foreach (var d in directoryEntries)
+            foreach (var directoryEntry in _directoryEntries)
             {
-                if (d.GetEntryName() == entryName && d.StgType != StgType.StgInvalid)
-                    result.Add(d);
+                if (directoryEntry.GetEntryName() == entryName && directoryEntry.StgType != StgType.StgInvalid)
+                    result.Add(directoryEntry);
             }
 
             return result;
         }
-
-
+        #endregion
+        
+        #region GetAllNamedEntries
         /// <summary>
         ///     Get a list of all entries with a given name contained in the document.
         /// </summary>
@@ -2442,163 +1779,20 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// </remarks>
         public IList<ICFItem> GetAllNamedEntries(String entryName)
         {
-            IList<IDirectoryEntry> r = FindDirectoryEntries(entryName);
+            var foundDirectoryEntries = FindDirectoryEntries(entryName);
             var result = new List<ICFItem>();
 
-            foreach (var id in r)
+            foreach (var directoryEntry in foundDirectoryEntries)
             {
-                if (id.GetEntryName() == entryName && id.StgType != StgType.StgInvalid)
-                {
-                    ICFItem i = id.StgType == StgType.StgStorage
-                        ? new CFStorage(this, id)
-                        : (ICFItem) new CFStream(this, id);
-                    result.Add(i);
-                }
+                if (directoryEntry.GetEntryName() != entryName || directoryEntry.StgType == StgType.StgInvalid) continue;
+                var i = directoryEntry.StgType == StgType.StgStorage
+                    ? new CFStorage(this, directoryEntry)
+                    : (ICFItem) new CFStream(this, directoryEntry);
+                result.Add(i);
             }
 
             return result;
         }
-
-        /// <summary>
-        ///     Compress free space by removing unallocated sectors from compound file
-        ///     effectively reducing stream or file size.
-        /// </summary>
-        /// <remarks>
-        ///     Current implementation supports compression only for ver. 3 compound files.
-        /// </remarks>
-        /// <example>
-        ///     <code>
-        ///  
-        ///   //This code has been extracted from unit test
-        ///   
-        ///     String FILENAME = "MultipleStorage3.cfs";
-        /// 
-        ///     FileInfo srcFile = new FileInfo(FILENAME);
-        /// 
-        ///     File.Copy(FILENAME, "MultipleStorage_Deleted_Compress.cfs", true);
-        /// 
-        ///     CompoundFile cf = new CompoundFile("MultipleStorage_Deleted_Compress.cfs", UpdateMode.Update, true, true);
-        /// 
-        ///     CFStorage st = cf.RootStorage.GetStorage("MyStorage");
-        ///     st = st.GetStorage("AnotherStorage");
-        ///     
-        ///     Assert.IsNotNull(st);
-        ///     st.Delete("Another2Stream"); //17Kb
-        ///     cf.Commit();
-        ///     cf.Close();
-        /// 
-        ///     CompoundFile.ShrinkCompoundFile("MultipleStorage_Deleted_Compress.cfs");
-        /// 
-        ///     FileInfo dstFile = new FileInfo("MultipleStorage_Deleted_Compress.cfs");
-        /// 
-        ///     Assert.IsTrue(srcFile.Length > dstFile.Length);
-        /// 
-        ///  </code>
-        /// </example>
-        public static void ShrinkCompoundFile(Stream s)
-        {
-            var cf = new CompoundFile(s);
-
-            if (cf.header.MajorVersion != (ushort) CFSVersion.Ver_3)
-                throw new CFException(
-                    "Current implementation of free space compression does not support version 4 of Compound File Format");
-
-            using (
-                var tempCF = new CompoundFile((CFSVersion) cf.header.MajorVersion, cf.sectorRecycle, cf.eraseFreeSectors)
-                )
-            {
-                //Copy Root CLSID
-                tempCF.RootStorage.CLSID = new Guid(cf.RootStorage.CLSID.ToByteArray());
-
-                DoCompression(cf.RootStorage, tempCF.RootStorage);
-
-                var tmpMS = new MemoryStream((int) cf.sourceStream.Length); //This could be a problem for v4
-
-                tempCF.Save(tmpMS);
-                tempCF.Close();
-
-                // If we were based on a writable stream, we update
-                // the stream and do reload from the compressed one...
-
-                s.Seek(0, SeekOrigin.Begin);
-                tmpMS.WriteTo(s);
-
-                s.Seek(0, SeekOrigin.Begin);
-                s.SetLength(tmpMS.Length);
-
-                tmpMS.Close();
-                cf.Close(false);
-            }
-        }
-
-        /// <summary>
-        ///     Remove unallocated sectors from compound file in order to reduce its size.
-        /// </summary>
-        /// <remarks>
-        ///     Current implementation supports compression only for ver. 3 compound files.
-        /// </remarks>
-        /// <example>
-        ///     <code>
-        ///  
-        ///   //This code has been extracted from unit test
-        ///   
-        ///     String FILENAME = "MultipleStorage3.cfs";
-        /// 
-        ///     FileInfo srcFile = new FileInfo(FILENAME);
-        /// 
-        ///     File.Copy(FILENAME, "MultipleStorage_Deleted_Compress.cfs", true);
-        /// 
-        ///     CompoundFile cf = new CompoundFile("MultipleStorage_Deleted_Compress.cfs", UpdateMode.Update, true, true);
-        /// 
-        ///     CFStorage st = cf.RootStorage.GetStorage("MyStorage");
-        ///     st = st.GetStorage("AnotherStorage");
-        ///     
-        ///     Assert.IsNotNull(st);
-        ///     st.Delete("Another2Stream"); //17Kb
-        ///     cf.Commit();
-        ///     cf.Close();
-        /// 
-        ///     CompoundFile.ShrinkCompoundFile("MultipleStorage_Deleted_Compress.cfs");
-        /// 
-        ///     FileInfo dstFile = new FileInfo("MultipleStorage_Deleted_Compress.cfs");
-        /// 
-        ///     Assert.IsTrue(srcFile.Length > dstFile.Length);
-        /// 
-        ///  </code>
-        /// </example>
-        public static void ShrinkCompoundFile(String fileName)
-        {
-            var fs = new FileStream(fileName, FileMode.Open, FileAccess.ReadWrite);
-            ShrinkCompoundFile(fs);
-            fs.Close();
-        }
-
-        /// <summary>
-        ///     Recursively clones valid structures, avoiding to copy free sectors.
-        /// </summary>
-        /// <param name="currSrcStorage">Current source storage to clone</param>
-        /// <param name="currDstStorage">Current cloned destination storage</param>
-        private static void DoCompression(ICFStorage currSrcStorage, ICFStorage currDstStorage)
-        {
-            VisitedEntryAction va =
-                delegate(ICFItem item)
-                {
-                    if (item.IsStream)
-                    {
-                        var itemAsStream = item as ICFStream;
-                        ICFStream st = currDstStorage.AddStream(itemAsStream.Name);
-                        st.SetData(itemAsStream.GetData());
-                    }
-                    else if (item.IsStorage)
-                    {
-                        var itemAsStorage = item as ICFStorage;
-                        ICFStorage strg = currDstStorage.AddStorage(itemAsStorage.Name);
-                        strg.CLSID = new Guid(itemAsStorage.CLSID.ToByteArray());
-                        DoCompression(itemAsStorage, strg); // recursion, one level deeper
-                    }
-                };
-
-            currSrcStorage.VisitEntries(va, false);
-        }
+        #endregion
     }
 }

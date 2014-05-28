@@ -26,12 +26,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         void SetEntryName(string entryName);
 
-        // ReSharper disable once InconsistentNaming
         int SID { get; set; }
 
         long Size { get; set; }
 
-        int StartSetc { get; set; }
+        int StartSector { get; set; }
 
         int StateBits { get; set; }
 
@@ -39,9 +38,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         StgType StgType { get; set; }
 
-        // ReSharper disable once InconsistentNaming
         Guid StorageCLSID { get; set; }
-
-        void Write(System.IO.Stream stream);
     }
 }
