@@ -7,27 +7,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
     /// <summary>
     ///     Abstract base class for Structured Storage entities.
     /// </summary>
-    /// <example>
-    ///     <code>
-    ///  
-    ///  const String STORAGE_NAME = "report.xls";
-    ///  CompoundFile cf = new CompoundFile(STORAGE_NAME);
-    /// 
-    ///  FileStream output = new FileStream("LogEntries.txt", FileMode.Create);
-    ///  TextWriter tw = new StreamWriter(output);
-    /// 
-    ///  // CFItem represents both storage and stream items
-    ///  VisitedEntryAction va = delegate(CFItem item)
-    ///  {
-    ///       tw.WriteLine(item.Name);
-    ///  };
-    /// 
-    ///  cf.RootStorage.VisitEntries(va, true);
-    /// 
-    ///  tw.Close();
-    ///  
-    ///  </code>
-    /// </example>
     public abstract class CFItem : IComparable, ICFItem
     {
         #region Fields
@@ -48,7 +27,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             get
             {
                 var name = DirEntry.GetEntryName();
-                return !string.IsNullOrEmpty(name) ? name.TrimEnd('\0') : String.Empty;
+                return !string.IsNullOrEmpty(name) ? name.TrimEnd('\0') : string.Empty;
             }
         }
 

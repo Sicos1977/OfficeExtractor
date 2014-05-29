@@ -1,46 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.BinaryTree;
+﻿using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.BinaryTree;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Exceptions;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Interfaces;
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
-
-    #region Delegates
-    /// <summary>
-    ///     Action to apply to visited items in the OLE structured storage
-    /// </summary>
-    /// <param name="item">
-    ///     Currently visited
-    ///     <see cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.CFItem">item</see>
-    /// </param>
-    /// <example>
-    ///     <code>
-    ///  
-    ///  //We assume that xls file should be a valid OLE compound file
-    ///  const String STORAGE_NAME = "report.xls";
-    ///  CompoundFile cf = new CompoundFile(STORAGE_NAME);
-    /// 
-    ///  FileStream output = new FileStream("LogEntries.txt", FileMode.Create);
-    ///  TextWriter tw = new StreamWriter(output);
-    /// 
-    ///  VisitedEntryAction va = delegate(CFItem item)
-    ///  {
-    ///      tw.WriteLine(item.Name);
-    ///  };
-    /// 
-    ///  cf.RootStorage.VisitEntries(va, true);
-    /// 
-    ///  tw.Close();
-    /// 
-    ///  </code>
-    /// </example>
-    public delegate void VisitedEntryAction(ICFItem item);
-
-    public delegate void VisitedEntryParamsAction(ICFItem item, params object[] args);
-    #endregion
-
     /// <summary>
     ///     Storage entity that acts like a logic container for streams or substorages in a compound file.
     /// </summary>
@@ -48,20 +11,9 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
     {
         #region Fields
         private BinarySearchTree<CFItem> _children;
-        private NodeAction<CFItem> _internalAction;
         #endregion
 
-        #region Constructors
-        /// <summary>
-        ///     Create a new CFStorage
-        /// </summary>
-        /// <param name="compFile">The Storage Owner - CompoundFile</param>
-        internal CFStorage(CompoundFile compFile) : base(compFile)
-        {
-            DirEntry = new DirectoryEntry(StgType.StgStorage) {StgColor = StgColor.Black};
-            compFile.InsertNewDirectoryEntry(DirEntry);
-        }
-
+        #region Constructor
         /// <summary>
         ///     Create a CFStorage using an existing directory (previously loaded).
         /// </summary>
@@ -98,38 +50,17 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// </summary>
         /// <param name="streamName">Name of the stream to look for</param>
         /// <returns>A stream reference if existing</returns>
-        /// <exception cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.CFDisposedException">
-        ///     Raised
-        ///     if trying to delete item from a closed compound file
-        /// </exception>
-        /// <exception cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.CFItemNotFound">
-        ///     Raised if
-        ///     item to delete is not found
-        /// </exception>
-        /// <example>
-        ///     <code>
-        ///  String filename = "report.xls";
-        /// 
-        ///  CompoundFile cf = new CompoundFile(filename);
-        ///  CFStream foundStream = cf.RootStorage.GetStream("Workbook");
-        /// 
-        ///  byte[] temp = foundStream.GetData();
-        /// 
-        ///  Assert.IsNotNull(temp);
-        /// 
-        ///  cf.Close();
-        ///  </code>
-        /// </example>
-        public ICFStream GetStream(String streamName)
+        /// <exception cref="CFItemNotFound">Raised if <see cref="streamName"/> is not found</exception>
+        public ICFStream GetStream(string streamName)
         {
             CheckDisposed();
 
-            var tmp = new CFMock(streamName, StgType.StgStream);
+            var cfMock = new CFMock(streamName, StgType.StgStream);
 
-            CFItem outDe;
+            CFItem directoryEntry;
 
-            if (Children.TryFind(tmp, out outDe) && outDe.DirEntry.StgType == StgType.StgStream)
-                return outDe as CFStream;
+            if (Children.TryFind(cfMock, out directoryEntry) && directoryEntry.DirEntry.StgType == StgType.StgStream)
+                return directoryEntry as CFStream;
 
             throw new CFItemNotFound("Cannot find item [" + streamName + "] within the current storage");
         }
@@ -143,7 +74,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// <returns>A boolean value indicating whether the child stream exists.</returns>
         /// <example>
         ///     <code>
-        ///  String filename = "report.xls";
+        ///  string filename = "report.xls";
         /// 
         ///  CompoundFile cf = new CompoundFile(filename);
         ///  
@@ -178,37 +109,17 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// </summary>
         /// <param name="storageName">Name of the storage to look for</param>
         /// <returns>A storage reference if existing.</returns>
-        /// <exception cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.CFDisposedException">
-        ///     Raised
-        ///     if trying to delete item from a closed compound file
-        /// </exception>
-        /// <exception cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.CFItemNotFound">
-        ///     Raised if
-        ///     item to delete is not found
-        /// </exception>
-        /// <example>
-        ///     <code>
-        ///  
-        ///  String FILENAME = "MultipleStorage2.cfs";
-        ///  CompoundFile cf = new CompoundFile(FILENAME, UpdateMode.ReadOnly, false, false);
-        /// 
-        ///  CFStorage st = cf.RootStorage.GetStorage("MyStorage");
-        /// 
-        ///  Assert.IsNotNull(st);
-        ///  cf.Close();
-        ///  </code>
-        /// </example>
-        public ICFStorage GetStorage(String storageName)
+        /// <exception cref="CFItemNotFound">Raised if <see cref="storageName"/> is not found</exception>
+        public ICFStorage GetStorage(string storageName)
         {
             CheckDisposed();
 
-            var tmp = new CFMock(storageName, StgType.StgStorage);
+            var cfMock = new CFMock(storageName, StgType.StgStorage);
 
-            CFItem outDe;
-            if (Children.TryFind(tmp, out outDe) && outDe.DirEntry.StgType == StgType.StgStorage)
-            {
-                return outDe as CFStorage;
-            }
+            CFItem directoryEntry;
+            if (Children.TryFind(cfMock, out directoryEntry) && directoryEntry.DirEntry.StgType == StgType.StgStorage)
+                return directoryEntry as CFStorage;
+            
             throw new CFItemNotFound("Cannot find item [" + storageName + "] within the current storage");
         }
         #endregion
@@ -219,139 +130,17 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// </summary>
         /// <param name="storageName">Name of the storage to look for.</param>
         /// <returns>A boolean value indicating whether the child storage was found.</returns>
-        /// <example>
-        ///     <code>
-        ///  String FILENAME = "MultipleStorage2.cfs";
-        ///  CompoundFile cf = new CompoundFile(FILENAME, UpdateMode.ReadOnly, false, false);
-        /// 
-        ///  bool exists = cf.RootStorage.ExistsStorage("MyStorage");
-        ///  
-        ///  if exists
-        ///  {
-        ///      CFStorage st = cf.RootStorage.GetStorage("MyStorage");
-        ///  }
-        ///  
-        ///  Assert.IsNotNull(st);
-        ///  cf.Close();
-        ///  </code>
-        /// </example>
         public bool ExistsStorage(string storageName)
         {
             CheckDisposed();
 
-            var tmp = new CFMock(storageName, StgType.StgStorage);
+            var cfMock = new CFMock(storageName, StgType.StgStorage);
 
-            CFItem outDe;
-            return Children.TryFind(tmp, out outDe) && outDe.DirEntry.StgType == StgType.StgStorage;
+            CFItem directoryEntry;
+            return Children.TryFind(cfMock, out directoryEntry) && directoryEntry.DirEntry.StgType == StgType.StgStorage;
         }
         #endregion
-
-        #region VisitEntries
-        /// <summary>
-        ///     Visit all entities contained in the storage applying a user provided action
-        /// </summary>
-        /// <exception cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.CFDisposedException">
-        ///     Raised
-        ///     when visiting items of a closed compound file
-        /// </exception>
-        /// <param name="action">
-        ///     User
-        ///     <see cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.VisitedEntryAction">action</see>
-        ///     to apply to visited entities
-        /// </param>
-        /// <param name="recursive">
-        ///     Visiting recursion level. True means substorages are visited recursively, false indicates that
-        ///     only the direct children of this storage are visited
-        /// </param>
-        /// <example>
-        ///     <code>
-        ///  const String STORAGE_NAME = "report.xls";
-        ///  CompoundFile cf = new CompoundFile(STORAGE_NAME);
-        /// 
-        ///  FileStream output = new FileStream("LogEntries.txt", FileMode.Create);
-        ///  TextWriter tw = new StreamWriter(output);
-        /// 
-        ///  VisitedEntryAction va = delegate(CFItem item)
-        ///  {
-        ///      tw.WriteLine(item.Name);
-        ///  };
-        /// 
-        ///  cf.RootStorage.VisitEntries(va, true);
-        /// 
-        ///  tw.Close();
-        ///  </code>
-        /// </example>
-        public void VisitEntries(VisitedEntryAction action, bool recursive)
-        {
-            CheckDisposed();
-
-            if (action == null) return;
-            var subStorages
-                = new List<BinaryTreeNode<CFItem>>();
-
-            _internalAction =
-                delegate(BinaryTreeNode<CFItem> targetNode)
-                {
-                    action(targetNode.Value);
-
-                    if (targetNode.Value.DirEntry.Child != DirectoryEntry.Nostream)
-                        subStorages.Add(targetNode);
-                };
-
-            Children.VisitTreeInOrder(_internalAction);
-
-            if (!recursive || subStorages.Count <= 0) return;
-            foreach (var n in subStorages)
-                ((CFStorage) n.Value).VisitEntries(action, true);
-        }
-
-        /// <summary>
-        ///     This overload of the VisitEntries method allows the passing of a parameter arry of
-        ///     objects to the delegate method.
-        /// </summary>
-        /// <param name="action">
-        ///     User
-        ///     <see cref="T:DocumentServices.Modules.Extractors.OfficeExtractor.OLECompoundFileStorage.VisitedEntryParamsAction">action</see>
-        ///     to apply to visited
-        ///     entities
-        /// </param>
-        /// <param name="recursive">
-        ///     Visiting recursion level. True means substorages are visited recursively, false
-        ///     indicates that only the direct children of this storage are visited
-        /// </param>
-        /// <param name="args">
-        ///     The arguments to pass through to the delegate method
-        /// </param>
-        /// <example>
-        ///     <code>
-        /// const String STORAGE_NAME = "report.xls";
-        /// CompoundFile cf = new CompoundFile(STORAGE_NAME);
-        /// 
-        /// FileStream output = new FileStream("LogEntries.txt", FileMode.Create);
-        /// TextWriter tw = new StreamWriter(output);
-        /// 
-        /// VisitedEntryParamsAction va = delegate(CFItem item, object[] args)
-        /// {
-        ///     var castList = (List<string />
-        ///             )args[0];
-        ///             castList.Add(item.Name);
-        ///             };
-        ///             var list = new List
-        ///             <string />
-        ///                 ();
-        ///                 cf.RootStorage.VisitEntries(va, true, list);
-        ///                 list.ForEach(tw.WriteLine);
-        ///                 tw.Close();
-        /// </code>
-        /// </example>
-        public void VisitEntries(VisitedEntryParamsAction action, bool recursive, params object[] args)
-        {
-            VisitedEntryAction wrappedDelegate = item => action(item, args);
-
-            VisitEntries(wrappedDelegate, recursive);
-        }
-        #endregion
-
+        
         #region LoadChildren
         private BinarySearchTree<CFItem> LoadChildren(int sid)
         {

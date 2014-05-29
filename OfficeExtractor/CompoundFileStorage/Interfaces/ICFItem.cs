@@ -10,7 +10,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// <summary>
         ///     Get entity name
         /// </summary>
-        String Name { get; }
+        string Name { get; }
 
         /// <summary>
         ///     Size in bytes of the item. It has a valid value

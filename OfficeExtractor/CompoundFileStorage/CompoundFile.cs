@@ -122,7 +122,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// <example>
         ///     <code>
         ///  //A xls file should have a Workbook stream
-        ///  String filename = "report.xls";
+        ///  string filename = "report.xls";
         /// 
         ///  CompoundFile cf = new CompoundFile(filename);
         ///  CFStream foundStream = cf.RootStorage.GetStream("Workbook");
@@ -164,7 +164,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// <example>
         ///     <code>
         ///  
-        ///  String filename = "reportREAD.xls";
+        ///  string filename = "reportREAD.xls";
         ///    
         ///  FileStream fs = new FileStream(filename, FileMode.Open);
         ///  CompoundFile cf = new CompoundFile(fs);
@@ -239,31 +239,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
         #endregion
 
-        #region FindDirectoryEntries
-        /// <summary>
-        ///     Returns all the directory entries in the compound file that correspond to the <see cref="entryName" />
-        /// </summary>
-        /// <param name="entryName"></param>
-        /// <returns></returns>
-        private IEnumerable<IDirectoryEntry> FindDirectoryEntries(String entryName)
-        {
-            var result = new List<IDirectoryEntry>();
-
-            foreach (var directoryEntry in _directoryEntries)
-            {
-                if (directoryEntry.GetEntryName() == entryName && directoryEntry.StgType != StgType.StgInvalid)
-                    result.Add(directoryEntry);
-            }
-
-            return result;
-        }
-        #endregion
-
         #region GetAllNamedEntries
         /// <summary>
-        ///     Get a list of all entries with a given name contained in the document.
+        ///     Returns a list of all entries with part of the name <see cref="entryName"/>
         /// </summary>
-        /// <param name="entryName">Name of entries to retrive</param>
+        /// <param name="entryName">Name of entries to retrieve</param>
         /// <returns>A list of name-matching entries</returns>
         /// <remarks>
         ///     This function is aimed to speed up entity lookup in
@@ -271,19 +251,17 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         ///     without the performance penalty related to entities hierarchy constraints.
         ///     There is no implied hierarchy in the returned list.
         /// </remarks>
-        public IList<ICFItem> GetAllNamedEntries(String entryName)
+        public IList<ICFItem> GetAllNamedEntries(string entryName)
         {
-            var foundDirectoryEntries = FindDirectoryEntries(entryName);
             var result = new List<ICFItem>();
 
-            foreach (var directoryEntry in foundDirectoryEntries)
+            foreach (var directoryEntry in _directoryEntries)
             {
-                if (directoryEntry.GetEntryName() != entryName || directoryEntry.StgType == StgType.StgInvalid)
-                    continue;
-                var i = directoryEntry.StgType == StgType.StgStorage
-                    ? new CFStorage(this, directoryEntry)
-                    : (ICFItem) new CFStream(this, directoryEntry);
-                result.Add(i);
+                if (directoryEntry.Name.ToUpperInvariant().Contains(entryName.ToUpperInvariant()) &&
+                    directoryEntry.StgType != StgType.StgInvalid)
+                    result.Add(directoryEntry.StgType == StgType.StgStorage
+                        ? new CFStorage(this, directoryEntry)
+                        : (ICFItem) new CFStream(this, directoryEntry));
             }
 
             return result;
@@ -303,7 +281,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// </summary>
         /// <example>
         ///     <code>
-        ///     const String FILENAME = "CompoundFile.cfs";
+        ///     const string FILENAME = "CompoundFile.cfs";
         ///     CompoundFile cf = new CompoundFile(FILENAME);
         /// 
         ///     CFStorage st = cf.RootStorage.GetStorage("MyStorage");

@@ -137,6 +137,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         #endregion
 
         #region Constructor
+        /// <summary>
+        /// Creates this object
+        /// </summary>
+        /// <param name="version"></param>
+        /// <exception cref="CFException">Raised when an invalid <see cref="version"/> is used</exception>
         public Header(ushort version)
         {
             DIFAT = new int[109];
@@ -212,11 +217,12 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// <summary>
         ///     Checks if the file has a valid OLE structured storage version number, only 3 and 4 are supported
         /// </summary>
+        /// <exception cref="CFFormatException">Raised when the compound file storage contains an invalid format</exception>
         private void CheckVersion()
         {
             if (_majorVersion != 3 && _majorVersion != 4)
                 throw new CFFormatException(
-                    "Unsupported Binary File Format version: OpenMcdf only supports Compound Files with major version equal to 3 or 4 ");
+                    "Unsupported binary file format version, only support for compound files with major version equal to 3 or 4 ");
         }
         #endregion
 
@@ -224,6 +230,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// <summary>
         ///     Checks if the file has a valid OLE structured storage signature
         /// </summary>
+        /// <exception cref="CFFormatException">Raised when the file is invalid</exception>
         private void CheckSignature()
         {
             for (var i = 0; i < _headerSignature.Length; i++)

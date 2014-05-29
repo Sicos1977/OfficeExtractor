@@ -115,17 +115,26 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         #endregion
 
         #region GetEntryName
+        /// <summary>
+        /// Returns the entry name
+        /// </summary>
+        /// <returns></returns>
         public string GetEntryName()
         {
             if (_entryName != null && _entryName.Length > 0)
-                return Encoding.Unicode.GetString(_entryName).Remove((_nameLength - 1)/2);
+                return Encoding.Unicode.GetString(_entryName).Remove((_nameLength - 1)/2).Trim();
 
             return string.Empty;
         }
         #endregion
 
         #region SetEntryName
-        public void SetEntryName(String entryName)
+        /// <summary>
+        /// Sets the entry name
+        /// </summary>
+        /// <param name="entryName"></param>
+        /// <exception cref="CFException">Raised when the <see cref="entryName"/> contains invalid characters or is longer then 31</exception>
+        public void SetEntryName(string entryName)
         {
             if (entryName.Contains(@"\") ||
                 entryName.Contains(@"/") ||
@@ -156,6 +165,12 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         #endregion
 
         #region CompareTo
+        /// <summary>
+        /// Compares an object to the current directory entry
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        /// <exception cref="CFException">Raised when the <see cref="obj"/> does not contain an <see cref="IDirectoryEntry"/> interface</exception>
         public int CompareTo(object obj)
         {
             const int thisIsGreater = 1;
@@ -191,6 +206,10 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         #endregion
 
         #region Read
+        /// <summary>
+        /// Read the <see cref="stream"/>
+        /// </summary>
+        /// <param name="stream"></param>
         public void Read(Stream stream)
         {
             var rw = new StreamReader(stream);

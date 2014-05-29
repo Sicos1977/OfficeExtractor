@@ -29,7 +29,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         private bool _disposed;
         #endregion
 
-        #region Sector
+        #region Constructors
         public Sector(int size, Stream stream)
         {
             Id = -1;

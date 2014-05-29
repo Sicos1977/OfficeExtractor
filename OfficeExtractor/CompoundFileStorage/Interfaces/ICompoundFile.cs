@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Interfaces
@@ -31,27 +30,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         ///         <see cref="T:OpenMcdf.CFDisposedException">CFDisposedException</see>.
         ///     </remarks>
         /// </summary>
-        /// <example>
-        ///     <code>
-        ///     const String FILENAME = "CompoundFile.cfs";
-        ///     CompoundFile cf = new CompoundFile(FILENAME);
-        /// 
-        ///     CFStorage st = cf.RootStorage.GetStorage("MyStorage");
-        ///     cf.Close();
-        /// 
-        ///     try
-        ///     {
-        ///         byte[] temp = st.GetStream("MyStream").GetData();
-        ///         
-        ///         // The following line will fail because back-end object has been closed
-        ///         Assert.Fail("Stream without media");
-        ///     }
-        ///     catch (Exception ex)
-        ///     {
-        ///         Assert.IsTrue(ex is CFDisposedException);
-        ///     }
-        ///  </code>
-        /// </example>
         void Close();
 
         /// <summary>
@@ -65,6 +43,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         ///     without the performance penalty related to entities hierarchy constraints.
         ///     There is no implied hierarchy in the returned list.
         /// </remarks>
-        IList<ICFItem> GetAllNamedEntries(String entryName);
+        IList<ICFItem> GetAllNamedEntries(string entryName);
     }
 }

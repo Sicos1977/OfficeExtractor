@@ -7,7 +7,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
     /// </summary>
     internal class CFMock : CFItem
     {
-        internal CFMock(String dirName, StgType dirType)
+        internal CFMock(string dirName, StgType dirType)
         {
             DirEntry = new DirectoryEntry(dirType);
             DirEntry.SetEntryName(dirName);

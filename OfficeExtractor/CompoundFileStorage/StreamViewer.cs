@@ -83,6 +83,13 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// Creates this object
+        /// </summary>
+        /// <param name="sectorChain"></param>
+        /// <param name="sectorSize"></param>
+        /// <param name="stream"></param>
+        /// <exception cref="CFException">Raised when <see cref="sectorChain"/> is null or <see cref="sectorSize"/> is zero or smaller</exception>
         public StreamViewer(List<Sector> sectorChain, int sectorSize, Stream stream)
         {
             if (sectorChain == null)
@@ -209,7 +216,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region Seek
         /// <summary>
-        /// Seeks anew position in the <see cref="_stream"/> from the <see cref="origin"/>
+        /// Seeks a new position in the <see cref="_stream"/> from the <see cref="origin"/>
         /// </summary>
         /// <param name="offset"></param>
         /// <param name="origin"></param>

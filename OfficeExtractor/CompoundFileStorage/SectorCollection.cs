@@ -5,11 +5,6 @@ using System.Collections.Generic;
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
     /// <summary>
-    ///     Action to implement when transaction support - sector has to be written to the underlying stream (see specs).
-    /// </summary>
-    public delegate void Ver3SizeLimitReached();
-
-    /// <summary>
     ///     Ad-hoc Heap Friendly sector collection to avoid using large array that may create some problem to GC collection
     ///     (see http://www.simple-talk.com/dotnet/.net-framework/the-dangers-of-the-large-object-heap/ )
     /// </summary>
@@ -24,21 +19,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         private const int SliceSize = 4096;
         private readonly List<ArrayList> _largeArraySlices = new List<ArrayList>();
         private bool _sizeLimitReached;
-        #endregion
-
-        #region Events
-        public event Ver3SizeLimitReached OnVer3SizeLimitReached;
-        #endregion
-
-        #region DoCheckSizeLimitReached
-        private void DoCheckSizeLimitReached()
-        {
-            if (_sizeLimitReached || (Count - 1 <= MaxSectorV4CountLockRange)) return;
-            if (OnVer3SizeLimitReached != null)
-                OnVer3SizeLimitReached();
-
-            _sizeLimitReached = true;
-        }
         #endregion
 
         #region IList<T> Members
@@ -88,8 +68,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         #region ICollection<T> Members
         public void Add(Sector item)
         {
-            DoCheckSizeLimitReached();
-
             var itemIndex = Count/SliceSize;
 
             if (itemIndex < _largeArraySlices.Count)

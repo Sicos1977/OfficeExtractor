@@ -53,8 +53,8 @@ namespace OfficeViewer
                     var cs =
                         new DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.CompoundFile(openFileDialog1.FileName);
 
-                    var stream = cs.RootStorage.GetStream("Workbook");
-
+                    var storage = cs.GetAllNamedEntries("CompObj");
+                    //Name = "Ole10Native"
                     // Check if there was an error
                     //var error = emlReader.GetErrorMessage();
 

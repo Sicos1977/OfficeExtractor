@@ -294,7 +294,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region TryFind
         /// <summary>
-        ///     Returns a Boolean, indicating if a specified value is contained within the BST.
+        ///     Returns a boolean, indicating if a specified value is contained within the BST.
         /// </summary>
         /// <param name="data">The data to search for.</param>
         /// <param name="foundObject"></param>
@@ -303,14 +303,14 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         {
             foundObject = default(T);
 
-            // search the tree for a node that contains data
+            // Search the tree for a node that contains data
             var current = Root;
             while (current != null)
             {
                 var result = _comparer.Compare(current.Value, data);
                 if (result == 0)
                 {
-                    // we found data
+                    // We found data
                     foundObject = current.Value;
                     return true;
                 }
