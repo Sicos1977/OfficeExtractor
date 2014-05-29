@@ -142,10 +142,10 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             DIFAT = new int[109];
             UnUsed = new byte[6];
             CLSID = new byte[16];
-            FirstDIFATSectorId = Sector.ENDOFCHAIN;
+            FirstDIFATSectorId = Sector.Endofchain;
             FirstMiniFATSectorId = unchecked((int) 0xFFFFFFFE);
             MinSizeStandardStream = 4096;
-            FirstDirectorySectorId = Sector.ENDOFCHAIN;
+            FirstDirectorySectorId = Sector.Endofchain;
             ByteOrder = 0xFFFE;
             SectorShift = 9;
             MiniSectorShift = 6;
@@ -167,7 +167,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
             for (var i = 0; i < 109; i++)
             {
-                DIFAT[i] = Sector.FREESECT;
+                DIFAT[i] = Sector.FreeSector;
             }
         }
         #endregion
@@ -179,7 +179,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// <param name="stream"></param>
         public void Read(Stream stream)
         {
-            var rw = new StreamRW(stream);
+            var rw = new StreamReader(stream);
 
             _headerSignature = rw.ReadBytes(8);
             CheckSignature();

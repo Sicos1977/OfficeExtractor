@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 
-namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
+namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Interfaces
 {
+    /// <summary>
+    /// The CompoundFile interface
+    /// </summary>
     public interface ICompoundFile
     {
-        bool ValidationExceptionEnabled { get; }
-
         /// <summary>
         ///     Return true if this compound file has been loaded from an existing file or stream
         /// </summary>

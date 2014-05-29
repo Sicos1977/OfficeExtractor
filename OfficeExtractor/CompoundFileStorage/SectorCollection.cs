@@ -5,46 +5,43 @@ using System.Collections.Generic;
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
     /// <summary>
-    /// Action to implement when transaction support - sector
-    /// has to be written to the underlying stream (see specs).
+    ///     Action to implement when transaction support - sector has to be written to the underlying stream (see specs).
     /// </summary>
     public delegate void Ver3SizeLimitReached();
 
     /// <summary>
-    /// Ad-hoc Heap Friendly sector collection to avoid using 
-    /// large array that may create some problem to GC collection 
-    /// (see http://www.simple-talk.com/dotnet/.net-framework/the-dangers-of-the-large-object-heap/ )
+    ///     Ad-hoc Heap Friendly sector collection to avoid using large array that may create some problem to GC collection
+    ///     (see http://www.simple-talk.com/dotnet/.net-framework/the-dangers-of-the-large-object-heap/ )
     /// </summary>
     internal class SectorCollection : IList<Sector>
     {
-        private const int MAX_SECTOR_V4_COUNT_LOCK_RANGE = 524287; //0x7FFFFF00 for Version 4
-        private const int SLICE_SIZE = 4096;
+        #region Fields
+        /// <summary>
+        ///     0x7FFFFF00 for Version 4
+        /// </summary>
+        private const int MaxSectorV4CountLockRange = 524287;
 
-        private int count = 0;
+        private const int SliceSize = 4096;
+        private readonly List<ArrayList> _largeArraySlices = new List<ArrayList>();
+        private bool _sizeLimitReached;
+        #endregion
 
+        #region Events
         public event Ver3SizeLimitReached OnVer3SizeLimitReached;
+        #endregion
 
-        private List<ArrayList> largeArraySlices = new List<ArrayList>();
-
-        public SectorCollection()
-        {
-
-        }
-
-        private bool sizeLimitReached = false;
+        #region DoCheckSizeLimitReached
         private void DoCheckSizeLimitReached()
         {
-            if (!sizeLimitReached && (count - 1 > MAX_SECTOR_V4_COUNT_LOCK_RANGE))
-            {
-                if (OnVer3SizeLimitReached != null)
-                    OnVer3SizeLimitReached();
+            if (_sizeLimitReached || (Count - 1 <= MaxSectorV4CountLockRange)) return;
+            if (OnVer3SizeLimitReached != null)
+                OnVer3SizeLimitReached();
 
-                sizeLimitReached = true;
-            }
+            _sizeLimitReached = true;
         }
+        #endregion
 
         #region IList<T> Members
-
         public int IndexOf(Sector item)
         {
             throw new NotImplementedException();
@@ -64,73 +61,60 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         {
             get
             {
-                int itemIndex = index / SLICE_SIZE;
-                int itemOffset = index % SLICE_SIZE;
+                var itemIndex = index/SliceSize;
+                var itemOffset = index%SliceSize;
 
-                if ((index > -1) && (index < count))
-                {
-                    return (Sector)largeArraySlices[itemIndex][itemOffset];
-                }
-                else
-                    throw new ArgumentOutOfRangeException("index", index, "Argument out of range");
+                if ((index > -1) && (index < Count))
+                    return (Sector) _largeArraySlices[itemIndex][itemOffset];
+
+                throw new ArgumentOutOfRangeException("index", index, "Argument out of range");
             }
 
             set
             {
-                int itemIndex = index / SLICE_SIZE;
-                int itemOffset = index % SLICE_SIZE;
+                var itemIndex = index/SliceSize;
+                var itemOffset = index%SliceSize;
 
-                if (index > -1 && index < count)
+                if (index > -1 && index < Count)
                 {
-                    largeArraySlices[itemIndex][itemOffset] = value;
+                    _largeArraySlices[itemIndex][itemOffset] = value;
                 }
                 else
                     throw new ArgumentOutOfRangeException("index", index, "Argument out of range");
             }
         }
-
         #endregion
 
         #region ICollection<T> Members
-
-        private int add(Sector item)
-        {
-            int itemIndex = count / SLICE_SIZE;
-
-            if (itemIndex < largeArraySlices.Count)
-            {
-                largeArraySlices[itemIndex].Add(item);
-                count++;
-            }
-            else
-            {
-                ArrayList ar = new ArrayList(SLICE_SIZE);
-                ar.Add(item);
-                largeArraySlices.Add(ar);
-                count++;
-            }
-
-            return count - 1;
-        }
-
         public void Add(Sector item)
         {
             DoCheckSizeLimitReached();
 
-            add(item);
+            var itemIndex = Count/SliceSize;
 
+            if (itemIndex < _largeArraySlices.Count)
+            {
+                _largeArraySlices[itemIndex].Add(item);
+                Count++;
+            }
+            else
+            {
+                var ar = new ArrayList(SliceSize) {item};
+                _largeArraySlices.Add(ar);
+                Count++;
+            }
         }
 
         public void Clear()
         {
-            foreach (ArrayList slice in largeArraySlices)
+            foreach (var slice in _largeArraySlices)
             {
                 slice.Clear();
             }
 
-            largeArraySlices.Clear();
+            _largeArraySlices.Clear();
 
-            count = 0;
+            Count = 0;
         }
 
         public bool Contains(Sector item)
@@ -143,13 +127,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             throw new NotImplementedException();
         }
 
-        public int Count
-        {
-            get
-            {
-                return count;
-            }
-        }
+        public int Count { get; private set; }
 
         public bool IsReadOnly
         {
@@ -160,39 +138,28 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         {
             throw new NotImplementedException();
         }
-
         #endregion
 
         #region IEnumerable<T> Members
-
         public IEnumerator<Sector> GetEnumerator()
         {
-
-            for (int i = 0; i < largeArraySlices.Count; i++)
+            foreach (var largeArraySlice in _largeArraySlices)
             {
-                for (int j = 0; j < largeArraySlices[i].Count; j++)
-                {
-                    yield return (Sector)largeArraySlices[i][j];
-
-                }
+                foreach (var t in largeArraySlice)
+                    yield return (Sector) t;
             }
         }
-
         #endregion
 
         #region IEnumerable Members
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            for (int i = 0; i < largeArraySlices.Count; i++)
+            foreach (var largeArraySlice in _largeArraySlices)
             {
-                for (int j = 0; j < largeArraySlices[i].Count; j++)
-                {
-                    yield return largeArraySlices[i][j];
-                }
+                for (var j = 0; j < largeArraySlice.Count; j++)
+                    yield return largeArraySlice[j];
             }
         }
-
         #endregion
     }
 }

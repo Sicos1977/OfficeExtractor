@@ -1,5 +1,6 @@
 ﻿using System;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Exceptions;
+using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Interfaces;
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {

@@ -3,6 +3,7 @@ using System.IO;
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
+    #region Enum SectorType
     internal enum SectorType
     {
         Normal,
@@ -12,111 +13,85 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         RangeLockSector,
         Directory
     }
+    #endregion
 
     internal class Sector : IDisposable
     {
-        public const int FREESECT = unchecked((int) 0xFFFFFFFF);
-        public const int ENDOFCHAIN = unchecked((int) 0xFFFFFFFE);
-        public const int FATSECT = unchecked((int) 0xFFFFFFFD);
-        public const int DIFSECT = unchecked((int) 0xFFFFFFFC);
-        public static int MINISECTOR_SIZE = 64;
-        private readonly object lockObject = new Object();
-        private readonly Stream stream;
-        private byte[] data;
+        #region Fields
+        public const int FreeSector = unchecked((int) 0xFFFFFFFF);
+        public const int Endofchain = unchecked((int) 0xFFFFFFFE);
+        public const int FATSector = unchecked((int) 0xFFFFFFFD);
+        public const int DifSector = unchecked((int) 0xFFFFFFFC);
+        public static int MinisectorSize = 64;
+        private readonly object _lockObject = new Object();
+        private readonly Stream _stream;
+        private byte[] _data;
+        private bool _disposed;
+        #endregion
 
-        private bool dirtyFlag;
-        private int id = -1;
-
-        private int size;
-
-
+        #region Sector
         public Sector(int size, Stream stream)
         {
-            this.size = size;
-            this.stream = stream;
+            Id = -1;
+            Size = size;
+            _stream = stream;
         }
 
         public Sector(int size, byte[] data)
         {
-            this.size = size;
-            this.data = data;
-            stream = null;
+            Id = -1;
+            Size = size;
+            _data = data;
+            _stream = null;
         }
 
         public Sector(int size)
         {
-            this.size = size;
-            data = null;
-            stream = null;
+            Id = -1;
+            Size = size;
+            _data = null;
+            _stream = null;
         }
+        #endregion
 
-        public bool DirtyFlag
-        {
-            get { return dirtyFlag; }
-            set { dirtyFlag = value; }
-        }
+        #region Properties
+        public bool DirtyFlag { get; set; }
 
         public bool IsStreamed
         {
-            get { return (stream != null && size != MINISECTOR_SIZE) && (id*size) + size < stream.Length; }
+            get { return (_stream != null && Size != MinisectorSize) && (Id*Size) + Size < _stream.Length; }
         }
 
         internal SectorType Type { get; set; }
 
-        public int Id
-        {
-            get { return id; }
-            set { id = value; }
-        }
+        public int Id { get; set; }
 
-        public int Size
-        {
-            get { return size; }
-        }
+        public int Size { get; private set; }
+        #endregion
 
+        #region GetData
         public byte[] GetData()
         {
-            if (data == null)
-            {
-                data = new byte[size];
+            if (_data != null) return _data;
+            _data = new byte[Size];
 
-                if (IsStreamed)
-                {
-                    stream.Seek(size + id*(long) size, SeekOrigin.Begin);
-                    stream.Read(data, 0, size);
-                }
-            }
+            if (!IsStreamed) return _data;
+            _stream.Seek(Size + Id*(long) Size, SeekOrigin.Begin);
+            _stream.Read(_data, 0, Size);
 
-            return data;
+            return _data;
         }
+        #endregion
 
-        //public void SetSectorData(byte[] b)
-        //{
-        //    this.data = b;
-        //}
-
-        //public void FillData(byte b)
-        //{
-        //    if (data != null)
-        //    {
-        //        for (int i = 0; i < data.Length; i++)
-        //        {
-        //            data[i] = b;
-        //        }
-        //    }
-        //}
-
+        #region ZeroData
         public void ZeroData()
         {
-            data = new byte[size];
-            dirtyFlag = true;
+            _data = new byte[Size];
+            DirtyFlag = true;
         }
+        #endregion
 
-        internal void ReleaseData()
-        {
-            data = null;
-        }
-
+        #region IDisposable Members
         /// <summary>
         ///     When called from user code, release all resources, otherwise, in the case runtime called it,
         ///     only unmanagd resources are released.
@@ -126,20 +101,18 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         {
             try
             {
-                if (!_disposed)
+                if (_disposed) return;
+                lock (_lockObject)
                 {
-                    lock (lockObject)
+                    if (disposing)
                     {
-                        if (disposing)
-                        {
-                            // Call from user code...
-                        }
-
-                        data = null;
-                        dirtyFlag = false;
-                        id = Sector.ENDOFCHAIN;
-                        size = 0;
+                        // Call from user code...
                     }
+
+                    _data = null;
+                    DirtyFlag = false;
+                    Id = Endofchain;
+                    Size = 0;
                 }
             }
             finally
@@ -147,10 +120,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 _disposed = true;
             }
         }
-
-        #region IDisposable Members
-        private bool _disposed; //false
-
+        
         void IDisposable.Dispose()
         {
             Dispose(true);

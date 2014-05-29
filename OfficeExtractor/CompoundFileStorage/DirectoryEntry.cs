@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Exceptions;
+using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Interfaces;
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
@@ -82,7 +83,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         public DirectoryEntry(StgType stgType)
         {
             SID = -1;
-            StartSector = Sector.ENDOFCHAIN;
+            StartSector = Sector.Endofchain;
             ModifyDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
             CreationDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
             StorageCLSID = Guid.NewGuid();
@@ -192,7 +193,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         #region Read
         public void Read(Stream stream)
         {
-            var rw = new StreamRW(stream);
+            var rw = new StreamReader(stream);
 
             _entryName = rw.ReadBytes(64);
             _nameLength = rw.ReadUInt16();

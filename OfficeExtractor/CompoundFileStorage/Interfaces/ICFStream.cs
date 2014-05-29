@@ -1,7 +1,10 @@
 ﻿using System;
 
-namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
+namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Interfaces
 {
+    /// <summary>
+    /// The Stream interface
+    /// </summary>
     public interface ICFStream : ICFItem
     {
         /// <summary>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.BinaryTree;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Exceptions;
+using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Interfaces;
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {

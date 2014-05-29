@@ -1,7 +1,10 @@
 ﻿using System;
 
-namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
+namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Interfaces
 {
+    /// <summary>
+    /// The directory entry interface
+    /// </summary>
     public interface IDirectoryEntry : IComparable
     {
         int Child { get; set; }
