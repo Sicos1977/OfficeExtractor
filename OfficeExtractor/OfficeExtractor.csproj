@@ -65,10 +65,6 @@
     <Compile Include="CompoundFileStorage\Interfaces\ICFStream.cs" />
     <Compile Include="CompoundFileStorage\Interfaces\ICompoundFile.cs" />
     <Compile Include="CompoundFileStorage\Interfaces\IDirectoryEntry.cs" />
-    <Compile Include="CompoundFileStorage\RBTree\RedBlack.cs" />
-    <Compile Include="CompoundFileStorage\RBTree\RedBlackEnumerator.cs" />
-    <Compile Include="CompoundFileStorage\RBTree\Exceptions\RedBlackException.cs" />
-    <Compile Include="CompoundFileStorage\RBTree\RedBlackNode.cs" />
     <Compile Include="CompoundFileStorage\Sector.cs" />
     <Compile Include="CompoundFileStorage\SectorCollection.cs" />
     <Compile Include="CompoundFileStorage\StreamReader.cs" />
