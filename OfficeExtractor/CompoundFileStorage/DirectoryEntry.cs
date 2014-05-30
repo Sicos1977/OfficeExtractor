@@ -53,8 +53,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         public StgType StgType { get; set; }
 
-        public StgColor StgColor { get; set; }
-
         public int LeftSibling { get; set; }
 
         public int RightSibling { get; set; }
@@ -90,7 +88,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             Child = Nostream;
             LeftSibling = Nostream;
             RightSibling = Nostream;
-            StgColor = StgColor.Black;
             StgType = stgType;
 
             switch (stgType)

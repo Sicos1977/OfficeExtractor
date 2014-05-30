@@ -69,6 +69,10 @@
     <Compile Include="CompoundFileStorage\SectorCollection.cs" />
     <Compile Include="CompoundFileStorage\StreamReader.cs" />
     <Compile Include="CompoundFileStorage\StreamViewer.cs" />
+    <Compile Include="Extractor.cs" />
+    <Compile Include="Helpers\ExceptionHelpers.cs" />
+    <Compile Include="Helpers\FileManager.cs" />
+    <Compile Include="Helpers\FileTypeSelector.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

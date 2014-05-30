@@ -36,8 +36,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         #region Fields
         private List<IDirectoryEntry> _directoryEntries = new List<IDirectoryEntry>();
         internal int LockSectorId = -1;
-        internal bool TransactionLockAdded = false;
-        internal bool TransactionLockAllocated = false;
 
         /// <summary>
         ///     CompoundFile header
@@ -218,9 +216,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
                 var numberOfSectors = Ceiling(((stream.Length - GetSectorSize())/(double) GetSectorSize()));
 
-                if (stream.Length > 0x7FFFFF0)
-                    TransactionLockAllocated = true;
-
                 _sectors = new SectorCollection();
 
                 for (var i = 0; i < numberOfSectors; i++)
@@ -228,8 +223,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
                 LoadDirectories();
 
-                _rootStorage
-                    = new CFStorage(this, _directoryEntries[0]);
+                _rootStorage = new CFStorage(this, _directoryEntries[0]);
             }
             catch (Exception)
             {
@@ -632,7 +626,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             // Load children from their original tree.
             LoadChildren(binarySearchTree, _directoryEntries[sid]);
 
-            // Rebuild of (Red)-Black tree of entry children.
+            // Rebuild of tree of entry children.
             binarySearchTree.VisitTreeInOrder(RefreshSIDs);
 
             return binarySearchTree;
@@ -655,26 +649,54 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             else
                 binarySearchTree.Add(new CFStorage(this, _directoryEntries[directoryEntry.Child]));
 
-            LoadSiblings(_directoryEntries[directoryEntry.Child]);
+            LoadSiblings(binarySearchTree, _directoryEntries[directoryEntry.Child]);
         }
         #endregion
-        
+
         #region LoadSiblings
         /// <summary>
-        /// Doubling methods allows iterative behavior while avoiding to insert duplicate items
+        /// Loads all the children (siblings)
         /// </summary>
+        /// <param name="binarySearchTree"></param>
         /// <param name="directoryEntry"></param>
-        private void LoadSiblings(IDirectoryEntry directoryEntry)
+        private void LoadSiblings(ICollection<CFItem> binarySearchTree, IDirectoryEntry directoryEntry)
+        {
+            if (directoryEntry.LeftSibling != DirectoryEntry.Nostream)
+            {
+                // If there're more left siblings load them...
+                DoLoadSiblings(binarySearchTree, _directoryEntries[directoryEntry.LeftSibling]);
+            }
+
+            if (directoryEntry.RightSibling != DirectoryEntry.Nostream)
+            {
+                // If there're more right siblings load them...
+                DoLoadSiblings(binarySearchTree, _directoryEntries[directoryEntry.RightSibling]);
+            }
+        }
+
+        private void DoLoadSiblings(ICollection<CFItem> binarySearchTree, IDirectoryEntry directoryEntry)
         {
             while (true)
             {
-                if (directoryEntry.LeftSibling != DirectoryEntry.Nostream)
+                if (ValidateSibling(directoryEntry.LeftSibling))
                 {
                     // If there're more left siblings load them...
-                    LoadSiblings(_directoryEntries[directoryEntry.LeftSibling]);
+                    DoLoadSiblings(binarySearchTree, _directoryEntries[directoryEntry.LeftSibling]);
                 }
 
-                if (directoryEntry.RightSibling != DirectoryEntry.Nostream)
+                switch (_directoryEntries[directoryEntry.SID].StgType)
+                {
+                    case StgType.StgStream:
+                        binarySearchTree.Add(new CFStream(this, _directoryEntries[directoryEntry.SID]));
+                        break;
+
+                    case StgType.StgStorage:
+                        binarySearchTree.Add(new CFStorage(this, _directoryEntries[directoryEntry.SID]));
+                        break;
+                }
+
+
+                if (ValidateSibling(directoryEntry.RightSibling))
                 {
                     // If there're more right siblings load them...
                     directoryEntry = _directoryEntries[directoryEntry.RightSibling];
@@ -682,6 +704,26 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 }
                 break;
             }
+        }
+        #endregion
+        
+        #region ValidateSibling
+        /// <summary>
+        /// Validates if the sibling is correct
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        private bool ValidateSibling(int sid)
+        {
+            if (sid == DirectoryEntry.Nostream) return false;
+
+            // If this siblings id does not overflow current list
+            if (sid >= _directoryEntries.Count)
+                return false;
+
+            // If this sibling is valid...
+            return _directoryEntries[sid].StgType != StgType.StgInvalid &&
+                   Enum.IsDefined(typeof (StgType), _directoryEntries[sid].StgType);
         }
         #endregion
 
@@ -698,7 +740,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
             var directoryReader = new StreamViewer(directoryChain, GetSectorSize(), directoryChain.Count*GetSectorSize(),
                 SourceStream);
-
 
             while (directoryReader.Position < directoryChain.Count*GetSectorSize())
             {

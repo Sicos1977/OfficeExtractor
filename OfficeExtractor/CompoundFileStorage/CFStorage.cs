@@ -36,7 +36,9 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             {
                 // Lazy loading of children tree.
                 if (_children != null) return _children;
-                _children = CompoundFile.HasSourceStream ? LoadChildren(DirEntry.SID) : new BinarySearchTree<CFItem>();
+                _children = CompoundFile.HasSourceStream
+                    ? CompoundFile.GetChildrenTree(DirEntry.SID)
+                    : new BinarySearchTree<CFItem>();
 
                 return _children;
             }
@@ -139,13 +141,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
             CFItem directoryEntry;
             return Children.TryFind(cfMock, out directoryEntry) && directoryEntry.DirEntry.StgType == StgType.StgStorage;
-        }
-        #endregion
-        
-        #region LoadChildren
-        private BinarySearchTree<CFItem> LoadChildren(int sid)
-        {
-            return CompoundFile.GetChildrenTree(sid);
         }
         #endregion
     }

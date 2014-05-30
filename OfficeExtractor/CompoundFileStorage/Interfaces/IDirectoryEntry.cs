@@ -37,8 +37,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         int StateBits { get; set; }
 
-        StgColor StgColor { get; set; }
-
         StgType StgType { get; set; }
 
         Guid StorageCLSID { get; set; }

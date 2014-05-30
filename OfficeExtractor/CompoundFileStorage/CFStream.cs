@@ -15,7 +15,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         #region Constructors
         internal CFStream(CompoundFile sectorManager) : base(sectorManager)
         {
-            DirEntry = new DirectoryEntry(StgType.StgStream) {StgColor = StgColor.Black};
+            DirEntry = new DirectoryEntry(StgType.StgStream);
             sectorManager.InsertNewDirectoryEntry(DirEntry);
         }
 

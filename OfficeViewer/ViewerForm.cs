@@ -51,27 +51,7 @@ namespace OfficeViewer
                     tempFolder = GetTemporaryFolder();
                     _tempFolders.Add(tempFolder);
 
-                    var compoundFile = new CompoundFile(openFileDialog1.FileName);
-
-                    // Embedded bestanden zijn in Word opgeslagen in CONTENTS of als ole10Native
-                    var objectPoolStorages = compoundFile.GetAllNamedEntries("ObjectPool");
-                    foreach (var objectPoolStorage in objectPoolStorages)
-                    {
-                        var storage = (CFStorage) objectPoolStorage;
-                        var children = storage.Children;
-                        if (storage.ExistsStream("CONTENTS"))
-                        {
-                            var contents = storage.GetStream("CONTENTS");
-                        }
-                        else if (storage.ExistsStream("ole10Native"))
-                        {
-                            var ole10Native = storage.GetStream("ole10Native");
-                        }
-                    }
-
-                    // De streams in de objectPool bevat meteen de data in CONTENTS
-                    // of deze zit weer geembed in een ole10Native stream
-                    //Name = "Ole10Native"
+                    
                     // Check if there was an error
                     //var error = emlReader.GetErrorMessage();
 
