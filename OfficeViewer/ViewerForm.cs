@@ -51,13 +51,8 @@ namespace OfficeViewer
                     tempFolder = GetTemporaryFolder();
                     _tempFolders.Add(tempFolder);
 
-                    
-                    // Check if there was an error
-                    //var error = emlReader.GetErrorMessage();
-
-                    //if (!string.IsNullOrEmpty(error))
-                    //    throw new Exception(error);
-
+                    var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
+                    extractor.ExtractFromWord(openFileDialog1.FileName, tempFolder);
                     FilesListBox.Items.Clear();
 
                     //foreach (var file in files)
