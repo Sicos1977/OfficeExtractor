@@ -8,7 +8,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
     /// <summary>
     ///     Stream decorator for a Sector or miniSector chain
     /// </summary>
-    internal class StreamViewer : Stream
+    internal class StreamView : Stream
     {
         #region Fields
         /// <summary>
@@ -90,7 +90,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// <param name="sectorSize"></param>
         /// <param name="stream"></param>
         /// <exception cref="CFException">Raised when <see cref="sectorChain"/> is null or <see cref="sectorSize"/> is zero or smaller</exception>
-        public StreamViewer(List<Sector> sectorChain, int sectorSize, Stream stream)
+        public StreamView(List<Sector> sectorChain, int sectorSize, Stream stream)
         {
             if (sectorChain == null)
                 throw new CFException("Sector chain cannot be null");
@@ -103,14 +103,14 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             _stream = stream;
         }
 
-        public StreamViewer(List<Sector> sectorChain, int sectorSize, long length, Queue<Sector> availableSectors,
+        public StreamView(List<Sector> sectorChain, int sectorSize, long length, Queue<Sector> availableSectors,
             Stream stream)
             : this(sectorChain, sectorSize, stream)
         {
             AdjustLength(length, availableSectors);
         }
 
-        public StreamViewer(List<Sector> sectorChain, int sectorSize, long length, Stream stream)
+        public StreamView(List<Sector> sectorChain, int sectorSize, long length, Stream stream)
             : this(sectorChain, sectorSize, stream)
         {
             AdjustLength(length);

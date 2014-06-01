@@ -5,7 +5,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
     /// <summary>
     ///     Used to read from the stream
     /// </summary>
-    internal class StreamReader
+    internal class StreamRW
     {
         #region Fields
         private readonly byte[] _buffer = new byte[8];
@@ -13,7 +13,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         #endregion
 
         #region Constructor
-        public StreamReader(Stream stream)
+        public StreamRW(Stream stream)
         {
             _stream = stream;
         }
@@ -66,7 +66,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             return ((ms << 32) | ls);
         }
         #endregion
-        
+
         #region ReadUInt64
         public ulong ReadUInt64()
         {
@@ -120,24 +120,24 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         public void Write(long value)
         {
-            _buffer[0] = (byte)value;
-            _buffer[1] = (byte)(value >> 8);
-            _buffer[2] = (byte)(value >> 16);
-            _buffer[3] = (byte)(value >> 24);
-            _buffer[4] = (byte)(value >> 32);
-            _buffer[5] = (byte)(value >> 40);
-            _buffer[6] = (byte)(value >> 48);
-            _buffer[7] = (byte)(value >> 56);
+            _buffer[0] = (byte) value;
+            _buffer[1] = (byte) (value >> 8);
+            _buffer[2] = (byte) (value >> 16);
+            _buffer[3] = (byte) (value >> 24);
+            _buffer[4] = (byte) (value >> 32);
+            _buffer[5] = (byte) (value >> 40);
+            _buffer[6] = (byte) (value >> 48);
+            _buffer[7] = (byte) (value >> 56);
 
             _stream.Write(_buffer, 0, 8);
         }
 
         public void Write(uint value)
         {
-            _buffer[0] = (byte)value;
-            _buffer[1] = (byte)(value >> 8);
-            _buffer[2] = (byte)(value >> 16);
-            _buffer[3] = (byte)(value >> 24);
+            _buffer[0] = (byte) value;
+            _buffer[1] = (byte) (value >> 8);
+            _buffer[2] = (byte) (value >> 16);
+            _buffer[3] = (byte) (value >> 24);
 
             _stream.Write(_buffer, 0, 4);
         }

@@ -8,7 +8,6 @@ using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.In
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
-
     #region Enum StgType
     public enum StgType
     {
@@ -19,6 +18,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         StgProperty = 4,
         StgRoot = 5
     }
+
     #endregion
 
     #region Enum StgColor
@@ -32,26 +32,16 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
     internal class DirectoryEntry : IDirectoryEntry
     {
         #region Fields
-        internal static Int32 Nostream = unchecked((int) 0xFFFFFFFF);
-        private byte[] _entryName = new byte[64];
-        private ushort _nameLength;
+        internal static Int32 Nostream = unchecked((int)0xFFFFFFFF);
         #endregion
 
         #region Properties
-        public int SID { get; set; }
-
-        public byte[] EntryName
-        {
-            get { return _entryName; }
-        }
-
-        public ushort NameLength
-        {
-            get { return _nameLength; }
-            set { throw new NotImplementedException(); }
-        }
+        public byte[] EntryName { get; private set; }
+        public ushort NameLength { get; private set; }
 
         public StgType StgType { get; set; }
+
+        public StgColor StgColor { get; set; }
 
         public int LeftSibling { get; set; }
 
@@ -60,6 +50,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         public int Child { get; set; }
 
         public Guid StorageCLSID { get; set; }
+
 
         public int StateBits { get; set; }
 
@@ -71,23 +62,22 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         public long Size { get; set; }
 
-        public string Name
-        {
-            get { return GetEntryName(); }
-        }
+        public int SID { get; set; }
         #endregion
 
         #region Constructor
         public DirectoryEntry(StgType stgType)
         {
+            StgColor = StgColor.Black;
             SID = -1;
-            StartSector = Sector.Endofchain;
-            ModifyDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-            CreationDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-            StorageCLSID = Guid.NewGuid();
-            Child = Nostream;
-            LeftSibling = Nostream;
+            EntryName = new byte[64];
             RightSibling = Nostream;
+            LeftSibling = Nostream;
+            Child = Nostream;
+            StorageCLSID = Guid.NewGuid();
+            CreationDate = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+            ModifyDate = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+            StartSector = Sector.Endofchain;
             StgType = stgType;
 
             switch (stgType)
@@ -95,8 +85,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 case StgType.StgStream:
 
                     StorageCLSID = new Guid("00000000000000000000000000000000");
-                    CreationDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-                    ModifyDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                    CreationDate = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                    ModifyDate = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
                     break;
 
                 case StgType.StgStorage:
@@ -104,44 +94,50 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                     break;
 
                 case StgType.StgRoot:
-                    CreationDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-                    ModifyDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                    CreationDate = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                    ModifyDate = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
                     break;
             }
+
         }
         #endregion
 
         #region GetEntryName
         /// <summary>
-        /// Returns the entry name
+        /// Gets the name of the directory entry
         /// </summary>
         /// <returns></returns>
         public string GetEntryName()
         {
-            if (_entryName != null && _entryName.Length > 0)
-                return Encoding.Unicode.GetString(_entryName).Remove((_nameLength - 1)/2).Trim();
-
+            if (EntryName != null && EntryName.Length > 0)
+            {
+                return Encoding.Unicode.GetString(EntryName).Remove((NameLength - 1)/2);
+            }
             return string.Empty;
         }
         #endregion
 
         #region SetEntryName
         /// <summary>
-        /// Sets the entry name
+        /// Sets the name of the directory entry
         /// </summary>
         /// <param name="entryName"></param>
-        /// <exception cref="CFException">Raised when the <see cref="entryName"/> contains invalid characters or is longer then 31</exception>
+        /// <exception cref="CFException">Raised when an invalid character is used or the length is longer then 31</exception>
         public void SetEntryName(string entryName)
         {
-            if (entryName.Contains(@"\") ||
+            if (
+                entryName.Contains(@"\") ||
                 entryName.Contains(@"/") ||
                 entryName.Contains(@":") ||
-                entryName.Contains(@"!"))
+                entryName.Contains(@"!")
+
+                )
                 throw new CFException(
                     "Invalid character in entry: the characters '\\', '/', ':','!' cannot be used in entry name");
 
             if (entryName.Length > 31)
                 throw new CFException("Entry name MUST be smaller than 31 characters");
+
 
             var temp = Encoding.Unicode.GetBytes(entryName);
             var newName = new byte[64];
@@ -149,25 +145,18 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             newName[temp.Length] = 0x00;
             newName[temp.Length + 1] = 0x00;
 
-            _entryName = newName;
-            _nameLength = (ushort) (temp.Length + 2);
-        }
-        #endregion
+            EntryName = newName;
+            NameLength = (ushort) (temp.Length + 2);
 
-        #region Equals
-        public override bool Equals(object obj)
-        {
-            return CompareTo(obj) == 0;
         }
         #endregion
 
         #region CompareTo
         /// <summary>
-        /// Compares an object to the current directory entry
+        /// Compares the object to the current IDirectory entry
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        /// <exception cref="CFException">Raised when the <see cref="obj"/> does not contain an <see cref="IDirectoryEntry"/> interface</exception>
         public int CompareTo(object obj)
         {
             const int thisIsGreater = 1;
@@ -178,11 +167,13 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 throw new CFException("Invalid casting: compared object does not implement IDirectorEntry interface");
 
             if (NameLength > otherDir.NameLength)
+            {
                 return thisIsGreater;
-
+            }
             if (NameLength < otherDir.NameLength)
+            {
                 return otherIsGreater;
-
+            }
             var thisName = Encoding.Unicode.GetString(EntryName, 0, NameLength).ToUpper(CultureInfo.InvariantCulture);
             var otherName =
                 Encoding.Unicode.GetString(otherDir.EntryName, 0, otherDir.NameLength)
@@ -202,22 +193,81 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
         #endregion
 
+        #region Equals
+        public override bool Equals(object obj)
+        {
+            return CompareTo(obj) == 0;
+        }
+        #endregion
+
+        #region GetHashCode
+        /// <summary>
+        /// FNV hash, short for Fowler/Noll/Vo
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <returns>(not warranted) unique hash for byte array</returns>
+        private static ulong fnv_hash(IList<byte> buffer)
+        {
+
+            ulong h = 2166136261;
+            int i;
+
+            for (i = 0; i < buffer.Count; i++)
+                h = (h * 16777619) ^ buffer[i];
+
+            return h;
+        }
+
+        public override int GetHashCode()
+        {
+            // ReSharper disable once NonReadonlyFieldInGetHashCode
+            return (int) fnv_hash(EntryName);
+        }
+        #endregion
+
+        #region Write
+        /// <summary>
+        /// Writes to the <see cref="stream"/>
+        /// </summary>
+        /// <param name="stream"></param>
+        public void Write(Stream stream)
+        {
+            var streamRw = new StreamRW(stream);
+
+            streamRw.Write(EntryName);
+            streamRw.Write(NameLength);
+            streamRw.Write((byte) StgType);
+            streamRw.Write((byte) StgColor);
+            streamRw.Write(LeftSibling);
+            streamRw.Write(RightSibling);
+            streamRw.Write(Child);
+            streamRw.Write(StorageCLSID.ToByteArray());
+            streamRw.Write(StateBits);
+            streamRw.Write(CreationDate);
+            streamRw.Write(ModifyDate);
+            streamRw.Write(StartSector);
+            streamRw.Write(Size);
+
+            streamRw.Close();
+        }
+        #endregion
+
         #region Read
         /// <summary>
-        /// Read the <see cref="stream"/>
+        /// Reads from the <see cref="stream"/>
         /// </summary>
         /// <param name="stream"></param>
         public void Read(Stream stream)
         {
-            var rw = new StreamReader(stream);
+            var streamRw = new StreamRW(stream);
 
-            _entryName = rw.ReadBytes(64);
-            _nameLength = rw.ReadUInt16();
-            StgType = (StgType) rw.ReadByte();
-            rw.ReadByte(); //Ignore color, only black tree
-            LeftSibling = rw.ReadInt32();
-            RightSibling = rw.ReadInt32();
-            Child = rw.ReadInt32();
+            EntryName = streamRw.ReadBytes(64);
+            NameLength = streamRw.ReadUInt16();
+            StgType = (StgType) streamRw.ReadByte();
+            streamRw.ReadByte();
+            LeftSibling = streamRw.ReadInt32();
+            RightSibling = streamRw.ReadInt32();
+            Child = streamRw.ReadInt32();
 
             if (StgType == StgType.StgInvalid)
             {
@@ -226,36 +276,22 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 Child = Nostream;
             }
 
-            StorageCLSID = new Guid(rw.ReadBytes(16));
-            StateBits = rw.ReadInt32();
-            CreationDate = rw.ReadBytes(8);
-            ModifyDate = rw.ReadBytes(8);
-            StartSector = rw.ReadInt32();
-            Size = rw.ReadInt64();
+            StorageCLSID = new Guid(streamRw.ReadBytes(16));
+            StateBits = streamRw.ReadInt32();
+            CreationDate = streamRw.ReadBytes(8);
+            ModifyDate = streamRw.ReadBytes(8);
+            StartSector = streamRw.ReadInt32();
+            Size = streamRw.ReadInt64();
         }
         #endregion
 
-        #region GetHashCode
+        #region Name
         /// <summary>
-        ///     FNV hash, short for Fowler/Noll/Vo
+        /// The name of the directory entry
         /// </summary>
-        /// <param name="buffer"></param>
-        /// <returns>(not warranted) unique hash for byte array</returns>
-        private static ulong FnvHash(IList<byte> buffer)
+        public string Name
         {
-            ulong h = 2166136261;
-            int i;
-
-            for (i = 0; i < buffer.Count; i++)
-                h = (h*16777619) ^ buffer[i];
-
-            return h;
-        }
-
-        public override int GetHashCode()
-        {
-            // ReSharper disable once NonReadonlyFieldInGetHashCode
-            return (int) FnvHash(_entryName);
+            get { return GetEntryName(); }
         }
         #endregion
     }

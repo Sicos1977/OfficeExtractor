@@ -9,54 +9,32 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
     internal class Header
     {
         #region Fields
-        //0 8 Compound document file identifier: D0H CFH 11H E0H A1H B1H 1AH E1H
         /// <summary>
         ///     Structured Storage signature
         /// </summary>
         private readonly byte[] _oleCFSSignature = {0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1};
-
-        private byte[] _headerSignature = {0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1};
-
-        //8 16 Unique identifier (UID) of this file (not of interest in the following, may be all 0)
-        private ushort _majorVersion = 0x0003;
-
-        //24 2 Revision number of the file format (most used is 003EH)
-        private ushort _minorVersion = 0x003E;
-
-        public Header() : this(3)
-        {
-        }
         #endregion
 
         #region Properties
         /// <summary>
-        ///     The signature of the header
+        ///     Compound document file identifier: D0H CFH 11H E0H A1H B1H 1AH E1H
         /// </summary>
-        public byte[] HeaderSignature
-        {
-            get { return _headerSignature; }
-        }
+        public byte[] HeaderSignature { get; private set; }
 
         /// <summary>
-        ///     The CLSID of the header
+        ///     Unique identifier (UID) of this file (not of interest in the following, may be all 0)
         /// </summary>
         public byte[] CLSID { get; set; }
 
         /// <summary>
-        ///     Minor version number of the header
+        ///     Revision number of the file format (most used is 003EH)
         /// </summary>
-        public ushort MinorVersion
-        {
-            get { return _minorVersion; }
-        }
+        public ushort MinorVersion { get; private set; }
 
         /// <summary>
         ///     Version number of the file format (most used is 0003H)
         /// </summary>
-        public ushort MajorVersion
-        {
-            get { return _majorVersion; }
-        }
+        public ushort MajorVersion { get; private set; }
 
         /// <summary>
         ///     Byte order identifier (➜4.2): FEH FFH = Little-Endian FFH FEH = Big-Endian
@@ -109,6 +87,9 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// </summary>
         public uint MinSizeStandardStream { get; set; }
 
+        //60 4 SecID of first sector of the short-sector allocation table (➜6.2), or –2 (End Of Chain
+        //SecID, ➜3.1) if not extant
+
         /// <summary>
         ///     This integer field contains the starting sector number for the mini FAT
         /// </summary>
@@ -120,8 +101,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         public uint MiniFATSectorsNumber { get; set; }
 
         /// <summary>
-        ///     SecID of first sector of the master sector allocation table (➜5.1), or –2
-        ///     (End Of Chain //SecID, ➜3.1) if no additional sectors used
+        ///     SecID of first sector of the master sector allocation table (➜5.1), or –2 (End Of Chain
+        ///     SecID, ➜3.1) if no additional sectors used
         /// </summary>
         public int FirstDIFATSectorId { get; set; }
 
@@ -136,33 +117,36 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         public int[] DIFAT { get; private set; }
         #endregion
 
-        #region Constructor
-        /// <summary>
-        /// Creates this object
-        /// </summary>
-        /// <param name="version"></param>
-        /// <exception cref="CFException">Raised when an invalid <see cref="version"/> is used</exception>
+        #region Constructors
+        public Header() : this(3)
+        {
+        }
+
         public Header(ushort version)
         {
+            HeaderSignature = _oleCFSSignature;
             DIFAT = new int[109];
             UnUsed = new byte[6];
-            CLSID = new byte[16];
-            FirstDIFATSectorId = Sector.Endofchain;
-            FirstMiniFATSectorId = unchecked((int) 0xFFFFFFFE);
-            MinSizeStandardStream = 4096;
-            FirstDirectorySectorId = Sector.Endofchain;
-            ByteOrder = 0xFFFE;
-            SectorShift = 9;
             MiniSectorShift = 6;
+            SectorShift = 9;
+            ByteOrder = 0xFFFE;
+            MajorVersion = 0x0003;
+            MinorVersion = 0x003E;
+            CLSID = new byte[16];
+            FirstDirectorySectorId = Sector.Endofchain;
+            MinSizeStandardStream = 4096;
+            FirstMiniFATSectorId = unchecked((int) 0xFFFFFFFE);
+            FirstDIFATSectorId = Sector.Endofchain;
+            
             switch (version)
             {
                 case 3:
-                    _majorVersion = 3;
+                    MajorVersion = 3;
                     SectorShift = 0x0009;
                     break;
 
                 case 4:
-                    _majorVersion = 4;
+                    MajorVersion = 4;
                     SectorShift = 0x000C;
                     break;
 
@@ -171,72 +155,102 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             }
 
             for (var i = 0; i < 109; i++)
-            {
                 DIFAT[i] = Sector.FreeSector;
-            }
         }
         #endregion
 
         #region Read
         /// <summary>
-        ///     Reads the header from the stream
+        ///     Reads from the <see cref="stream" />
         /// </summary>
         /// <param name="stream"></param>
         public void Read(Stream stream)
         {
-            var rw = new StreamReader(stream);
+            var streamRw = new StreamRW(stream);
 
-            _headerSignature = rw.ReadBytes(8);
+            HeaderSignature = streamRw.ReadBytes(8);
             CheckSignature();
-            CLSID = rw.ReadBytes(16);
-            _minorVersion = rw.ReadUInt16();
-            _majorVersion = rw.ReadUInt16();
+            CLSID = streamRw.ReadBytes(16);
+            MinorVersion = streamRw.ReadUInt16();
+            MajorVersion = streamRw.ReadUInt16();
             CheckVersion();
-            ByteOrder = rw.ReadUInt16();
-            SectorShift = rw.ReadUInt16();
-            MiniSectorShift = rw.ReadUInt16();
-            UnUsed = rw.ReadBytes(6);
-            DirectorySectorsNumber = rw.ReadInt32();
-            FATSectorsNumber = rw.ReadInt32();
-            FirstDirectorySectorId = rw.ReadInt32();
-            UnUsed2 = rw.ReadUInt32();
-            MinSizeStandardStream = rw.ReadUInt32();
-            FirstMiniFATSectorId = rw.ReadInt32();
-            MiniFATSectorsNumber = rw.ReadUInt32();
-            FirstDIFATSectorId = rw.ReadInt32();
-            DIFATSectorsNumber = rw.ReadUInt32();
+            ByteOrder = streamRw.ReadUInt16();
+            SectorShift = streamRw.ReadUInt16();
+            MiniSectorShift = streamRw.ReadUInt16();
+            UnUsed = streamRw.ReadBytes(6);
+            DirectorySectorsNumber = streamRw.ReadInt32();
+            FATSectorsNumber = streamRw.ReadInt32();
+            FirstDirectorySectorId = streamRw.ReadInt32();
+            UnUsed2 = streamRw.ReadUInt32();
+            MinSizeStandardStream = streamRw.ReadUInt32();
+            FirstMiniFATSectorId = streamRw.ReadInt32();
+            MiniFATSectorsNumber = streamRw.ReadUInt32();
+            FirstDIFATSectorId = streamRw.ReadInt32();
+            DIFATSectorsNumber = streamRw.ReadUInt32();
 
             for (var i = 0; i < 109; i++)
-                DIFAT[i] = rw.ReadInt32();
+                DIFAT[i] = streamRw.ReadInt32();
 
-            rw.Close();
+            streamRw.Close();
         }
         #endregion
 
-        #region CheckVersion
+        #region Write
         /// <summary>
-        ///     Checks if the file has a valid OLE structured storage version number, only 3 and 4 are supported
+        ///     Writes to the <see cref="stream"/>
         /// </summary>
-        /// <exception cref="CFFormatException">Raised when the compound file storage contains an invalid format</exception>
+        /// <param name="stream"></param>
+        public void Write(Stream stream)
+        {
+            var streamRw = new StreamRW(stream);
+
+            streamRw.Write(HeaderSignature);
+            streamRw.Write(CLSID);
+            streamRw.Write(MinorVersion);
+            streamRw.Write(MajorVersion);
+            streamRw.Write(ByteOrder);
+            streamRw.Write(SectorShift);
+            streamRw.Write(MiniSectorShift);
+            streamRw.Write(UnUsed);
+            streamRw.Write(DirectorySectorsNumber);
+            streamRw.Write(FATSectorsNumber);
+            streamRw.Write(FirstDirectorySectorId);
+            streamRw.Write(UnUsed2);
+            streamRw.Write(MinSizeStandardStream);
+            streamRw.Write(FirstMiniFATSectorId);
+            streamRw.Write(MiniFATSectorsNumber);
+            streamRw.Write(FirstDIFATSectorId);
+            streamRw.Write(DIFATSectorsNumber);
+
+            foreach (var i in DIFAT)
+                streamRw.Write(i);
+
+            if (MajorVersion == 4)
+            {
+                var zeroHead = new byte[3584];
+                streamRw.Write(zeroHead);
+            }
+
+            streamRw.Close();
+        }
+        #endregion
+        
+        #region CheckVersion
         private void CheckVersion()
         {
-            if (_majorVersion != 3 && _majorVersion != 4)
-                throw new CFFormatException(
-                    "Unsupported binary file format version, only support for compound files with major version equal to 3 or 4 ");
+            if (MajorVersion != 3 && MajorVersion != 4)
+                throw new CFFileFormatException(
+                    "Unsupported binary file format version there is only support for compound files with major version equal to 3 or 4");
         }
         #endregion
 
         #region CheckSignature
-        /// <summary>
-        ///     Checks if the file has a valid OLE structured storage signature
-        /// </summary>
-        /// <exception cref="CFFormatException">Raised when the file is invalid</exception>
         private void CheckSignature()
         {
-            for (var i = 0; i < _headerSignature.Length; i++)
+            for (var i = 0; i < HeaderSignature.Length; i++)
             {
-                if (_headerSignature[i] != _oleCFSSignature[i])
-                    throw new CFFormatException("Invalid OLE structured storage file");
+                if (HeaderSignature[i] != _oleCFSSignature[i])
+                    throw new CFFileFormatException("Invalid OLE structured storage file");
             }
         }
         #endregion

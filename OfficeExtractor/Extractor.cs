@@ -71,7 +71,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             var result = new List<string>();
 
             var compoundFile = new CompoundFile(inputFile);
-
+            compoundFile.SaveSubStream("");
             // In a Word file the objects are stored in the ObjectPool tree
             var objectPools = compoundFile.GetAllNamedEntries("ObjectPool");
             foreach (var objectPool in objectPools)
@@ -86,29 +86,38 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                     var childStorage = child as CFStorage;
                     if (childStorage == null) continue;
 
-                    // Ole objects can be stored in 2 ways
-                    // - Directly in the CONTENT stream
+                    //// When true then the object is a link to a file
+                    //var isLink = false;
+
+                    //// When true then the object is shown as an icon
+                    //var shownAsIcon = false;
+
+                    //// Check if there is an objInfo stream, this stream gives information about the embedded object
+                    //// http://msdn.microsoft.com/en-us/library/gg132458%28v=office.12%29.aspx
+                    //if (childStorage.ExistsStream("\x03ObjInfo"))
+                    //{
+                    //    var objInfo = childStorage.GetStream("\x03ObjInfo");
+                    //    var objInfoData = objInfo.GetData();
+                    //    isLink = objInfoData[0].GetBit(4);
+                    //    shownAsIcon = objInfoData[0].GetBit(6);
+                    //}
+
+                    // Ole objects can be stored in 4 ways
+                    // - As a CONTENT stream
+                    // - As a Package
                     // - As an Ole10Native object
+                    // - Embedded into the same compound file
                     if (childStorage.ExistsStream("CONTENTS"))
                     {
                         var contents = childStorage.GetStream("CONTENTS");
-                        // If there is any data
                         if (contents.Size > 0)
-                        {
-                            var data = contents.GetData();
-                            var tempFileName = outputFolder + "Embedded word object";
-                            // Because the data is stored in the CONTENT stream we have no name for it so we
-                            // have to check the magic bytes to see with what kind of file we are dealing
-                            var fileType = FileTypeSelector.GetFileTypeFileInfo(data);
-                            if(fileType != null && !string.IsNullOrEmpty(fileType.Extension))
-                                tempFileName += "." + fileType.Extension;
-
-                            // Check if the output file already exists and if so make a new one
-                            tempFileName = FileManager.FileExistsMakeNew(tempFileName);
-
-                            File.WriteAllBytes(tempFileName, data);
-                            result.Add(tempFileName);
-                        }
+                            result.Add(SaveByteArrayToFile(contents.GetData(), outputFolder + "embedded word object"));
+                    }
+                    else if (childStorage.ExistsStream("Package"))
+                    {
+                        var package = childStorage.GetStream("Package");
+                        if (package.Size > 0)
+                            result.Add(SaveByteArrayToFile(package.GetData(), outputFolder + "embedded word object"));
                     }
                     else if (childStorage.ExistsStream("\x01Ole10Native"))
                     {
@@ -116,6 +125,10 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                         if (ole10Native.Size > 0)
                             result.Add(ExtractFileFromOle10Native(ole10Native.GetData(), outputFolder));
                     }
+
+                    // Workbook
+                    // PowerPoint Document
+                    // WordDocument
                 }
             }
 
@@ -137,12 +150,35 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         }
         #endregion
 
+        #region SaveByteArrayToFile
+        /// <summary>
+        /// Saves the <see cref="data"/> byte array to the <see cref="outputFile"/>
+        /// </summary>
+        /// <param name="data">The stream as byte array</param>
+        /// <param name="outputFile">The output filename with path</param>
+        /// <returns></returns>
+        private static string SaveByteArrayToFile(byte[] data, string outputFile)
+        {
+            // Because the data is stored in a stream we have no name for it so we
+            // have to check the magic bytes to see with what kind of file we are dealing
+            var fileType = FileTypeSelector.GetFileTypeFileInfo(data);
+            if (fileType != null && !string.IsNullOrEmpty(fileType.Extension))
+                outputFile += "." + fileType.Extension;
+
+            // Check if the output file already exists and if so make a new one
+            outputFile = FileManager.FileExistsMakeNew(outputFile);
+
+            File.WriteAllBytes(outputFile, data);
+            return outputFile;
+        }
+        #endregion
+
         #region ExtractFileFromOle10Native
         /// <summary>
         /// Extract the file from the Ole10Native container and saves it to the outputfolder
         /// </summary>
-        /// <param name="ole10Native"></param>
-        /// <param name="outputFolder"></param>
+        /// <param name="ole10Native">The Ole10Native object as an byte array</param>
+        /// <param name="outputFolder">The output folder</param>
         /// <returns>The filename with path from the extracted file</returns>
         private static string ExtractFileFromOle10Native(byte[] ole10Native, string outputFolder)
         {

@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.BinaryTree;
+﻿using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.BinaryTree;
+using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.BinaryTree.Exceptions;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Exceptions;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Interfaces;
 
@@ -15,6 +15,17 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         #endregion
 
         #region Constructor
+        /// <summary>
+        /// Create a new CFStorage
+        /// </summary>
+        /// <param name="compFile">The Storage Owner - CompoundFile</param>
+        internal CFStorage(CompoundFile compFile)
+            : base(compFile)
+        {
+            DirEntry = new DirectoryEntry(StgType.StgStorage);
+            compFile.InsertNewDirectoryEntry(DirEntry);
+        }
+
         /// <summary>
         ///     Create a CFStorage using an existing directory (previously loaded).
         /// </summary>
@@ -69,6 +80,65 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
         #endregion
 
+        #region AddStream
+        /// <summary>
+        /// Create a new child stream inside the current <see cref="T:OpenMcdf.CFStorage">storage</see>
+        /// </summary>
+        /// <param name="streamName">The new stream name</param>
+        /// <returns>The new <see cref="T:OpenMcdf.CFStream">stream</see> reference</returns>
+        /// <exception cref="CFDuplicatedItemException">Raised when adding an item with the same name of an existing one</exception>
+        /// <exception cref="CFDisposedException">Raised when adding a stream to a closed compound file</exception>
+        /// <exception cref="CFException">Raised when adding a stream with null or empty name</exception>
+        /// <example>
+        /// <code>
+        /// 
+        ///  String filename = "A_NEW_COMPOUND_FILE_YOU_CAN_WRITE_TO.cfs";
+        ///
+        ///  CompoundFile cf = new CompoundFile();
+        ///
+        ///  CFStorage st = cf.RootStorage.AddStorage("MyStorage");
+        ///  CFStream sm = st.AddStream("MyStream");
+        ///  byte[] b = Helpers.GetBuffer(220, 0x0A);
+        ///  sm.SetData(b);
+        ///
+        ///  cf.Save(filename);
+        ///  
+        /// </code>
+        /// </example>
+        public CFStream AddStream(string streamName)
+        {
+            CheckDisposed();
+
+            if (string.IsNullOrEmpty(streamName))
+                throw new CFException("Stream name cannot be null or empty");
+
+
+            // Add new Stream directory entry
+            var stream = new CFStream(CompoundFile);
+            stream.DirEntry.SetEntryName(streamName);
+
+            try
+            {
+                // Add object to Siblings tree
+                Children.Add(stream);
+
+                //Rethread children tree...
+                CompoundFile.RefreshIterative(Children.Root);
+
+                // ... and set the root of the tree as new child of the current item directory entry
+                DirEntry.Child = Children.Root.Value.DirEntry.SID;
+            }
+            catch (BSTDuplicatedException)
+            {
+                CompoundFile.ResetDirectoryEntry(stream.DirEntry.SID);
+                throw new CFDuplicatedItemException("An entry with name '" + streamName +
+                                                    "' is already present in storage '" + Name + "' ");
+            }
+
+            return stream;
+        }
+        #endregion
+        
         #region ExistsStream
         /// <summary>
         ///     Checks whether a child stream exists in the parent.
@@ -124,6 +194,62 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 return directoryEntry as CFStorage;
             
             throw new CFItemNotFound("Cannot find item [" + storageName + "] within the current storage");
+        }
+        #endregion
+
+        #region AddStorage
+        /// <summary>
+        /// Create new child storage directory inside the current storage.
+        /// </summary>
+        /// <param name="storageName">The new storage name</param>
+        /// <returns>Reference to the new <see cref="T:OpenMcdf.CFStorage">storage</see></returns>
+        /// <exception cref="T:OpenMcdf.CFDuplicatedItemException">Raised when adding an item with the same name of an existing one</exception>
+        /// <exception cref="T:OpenMcdf.CFDisposedException">Raised when adding a storage to a closed compound file</exception>
+        /// <exception cref="T:OpenMcdf.CFException">Raised when adding a storage with null or empty name</exception>
+        /// <example>
+        /// <code>
+        /// 
+        ///  String filename = "A_NEW_COMPOUND_FILE_YOU_CAN_WRITE_TO.cfs";
+        ///
+        ///  CompoundFile cf = new CompoundFile();
+        ///
+        ///  CFStorage st = cf.RootStorage.AddStorage("MyStorage");
+        ///  CFStream sm = st.AddStream("MyStream");
+        ///  byte[] b = Helpers.GetBuffer(220, 0x0A);
+        ///  sm.SetData(b);
+        ///
+        ///  cf.Save(filename);
+        ///  
+        /// </code>
+        /// </example>
+        public CFStorage AddStorage(string storageName)
+        {
+            CheckDisposed();
+
+            if (string.IsNullOrEmpty(storageName))
+                throw new CFException("Stream name cannot be null or empty");
+
+            // Add new Storage directory entry
+            var storage = new CFStorage(CompoundFile);
+            storage.DirEntry.SetEntryName(storageName);
+
+            try
+            {
+                // Add object to Siblings tree
+                Children.Add(storage);
+            }
+            catch (BSTDuplicatedException)
+            {
+
+                CompoundFile.ResetDirectoryEntry(storage.DirEntry.SID);
+                throw new CFDuplicatedItemException("An entry with name '" + storageName +
+                                                    "' is already present in storage '" + Name + "' ");
+            }
+
+
+            CompoundFile.RefreshIterative(Children.Root);
+            DirEntry.Child = Children.Root.Value.DirEntry.SID;
+            return storage;
         }
         #endregion
 

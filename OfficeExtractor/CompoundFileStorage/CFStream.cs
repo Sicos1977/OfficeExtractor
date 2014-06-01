@@ -28,6 +28,26 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
         #endregion
 
+        #region SetData
+        /// <summary>
+        /// Set the data associated with the stream object.
+        /// </summary>
+        /// <example>
+        /// <code>
+        ///    byte[] b = new byte[]{0x0,0x1,0x2,0x3};
+        ///    CompoundFile cf = new CompoundFile();
+        ///    CFStream myStream = cf.RootStorage.AddStream("MyStream");
+        ///    myStream.SetData(b);
+        /// </code>
+        /// </example>
+        /// <param name="data">Data bytes to write to this stream</param>
+        public void SetData(Byte[] data)
+        {
+            CheckDisposed();
+            CompoundFile.SetData(this, data);
+        }
+        #endregion
+
         #region GetData
         /// <summary>
         ///     Get the data associated with the stream object.

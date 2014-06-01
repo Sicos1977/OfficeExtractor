@@ -46,6 +46,7 @@
     <Compile Include="CompoundFileStorage\BinaryTree\NodeList.cs" />
     <Compile Include="CompoundFileStorage\BinaryTree\TraversalMethods.cs" />
     <Compile Include="CompoundFileStorage\CFItemComparer.cs" />
+    <Compile Include="CompoundFileStorage\Exceptions\CFFileFormatException.cs" />
     <Compile Include="CompoundFileStorage\Exceptions\CFInvalidOperation.cs" />
     <Compile Include="CompoundFileStorage\CFItem.cs" />
     <Compile Include="CompoundFileStorage\CFMock.cs" />
@@ -67,9 +68,10 @@
     <Compile Include="CompoundFileStorage\Interfaces\IDirectoryEntry.cs" />
     <Compile Include="CompoundFileStorage\Sector.cs" />
     <Compile Include="CompoundFileStorage\SectorCollection.cs" />
-    <Compile Include="CompoundFileStorage\StreamReader.cs" />
-    <Compile Include="CompoundFileStorage\StreamViewer.cs" />
+    <Compile Include="CompoundFileStorage\StreamRW.cs" />
+    <Compile Include="CompoundFileStorage\StreamView.cs" />
     <Compile Include="Extractor.cs" />
+    <Compile Include="Helpers\ByteExtensions.cs" />
     <Compile Include="Helpers\ExceptionHelpers.cs" />
     <Compile Include="Helpers\FileManager.cs" />
     <Compile Include="Helpers\FileTypeSelector.cs" />

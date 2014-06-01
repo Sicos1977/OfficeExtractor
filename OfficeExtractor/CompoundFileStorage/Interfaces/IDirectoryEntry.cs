@@ -21,7 +21,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         string Name { get; }
 
-        ushort NameLength { get; set; }
+        ushort NameLength { get; }
 
         void Read(System.IO.Stream stream);
 
@@ -37,8 +37,12 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         int StateBits { get; set; }
 
+        StgColor StgColor { get; set; }
+
         StgType StgType { get; set; }
 
         Guid StorageCLSID { get; set; }
+
+        void Write(System.IO.Stream stream);
     }
 }

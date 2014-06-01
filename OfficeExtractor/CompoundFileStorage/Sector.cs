@@ -29,6 +29,21 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         private bool _disposed;
         #endregion
 
+        #region Properties
+        public bool DirtyFlag { get; set; }
+
+        public bool IsStreamed
+        {
+            get { return (_stream != null && Size != MinisectorSize) && (Id*Size) + Size < _stream.Length; }
+        }
+
+        internal SectorType Type { get; set; }
+
+        public int Id { get; set; }
+
+        public int Size { get; private set; }
+        #endregion
+
         #region Constructors
         public Sector(int size, Stream stream)
         {
@@ -54,21 +69,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
         #endregion
 
-        #region Properties
-        public bool DirtyFlag { get; set; }
-
-        public bool IsStreamed
-        {
-            get { return (_stream != null && Size != MinisectorSize) && (Id*Size) + Size < _stream.Length; }
-        }
-
-        internal SectorType Type { get; set; }
-
-        public int Id { get; set; }
-
-        public int Size { get; private set; }
-        #endregion
-
         #region GetData
         public byte[] GetData()
         {
@@ -80,6 +80,13 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             _stream.Read(_data, 0, Size);
 
             return _data;
+        }
+        #endregion
+
+        #region ReleaseData
+        internal void ReleaseData()
+        {
+            _data = null;
         }
         #endregion
 

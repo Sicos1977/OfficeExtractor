@@ -52,11 +52,11 @@ namespace OfficeViewer
                     _tempFolders.Add(tempFolder);
 
                     var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-                    extractor.ExtractFromWord(openFileDialog1.FileName, tempFolder);
+                    var files = extractor.ExtractFromWord(openFileDialog1.FileName, tempFolder);
                     FilesListBox.Items.Clear();
 
-                    //foreach (var file in files)
-                    //    FilesListBox.Items.Add(file);
+                    foreach (var file in files)
+                        FilesListBox.Items.Add(file);
                 }
                 catch (Exception ex)
                 {
