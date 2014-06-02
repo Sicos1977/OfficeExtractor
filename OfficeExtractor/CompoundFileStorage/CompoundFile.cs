@@ -727,43 +727,44 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region SaveNamedEntryTreeToCompoundFile
         /// <summary>
-        /// This will save the named entry and all it's <see cref="CFStorage"/> and <see cref="CFStream"/>
-        /// children to a new compound file
+        /// This will save the complete tree from the given <see cref="storage"/> to a new <see cref="CompoundFile"/>
         /// </summary>
-        /// <param name="namedEntryName">The named entry to save</param>
+        /// <param name="storage"></param>
         /// <param name="fileName">The filename with path for the new compound file</param>
-        /// <exception cref="CFItemNotFound">Raised when the <see cref="namedEntryName"/> could not be found</exception>
-        public void SaveNamedEntryTreeToCompoundFile(string namedEntryName, string fileName)
+        /// <exception cref="ArgumentNullException">Raised when <see cref="storage"/> or <see cref="fileName"/> is null</exception>
+        public void SaveNamedEntryTreeToCompoundFile(CFStorage storage, string fileName)
         {
             var compoundFile = new CompoundFile();
-            var namedEntries = GetAllNamedEntries(namedEntryName);
 
-            if (namedEntries.Count == 0)
-                throw new CFItemNotFound("The named entry could not be found");
+            if (storage == null)
+                throw new ArgumentNullException("storage");
 
-            GetStorageChain(compoundFile.RootStorage);
+            if (string.IsNullOrEmpty(fileName))
+                throw new ArgumentNullException("fileName");
 
+            GetStorageChain(compoundFile.RootStorage, storage);
             compoundFile.Save(fileName);
         }
 
         /// <summary>
         /// Returns the complete tree with all the <see cref="CFStorage"/> and <see cref="CFStream"/> children
         /// </summary>
+        /// <param name="rootStorage"></param>
         /// <param name="storage"></param>
-        public void GetStorageChain(CFStorage storage)
+        public void GetStorageChain(CFStorage rootStorage, CFStorage storage)
         {
             foreach (var child in storage.Children)
             {
                 if (child.IsStorage)
                 {
-                    var tempStorage = storage.AddStorage(child.Name);
-                    GetStorageChain(tempStorage);
+                    var newRootStorage = rootStorage.AddStorage(child.Name);
+                    GetStorageChain(newRootStorage, child as CFStorage);
                 }
                 else if (child.IsStream)
                 {
                     var childStream = child as CFStream;
                     if (childStream == null) continue;
-                    var stream = storage.AddStream(child.Name);
+                    var stream = rootStorage.AddStream(child.Name);
                     stream.SetData(childStream.GetData());
                 }
             }

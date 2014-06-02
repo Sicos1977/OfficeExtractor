@@ -120,7 +120,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             var result = new List<string>();
 
             var compoundFile = new CompoundFile(inputFile);
-            compoundFile.SaveSubStream("");
+
             // In a Word file the objects are stored in the ObjectPool tree
             var objectPools = compoundFile.GetAllNamedEntries("ObjectPool");
             foreach (var objectPool in objectPools)
@@ -135,23 +135,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                     var childStorage = child as CFStorage;
                     if (childStorage == null) continue;
 
-                    //// When true then the object is a link to a file
-                    //var isLink = false;
-
-                    //// When true then the object is shown as an icon
-                    //var shownAsIcon = false;
-
-                    //// Check if there is an objInfo stream, this stream gives information about the embedded object
-                    //// http://msdn.microsoft.com/en-us/library/gg132458%28v=office.12%29.aspx
-                    //if (childStorage.ExistsStream("\x03ObjInfo"))
-                    //{
-                    //    var objInfo = childStorage.GetStream("\x03ObjInfo");
-                    //    var objInfoData = objInfo.GetData();
-                    //    isLink = objInfoData[0].GetBit(4);
-                    //    shownAsIcon = objInfoData[0].GetBit(6);
-                    //}
-
-                    // Ole objects can be stored in 4 ways
+                    // Embedded objects can be stored in 4 ways
                     // - As a CONTENT stream
                     // - As a Package
                     // - As an Ole10Native object
@@ -174,10 +158,27 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                         if (ole10Native.Size > 0)
                             result.Add(ExtractFileFromOle10Native(ole10Native.GetData(), outputFolder));
                     }
-
-                    // Workbook
-                    // PowerPoint Document
-                    // WordDocument
+                    else if (childStorage.ExistsStream("WordDocument"))
+                    {
+                        // The embedded object is a Word file
+                        var tempFileName = outputFolder + "Embedded Word document.doc";
+                        compoundFile.SaveNamedEntryTreeToCompoundFile(childStorage, tempFileName);
+                        result.Add(tempFileName);
+                    }
+                    else if (childStorage.ExistsStream("Workbook"))
+                    {
+                        // The embedded object is an Excel file   
+                        var tempFileName = outputFolder + "Embedded Excel document.xls";
+                        compoundFile.SaveNamedEntryTreeToCompoundFile(childStorage, tempFileName);
+                        result.Add(tempFileName);
+                    }
+                    else if (childStorage.ExistsStream("PowerPoint Document"))
+                    {
+                        // The embedded object is a PowerPoint file
+                        var tempFileName = outputFolder + "Embedded PowerPoint document.ppt";
+                        compoundFile.SaveNamedEntryTreeToCompoundFile(childStorage, tempFileName);
+                        result.Add(tempFileName);
+                    }
                 }
             }
 
@@ -200,7 +201,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             var result = new List<string>();
 
             var compoundFile = new CompoundFile(inputFile);
-            compoundFile.SaveSubStream("");
             // In a Word file the objects are stored in the ObjectPool tree
             var objectPools = compoundFile.GetAllNamedEntries("ObjectPool");
             foreach (var objectPool in objectPools)
@@ -264,7 +264,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             var result = new List<string>();
 
             var compoundFile = new CompoundFile(inputFile);
-            compoundFile.SaveSubStream("");
             // In a Word file the objects are stored in the ObjectPool tree
             var objectPools = compoundFile.GetAllNamedEntries("ObjectPool");
             foreach (var objectPool in objectPools)
