@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage;
+using DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions;
 using DocumentServices.Modules.Extractors.OfficeExtractor.Helpers;
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor
@@ -36,25 +37,73 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         }
         #endregion
 
-        #region ExtractFromWord
+        #region ExtractToFolder
         /// <summary>
-        /// Extracts all the embedded Word object from the <see cref="inputFile"/> to the 
+        /// Extracts all the embedded object from the Microsoft Office <see cref="inputFile"/> to the 
         /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
         /// </summary>
-        /// <param name="inputFile">The Word file</param>
+        /// <param name="inputFile">The Microsoft Office file</param>
         /// <param name="outputFolder">The output folder</param>
         /// <returns>List with files or en empty list when there are nog embedded files</returns>
         /// <exception cref="ArgumentNullException">Raised when the <see cref="inputFile"/> or <see cref="outputFolder"/> is null or empty</exception>
         /// <exception cref="FileNotFoundException">Raised when the <see cref="inputFile"/> does not exists</exception>
         /// <exception cref="DirectoryNotFoundException">Raised when the <see cref="outputFolder"/> does not exists</exception>
-        public List<string> ExtractFromWord(string inputFile, string outputFolder)
+        /// <exception cref="OEFileTypeNotSupported">Raised when the Microsoft Office File Type is not supported</exception>
+        public List<string> ExtractToFolder(string inputFile, string outputFolder)
         {
             CheckFileNameAndOutputFolder(inputFile, outputFolder);
+            
+            var extension = Path.GetExtension(inputFile);
+            if (extension != null)
+                extension = extension.ToUpperInvariant();
+
             outputFolder = FileManager.CheckForBackSlash(outputFolder);
 
-            // TODO: Add support for Word 2007 and up format
+            switch (extension)
+            {
+                case ".DOC":
+                case ".DOT":
+                    // Word 97 - 2003
+                    return ExtractFromWordBinaryFormat(inputFile, outputFolder);
 
-            return ExtractFromWordBinaryFormat(inputFile, outputFolder);
+                case ".DOCM":
+                case ".DOCX":
+                case ".DOTM":
+                    // Word 2007 - 2013
+                    return ExtractFromOfficeOpenXmlFormat(inputFile, "/word/embeddings/", outputFolder);
+
+                case ".XLS":
+                case ".XLT":
+                case ".XLW":
+                    // Excel 97 - 2003
+                    return ExtractFromExcelBinaryFormat(inputFile, outputFolder);
+
+                case ".XLSB":
+                case ".XLSM":
+                case ".XLSX":
+                case ".XLTM":
+                case ".XLTX":
+                    // Excel 2007 - 2013
+                    return ExtractFromOfficeOpenXmlFormat(inputFile, "/excel/embeddings/", outputFolder);
+
+                case ".POT":
+                case ".PPS":
+                    // PowerPoint 97 - 2003
+                    return ExtractFromPowerPointBinaryFormat(inputFile, outputFolder);
+
+                case ".POTM":
+                case ".POTX":
+                case ".PPSM":
+                case ".PPSX":
+                case ".PPTM":
+                case ".PPTX":
+                    // PowerPoint 2007 - 2013
+                    return ExtractFromOfficeOpenXmlFormat(inputFile, "/ppt/embeddings/", outputFolder);
+
+                default:
+                    throw new OEFileTypeNotSupported("The file '" + Path.GetFileName(inputFile) +
+                                                     "' is not supported, only .DOC, .DOCM, .DOCX, .DOT, .DOTM, .XLS, .XLSB, .XLSM, .XLSX, .XLT, .XLTM, .XLTX, .XLW, .POT, .POTM, .POTX, .PPS, .PPSM, .PPSX, .PPTM and .PPTX are supported");
+            }
         }
         #endregion
 
@@ -136,17 +185,160 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         }
         #endregion
 
-        #region ExtractFromWordOfficeOpenXMLFormat
+        #region ExtractFromExcelBinaryFormat
         /// <summary>
-        /// Extracts all the embedded Word object from the <see cref="inputFile"/> to the 
+        /// Extracts all the embedded Excel object from the <see cref="inputFile"/> to the 
         /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
         /// </summary>
-        /// <param name="inputFile">The office open XML Word file</param>
+        /// <param name="inputFile">The binary Excel file</param>
         /// <param name="outputFolder">The output folder</param>
         /// <returns>List with files or en empty list when there are nog embedded files</returns>
-        public List<string> ExtractFromWordOfficeOpenXmlFormat(string inputFile, string outputFolder)
+        public List<string> ExtractFromExcelBinaryFormat(string inputFile, string outputFolder)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Not yet fully implemented");
+
+            var result = new List<string>();
+
+            var compoundFile = new CompoundFile(inputFile);
+            compoundFile.SaveSubStream("");
+            // In a Word file the objects are stored in the ObjectPool tree
+            var objectPools = compoundFile.GetAllNamedEntries("ObjectPool");
+            foreach (var objectPool in objectPools)
+            {
+                // An objectPool is always a CFStorage type
+                var objectPoolStorage = objectPool as CFStorage;
+                if (objectPoolStorage == null) continue;
+
+                // Multiple objects are stored as children of the objectPool
+                foreach (var child in objectPoolStorage.Children)
+                {
+                    var childStorage = child as CFStorage;
+                    if (childStorage == null) continue;
+
+                    // Ole objects can be stored in 4 ways
+                    // - As a CONTENT stream
+                    // - As a Package
+                    // - As an Ole10Native object
+                    // - Embedded into the same compound file
+                    if (childStorage.ExistsStream("CONTENTS"))
+                    {
+                        var contents = childStorage.GetStream("CONTENTS");
+                        if (contents.Size > 0)
+                            result.Add(SaveByteArrayToFile(contents.GetData(), outputFolder + "embedded word object"));
+                    }
+                    else if (childStorage.ExistsStream("Package"))
+                    {
+                        var package = childStorage.GetStream("Package");
+                        if (package.Size > 0)
+                            result.Add(SaveByteArrayToFile(package.GetData(), outputFolder + "embedded word object"));
+                    }
+                    else if (childStorage.ExistsStream("\x01Ole10Native"))
+                    {
+                        var ole10Native = childStorage.GetStream("\x01Ole10Native");
+                        if (ole10Native.Size > 0)
+                            result.Add(ExtractFileFromOle10Native(ole10Native.GetData(), outputFolder));
+                    }
+
+                    // Workbook
+                    // PowerPoint Document
+                    // WordDocument
+                }
+            }
+
+            return result;
+        }
+        #endregion
+
+        #region ExtractFromPowerPointBinaryFormat
+        /// <summary>
+        /// Extracts all the embedded PowerPoint object from the <see cref="inputFile"/> to the 
+        /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
+        /// </summary>
+        /// <param name="inputFile">The binary Excel file</param>
+        /// <param name="outputFolder">The output folder</param>
+        /// <returns>List with files or en empty list when there are nog embedded files</returns>
+        public List<string> ExtractFromPowerPointBinaryFormat(string inputFile, string outputFolder)
+        {
+            throw new NotImplementedException("Not yet fully implemented");
+
+            var result = new List<string>();
+
+            var compoundFile = new CompoundFile(inputFile);
+            compoundFile.SaveSubStream("");
+            // In a Word file the objects are stored in the ObjectPool tree
+            var objectPools = compoundFile.GetAllNamedEntries("ObjectPool");
+            foreach (var objectPool in objectPools)
+            {
+                // An objectPool is always a CFStorage type
+                var objectPoolStorage = objectPool as CFStorage;
+                if (objectPoolStorage == null) continue;
+
+                // Multiple objects are stored as children of the objectPool
+                foreach (var child in objectPoolStorage.Children)
+                {
+                    var childStorage = child as CFStorage;
+                    if (childStorage == null) continue;
+
+                    // Ole objects can be stored in 4 ways
+                    // - As a CONTENT stream
+                    // - As a Package
+                    // - As an Ole10Native object
+                    // - Embedded into the same compound file
+                    if (childStorage.ExistsStream("CONTENTS"))
+                    {
+                        var contents = childStorage.GetStream("CONTENTS");
+                        if (contents.Size > 0)
+                            result.Add(SaveByteArrayToFile(contents.GetData(), outputFolder + "embedded word object"));
+                    }
+                    else if (childStorage.ExistsStream("Package"))
+                    {
+                        var package = childStorage.GetStream("Package");
+                        if (package.Size > 0)
+                            result.Add(SaveByteArrayToFile(package.GetData(), outputFolder + "embedded word object"));
+                    }
+                    else if (childStorage.ExistsStream("\x01Ole10Native"))
+                    {
+                        var ole10Native = childStorage.GetStream("\x01Ole10Native");
+                        if (ole10Native.Size > 0)
+                            result.Add(ExtractFileFromOle10Native(ole10Native.GetData(), outputFolder));
+                    }
+
+                    // Workbook
+                    // PowerPoint Document
+                    // WordDocument
+                }
+            }
+
+            return result;
+        }
+        #endregion
+
+        #region ExtractFromOfficeOpenXmlFormat
+        /// <summary>
+        /// Extracts all the embedded object from the Office Open XML <see cref="inputFile"/> to the 
+        /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
+        /// </summary>
+        /// <param name="inputFile">The Office Open XML format file</param>
+        /// <param name="zipFolder">The folder in the Office Open XML format (zip) file</param>
+        /// <param name="outputFolder">The output folder</param>
+        /// <returns>List with files or en empty list when there are nog embedded files</returns>
+        public List<string> ExtractFromOfficeOpenXmlFormat(string inputFile, string zipFolder, string outputFolder)
+        {
+            throw new NotImplementedException("Not yet implemented");
+            //Package pkg = Package.Open(fileName);
+
+
+            //// Get the embedded files names. 
+            //foreach (PackagePart pkgPart in pkg.GetParts())
+            //{
+            //    if (pkgPart.Uri.ToString().StartsWith(embeddingPartString))
+            //    {
+            //        string fileName1 = pkgPart.Uri.ToString().Remove(0, embeddingPartString.Length);
+            //        chkdLstEmbeddedFiles.Items.Add(fileName1);
+            //    }
+            //}
+            //pkg.Close(); 
+
         }
         #endregion
 

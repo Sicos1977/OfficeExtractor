@@ -70,6 +70,7 @@
     <Compile Include="CompoundFileStorage\SectorCollection.cs" />
     <Compile Include="CompoundFileStorage\StreamRW.cs" />
     <Compile Include="CompoundFileStorage\StreamView.cs" />
+    <Compile Include="Exceptions\OEFileTypeNotSupported.cs" />
     <Compile Include="Extractor.cs" />
     <Compile Include="Helpers\ByteExtensions.cs" />
     <Compile Include="Helpers\ExceptionHelpers.cs" />
