@@ -161,21 +161,21 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                     else if (childStorage.ExistsStream("WordDocument"))
                     {
                         // The embedded object is a Word file
-                        var tempFileName = outputFolder + "Embedded Word document.doc";
+                        var tempFileName = FileManager.FileExistsMakeNew(outputFolder + "Embedded Word document.doc");
                         compoundFile.SaveNamedEntryTreeToCompoundFile(childStorage, tempFileName);
                         result.Add(tempFileName);
                     }
                     else if (childStorage.ExistsStream("Workbook"))
                     {
                         // The embedded object is an Excel file   
-                        var tempFileName = outputFolder + "Embedded Excel document.xls";
+                        var tempFileName = FileManager.FileExistsMakeNew(outputFolder + "Embedded Excel document.xls");
                         compoundFile.SaveNamedEntryTreeToCompoundFile(childStorage, tempFileName);
                         result.Add(tempFileName);
                     }
                     else if (childStorage.ExistsStream("PowerPoint Document"))
                     {
                         // The embedded object is a PowerPoint file
-                        var tempFileName = outputFolder + "Embedded PowerPoint document.ppt";
+                        var tempFileName = outputFolder + FileManager.FileExistsMakeNew("Embedded PowerPoint document.ppt");
                         compoundFile.SaveNamedEntryTreeToCompoundFile(childStorage, tempFileName);
                         result.Add(tempFileName);
                     }
