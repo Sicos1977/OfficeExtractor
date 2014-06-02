@@ -67,6 +67,17 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="testfiles\1.doc" />
+    <None Include="testfiles\2.doc" />
+    <None Include="testfiles\Excel met embedded word 2003 document.xls" />
+    <None Include="testfiles\kees.doc" />
+    <None Include="testfiles\Map1.xls" />
+    <None Include="testfiles\Map1.xlsx" />
+    <None Include="testfiles\oleObject1.bin" />
+    <None Include="testfiles\Test met embedded pdf.doc" />
+    <None Include="testfiles\Test met embedded PowerPoint.doc" />
+    <None Include="testfiles\Test met normaal embedded object.doc" />
+    <None Include="testfiles\Test met normaal embedded object.docx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OfficeExtractor\OfficeExtractor.csproj">

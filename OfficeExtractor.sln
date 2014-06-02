@@ -7,21 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfficeViewer", "OfficeViewe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfficeExtractor", "OfficeExtractor\OfficeExtractor.csproj", "{38D2F0BC-C44C-4146-8C31-9F8162782541}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testfiles", "Testfiles", "{54A56C95-0475-4FC3-8DA5-940BF90089AA}"
-	ProjectSection(SolutionItems) = preProject
-		D:\1.doc = D:\1.doc
-		D:\2.doc = D:\2.doc
-		D:\Excel met embedded word 2003 document.xls = D:\Excel met embedded word 2003 document.xls
-		D:\kees.doc = D:\kees.doc
-		D:\Map1.xls = D:\Map1.xls
-		D:\Map1.xlsx = D:\Map1.xlsx
-		D:\oleObject1.bin = D:\oleObject1.bin
-		D:\Test met embedded pdf.doc = D:\Test met embedded pdf.doc
-		D:\Test met embedded PowerPoint.doc = D:\Test met embedded PowerPoint.doc
-		D:\Test met normaal embedded object.doc = D:\Test met normaal embedded object.doc
-		D:\Test met normaal embedded object.docx = D:\Test met normaal embedded object.docx
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
