@@ -586,7 +586,24 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
         #endregion
 
-        public void SaveSubStream(string name)
+        /// <summary>
+        /// This will save the named entry and all it's children to a new compound file
+        /// </summary>
+        /// <param name="namedEntryName">The named entry to save</param>
+        /// <param name="fileName">The filename with path for the new compound file</param>
+        /// <exception cref="CFItemNotFound">Raised when the <see cref="namedEntryName"/> could not be found</exception>
+        public void SaveNamedEntryTreeToCompoundFile(string namedEntryName, string fileName)
+        {
+            var compoundFile = new CompoundFile();
+            var namedEntries = GetAllNamedEntries(namedEntryName);
+
+            if (namedEntries.Count == 0)
+                throw new CFItemNotFound("The named entry could not be found");
+
+            var storage
+        }
+
+        public void SaveNamedEntryTreeRecursive(CFStorage rootStorage, CFStorage subStorage)
         {
             var cf = new CompoundFile();
             var entry = GetAllNamedEntries("MBD00448A84")[0];
