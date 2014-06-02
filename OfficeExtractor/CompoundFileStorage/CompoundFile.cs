@@ -586,45 +586,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
         #endregion
 
-        /// <summary>
-        /// This will save the named entry and all it's children to a new compound file
-        /// </summary>
-        /// <param name="namedEntryName">The named entry to save</param>
-        /// <param name="fileName">The filename with path for the new compound file</param>
-        /// <exception cref="CFItemNotFound">Raised when the <see cref="namedEntryName"/> could not be found</exception>
-        public void SaveNamedEntryTreeToCompoundFile(string namedEntryName, string fileName)
-        {
-            var compoundFile = new CompoundFile();
-            var namedEntries = GetAllNamedEntries(namedEntryName);
-
-            if (namedEntries.Count == 0)
-                throw new CFItemNotFound("The named entry could not be found");
-
-            var storage
-        }
-
-        public void SaveNamedEntryTreeRecursive(CFStorage rootStorage, CFStorage subStorage)
-        {
-            var cf = new CompoundFile();
-            var entry = GetAllNamedEntries("MBD00448A84")[0];
-            var children = (entry as CFStorage).Children;
-            foreach (var child in children)
-            {
-                if (child.IsStorage)
-                {
-                    cf.RootStorage.AddStorage(child.Name);
-                }
-                else if (child.IsStream)
-                {
-                    var childStream = child as CFStream;
-                    var stream = cf.RootStorage.AddStream(child.Name);
-                    stream.SetData(childStream.GetData());
-                }
-            }
-
-            cf.Save("d:\\kees.cfs");
-        }
-
         #region LoadFile
         /// <summary>
         /// Loads a compound file from a file
@@ -760,6 +721,51 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             catch (Exception ex)
             {
                 throw new CFException("Internal error while saving compound file to stream ", ex);
+            }
+        }
+        #endregion
+
+        #region SaveNamedEntryTreeToCompoundFile
+        /// <summary>
+        /// This will save the named entry and all it's <see cref="CFStorage"/> and <see cref="CFStream"/>
+        /// children to a new compound file
+        /// </summary>
+        /// <param name="namedEntryName">The named entry to save</param>
+        /// <param name="fileName">The filename with path for the new compound file</param>
+        /// <exception cref="CFItemNotFound">Raised when the <see cref="namedEntryName"/> could not be found</exception>
+        public void SaveNamedEntryTreeToCompoundFile(string namedEntryName, string fileName)
+        {
+            var compoundFile = new CompoundFile();
+            var namedEntries = GetAllNamedEntries(namedEntryName);
+
+            if (namedEntries.Count == 0)
+                throw new CFItemNotFound("The named entry could not be found");
+
+            GetStorageChain(compoundFile.RootStorage);
+
+            compoundFile.Save(fileName);
+        }
+
+        /// <summary>
+        /// Returns the complete tree with all the <see cref="CFStorage"/> and <see cref="CFStream"/> children
+        /// </summary>
+        /// <param name="storage"></param>
+        public void GetStorageChain(CFStorage storage)
+        {
+            foreach (var child in storage.Children)
+            {
+                if (child.IsStorage)
+                {
+                    var tempStorage = storage.AddStorage(child.Name);
+                    GetStorageChain(tempStorage);
+                }
+                else if (child.IsStream)
+                {
+                    var childStream = child as CFStream;
+                    if (childStream == null) continue;
+                    var stream = storage.AddStream(child.Name);
+                    stream.SetData(childStream.GetData());
+                }
             }
         }
         #endregion
