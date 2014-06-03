@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.BinaryTree;
@@ -765,7 +766,60 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                     var childStream = child as CFStream;
                     if (childStream == null) continue;
                     var stream = rootStorage.AddStream(child.Name);
-                    stream.SetData(childStream.GetData());
+                    var bytes = childStream.GetData();
+
+                    // When a Excel document is embedded in for example a Word document the Workbook
+                    // is set to hidden. Don't know why Microsoft does this but they do. To solve this
+                    // problem we seek the WINDOW1 record in the BOF record of the stream. In there a
+                    // gbit structure is located. The first bit in this structure controls the visibility
+                    // of the workbook, so we check if this bit is set to 1 (hidden) en is so set it to 0.
+                    // Normally a Workbook stream only contains one WINDOW record but when it is embedded
+                    // it will contain 2 or more records.
+                    if (stream.Name == "Workbook")
+                    {
+                        // Get the record type, at the beginning of the stream this should always be the BOF
+                        var rType = new byte[2];
+                        rType[0] = bytes[1];
+                        rType[1] = bytes[0];
+
+                        // Get the record length of the BOF
+                        var rLength = new byte[2];
+                        rLength[0] = bytes[3];
+                        rLength[1] = bytes[2];
+                        var recordType = BitConverter.ToUInt16(rType, 0);
+
+                        // Something seems to be wrong, we would expect a BOF but for some reason it isn't so stop it
+                        if (recordType == 0x908)
+                        {
+                            var recordLength = BitConverter.ToUInt16(rLength, 0);
+
+                            if (recordLength < bytes.Length)
+                            {
+                                // Search in the BOF for the WINDOW1 record, this starts with 3D hex
+                                for (var i = 0; i < recordLength; i++)
+                                {
+                                    if (bytes[i] != 0x3D) continue;
+                                    // The hidden bit is found 12 positions after the offset
+                                    var b = new byte[1];
+                                    Buffer.BlockCopy(bytes, i + 12, b, 0, 1);
+                                    var bitArray = new BitArray(b);
+
+                                    // When the bit is set then unset it
+                                    if (bitArray.Get(0))
+                                    {
+                                        bitArray.Set(0, false);
+
+                                        // Copy the byte back into the stream
+                                        bitArray.CopyTo(bytes, i + 12);
+                                    }
+
+                                    // A WINDOW1 record is always 18 bytes so skip it
+                                    i += 18;
+                                }
+                            }
+                        }
+                    }
+                    stream.SetData(bytes);
                 }
             }
         }
