@@ -768,58 +768,65 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                     var stream = rootStorage.AddStream(child.Name);
                     var bytes = childStream.GetData();
 
-                    // When a Excel document is embedded in for example a Word document the Workbook
-                    // is set to hidden. Don't know why Microsoft does this but they do. To solve this
-                    // problem we seek the WINDOW1 record in the BOF record of the stream. In there a
-                    // gbit structure is located. The first bit in this structure controls the visibility
-                    // of the workbook, so we check if this bit is set to 1 (hidden) en is so set it to 0.
-                    // Normally a Workbook stream only contains one WINDOW record but when it is embedded
-                    // it will contain 2 or more records.
                     if (stream.Name == "Workbook")
-                    {
-                        // Get the record type, at the beginning of the stream this should always be the BOF
-                        var rType = new byte[2];
-                        rType[0] = bytes[1];
-                        rType[1] = bytes[0];
-
-                        // Get the record length of the BOF
-                        var rLength = new byte[2];
-                        rLength[0] = bytes[3];
-                        rLength[1] = bytes[2];
-                        var recordType = BitConverter.ToUInt16(rType, 0);
-
-                        // Something seems to be wrong, we would expect a BOF but for some reason it isn't so stop it
-                        if (recordType == 0x908)
-                        {
-                            var recordLength = BitConverter.ToUInt16(rLength, 0);
-
-                            if (recordLength < bytes.Length)
-                            {
-                                // Search in the BOF for the WINDOW1 record, this starts with 3D hex
-                                for (var i = 0; i < recordLength; i++)
-                                {
-                                    if (bytes[i] != 0x3D) continue;
-                                    // The hidden bit is found 12 positions after the offset
-                                    var b = new byte[1];
-                                    Buffer.BlockCopy(bytes, i + 12, b, 0, 1);
-                                    var bitArray = new BitArray(b);
-
-                                    // When the bit is set then unset it
-                                    if (bitArray.Get(0))
-                                    {
-                                        bitArray.Set(0, false);
-
-                                        // Copy the byte back into the stream
-                                        bitArray.CopyTo(bytes, i + 12);
-                                    }
-
-                                    // A WINDOW1 record is always 18 bytes so skip it
-                                    i += 18;
-                                }
-                            }
-                        }
-                    }
+                        SetWorkbookVisibility(ref bytes);
+                    
                     stream.SetData(bytes);
+                }
+            }
+        }
+
+        /// <summary>
+        /// When a Excel document is embedded in for example a Word document the Workbook
+        /// is set to hidden. Don't know why Microsoft does this but they do. To solve this
+        /// problem we seek the WINDOW1 record in the BOF record of the stream. In there a
+        /// gbit structure is located. The first bit in this structure controls the visibility
+        /// of the workbook, so we check if this bit is set to 1 (hidden) en is so set it to 0.
+        /// Normally a Workbook stream only contains one WINDOW record but when it is embedded
+        /// it will contain 2 or more records.
+        /// </summary>
+        /// <param name="bytes"></param>
+        private static void SetWorkbookVisibility(ref byte[] bytes)
+        {
+            // Get the record type, at the beginning of the stream this should always be the BOF
+            var rType = new byte[2];
+            rType[0] = bytes[1];
+            rType[1] = bytes[0];
+
+            // Get the record length of the BOF
+            var rLength = new byte[2];
+            rLength[0] = bytes[3];
+            rLength[1] = bytes[2];
+            var recordType = BitConverter.ToUInt16(rType, 0);
+
+            // Something seems to be wrong, we would expect a BOF but for some reason it isn't so stop it
+            if (recordType == 0x908)
+            {
+                var recordLength = BitConverter.ToUInt16(rLength, 0);
+
+                if (recordLength < bytes.Length)
+                {
+                    // Search in the BOF for the WINDOW1 record, this starts with 3D hex
+                    for (var i = 0; i < recordLength; i++)
+                    {
+                        if (bytes[i] != 0x3D) continue;
+                        // The hidden bit is found 12 positions after the offset
+                        var b = new byte[1];
+                        Buffer.BlockCopy(bytes, i + 12, b, 0, 1);
+                        var bitArray = new BitArray(b);
+
+                        // When the bit is set then unset it
+                        if (bitArray.Get(0))
+                        {
+                            bitArray.Set(0, false);
+
+                            // Copy the byte back into the stream
+                            bitArray.CopyTo(bytes, i + 12);
+                        }
+
+                        // A WINDOW1 record is always 18 bytes so skip it
+                        i += 18;
+                    }
                 }
             }
         }
@@ -2149,26 +2156,13 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
         #endregion
 
-        #region FindDirectoryEntries
-        private IEnumerable<IDirectoryEntry> FindDirectoryEntries(string entryName)
-        {
-            var result = new List<IDirectoryEntry>();
-
-            foreach (var d in _directoryEntries)
-            {
-                if (d.GetEntryName() == entryName && d.StgType != StgType.StgInvalid)
-                    result.Add(d);
-            }
-
-            return result;
-        }
-        #endregion
-
         #region GetAllNamedEntries
         /// <summary>
-        ///     Get a list of all entries with a given name contained in the document.
+        ///     Get a list of all entries which start with the given <see cref="entryName"/>
         /// </summary>
         /// <param name="entryName">Name of entries to retrive</param>
+        /// <param name="parentSibling">The parent id from the node where you want to find the named entries, 
+        /// use null if you want to search in all nodes</param>
         /// <returns>A list of name-matching entries</returns>
         /// <remarks>
         ///     This function is aimed to speed up entity lookup in
@@ -2176,16 +2170,19 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         ///     without the performance penalty related to entities hierarchy constraints.
         ///     There is no implied hierarchy in the returned list.
         /// </remarks>
-        public IList<CFItem> GetAllNamedEntries(string entryName)
+        public IList<CFItem> GetAllNamedEntries(string entryName, int? parentSibling)
         {
-            var r = FindDirectoryEntries(entryName);
             var result = new List<CFItem>();
 
-            foreach (var id in r)
+            foreach (var directoryEntry in _directoryEntries)
             {
-                if (id.GetEntryName() != entryName || id.StgType == StgType.StgInvalid) continue;
-                var i = id.StgType == StgType.StgStorage ? new CFStorage(this, id) : (CFItem) new CFStream(this, id);
-                result.Add(i);
+                if (directoryEntry.StgType == StgType.StgInvalid || !directoryEntry.GetEntryName().StartsWith(entryName)) continue;
+                if (directoryEntry.LeftSibling != parentSibling && parentSibling != null) continue;
+                var cfItem = directoryEntry.StgType == StgType.StgStorage
+                    ? new CFStorage(this, directoryEntry)
+                    : (CFItem) new CFStream(this, directoryEntry);
+                
+                result.Add(cfItem);
             }
 
             return result;

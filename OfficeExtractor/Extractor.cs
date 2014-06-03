@@ -64,7 +64,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                 case ".DOC":
                 case ".DOT":
                     // Word 97 - 2003
-                    return ExtractFromWordBinaryFormat(inputFile, outputFolder);
+                    return ExtractFromBinaryFormat(inputFile, outputFolder, "ObjectPool");
 
                 case ".DOCM":
                 case ".DOCX":
@@ -76,7 +76,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                 case ".XLT":
                 case ".XLW":
                     // Excel 97 - 2003
-                    return ExtractFromExcelBinaryFormat(inputFile, outputFolder);
+                    return ExtractFromBinaryFormat(inputFile, outputFolder, "MBD");
 
                 case ".XLSB":
                 case ".XLSM":
@@ -89,7 +89,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                 case ".POT":
                 case ".PPS":
                     // PowerPoint 97 - 2003
-                    return ExtractFromPowerPointBinaryFormat(inputFile, outputFolder);
+                    return ExtractFromBinaryFormat(inputFile, outputFolder, "ObjectPool");
 
                 case ".POTM":
                 case ".POTX":
@@ -107,30 +107,30 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         }
         #endregion
 
-        #region ExtractFromWordBinaryFormat
+        #region ExtractFromBinaryFormat
         /// <summary>
-        /// Extracts all the embedded Word object from the <see cref="inputFile"/> to the 
-        /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
+        /// This method saves all the embedded binary objects from the <see cref="inputFile"/> to the
+        /// <see cref="outputFolder"/>
         /// </summary>
-        /// <param name="inputFile">The binary Word file</param>
+        /// <param name="inputFile">The binary office file</param>
         /// <param name="outputFolder">The output folder</param>
-        /// <returns>List with files or en empty list when there are nog embedded files</returns>
-        public List<string> ExtractFromWordBinaryFormat(string inputFile, string outputFolder)
+        /// <param name="namedEntryName">The named entry where the embedded objects are located</param>
+        /// <returns></returns>
+        private List<string> ExtractFromBinaryFormat(string inputFile, string outputFolder, string namedEntryName)
         {
+            var compoundFile = new CompoundFile(inputFile);
+            
             var result = new List<string>();
 
-            var compoundFile = new CompoundFile(inputFile);
-
-            // In a Word file the objects are stored in the ObjectPool tree
-            var objectPools = compoundFile.GetAllNamedEntries("ObjectPool");
-            foreach (var objectPool in objectPools)
+            // We only want to find the named entries in the rood node so we use -1 as the parent id
+            var namedEntries = compoundFile.GetAllNamedEntries(namedEntryName, -1);
+            foreach (var namedEntry in namedEntries)
             {
-                // An objectPool is always a CFStorage type
-                var objectPoolStorage = objectPool as CFStorage;
-                if (objectPoolStorage == null) continue;
+                var storage = namedEntry as CFStorage;
+                if (storage == null) continue;
 
-                // Multiple objects are stored as children of the objectPool
-                foreach (var child in objectPoolStorage.Children)
+                // Multiple objects are stored as children of the storage object
+                foreach (var child in storage.Children)
                 {
                     var childStorage = child as CFStorage;
                     if (childStorage == null) continue;
@@ -185,133 +185,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             return result;
         }
         #endregion
-
-        #region ExtractFromExcelBinaryFormat
-        /// <summary>
-        /// Extracts all the embedded Excel object from the <see cref="inputFile"/> to the 
-        /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
-        /// </summary>
-        /// <param name="inputFile">The binary Excel file</param>
-        /// <param name="outputFolder">The output folder</param>
-        /// <returns>List with files or en empty list when there are nog embedded files</returns>
-        public List<string> ExtractFromExcelBinaryFormat(string inputFile, string outputFolder)
-        {
-            throw new NotImplementedException("Not yet fully implemented");
-
-            var result = new List<string>();
-
-            var compoundFile = new CompoundFile(inputFile);
-            // In a Word file the objects are stored in the ObjectPool tree
-            var objectPools = compoundFile.GetAllNamedEntries("ObjectPool");
-            foreach (var objectPool in objectPools)
-            {
-                // An objectPool is always a CFStorage type
-                var objectPoolStorage = objectPool as CFStorage;
-                if (objectPoolStorage == null) continue;
-
-                // Multiple objects are stored as children of the objectPool
-                foreach (var child in objectPoolStorage.Children)
-                {
-                    var childStorage = child as CFStorage;
-                    if (childStorage == null) continue;
-
-                    // Ole objects can be stored in 4 ways
-                    // - As a CONTENT stream
-                    // - As a Package
-                    // - As an Ole10Native object
-                    // - Embedded into the same compound file
-                    if (childStorage.ExistsStream("CONTENTS"))
-                    {
-                        var contents = childStorage.GetStream("CONTENTS");
-                        if (contents.Size > 0)
-                            result.Add(SaveByteArrayToFile(contents.GetData(), outputFolder + "embedded word object"));
-                    }
-                    else if (childStorage.ExistsStream("Package"))
-                    {
-                        var package = childStorage.GetStream("Package");
-                        if (package.Size > 0)
-                            result.Add(SaveByteArrayToFile(package.GetData(), outputFolder + "embedded word object"));
-                    }
-                    else if (childStorage.ExistsStream("\x01Ole10Native"))
-                    {
-                        var ole10Native = childStorage.GetStream("\x01Ole10Native");
-                        if (ole10Native.Size > 0)
-                            result.Add(ExtractFileFromOle10Native(ole10Native.GetData(), outputFolder));
-                    }
-
-                    // Workbook
-                    // PowerPoint Document
-                    // WordDocument
-                }
-            }
-
-            return result;
-        }
-        #endregion
-
-        #region ExtractFromPowerPointBinaryFormat
-        /// <summary>
-        /// Extracts all the embedded PowerPoint object from the <see cref="inputFile"/> to the 
-        /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
-        /// </summary>
-        /// <param name="inputFile">The binary Excel file</param>
-        /// <param name="outputFolder">The output folder</param>
-        /// <returns>List with files or en empty list when there are nog embedded files</returns>
-        public List<string> ExtractFromPowerPointBinaryFormat(string inputFile, string outputFolder)
-        {
-            throw new NotImplementedException("Not yet fully implemented");
-
-            var result = new List<string>();
-
-            var compoundFile = new CompoundFile(inputFile);
-            // In a Word file the objects are stored in the ObjectPool tree
-            var objectPools = compoundFile.GetAllNamedEntries("ObjectPool");
-            foreach (var objectPool in objectPools)
-            {
-                // An objectPool is always a CFStorage type
-                var objectPoolStorage = objectPool as CFStorage;
-                if (objectPoolStorage == null) continue;
-
-                // Multiple objects are stored as children of the objectPool
-                foreach (var child in objectPoolStorage.Children)
-                {
-                    var childStorage = child as CFStorage;
-                    if (childStorage == null) continue;
-
-                    // Ole objects can be stored in 4 ways
-                    // - As a CONTENT stream
-                    // - As a Package
-                    // - As an Ole10Native object
-                    // - Embedded into the same compound file
-                    if (childStorage.ExistsStream("CONTENTS"))
-                    {
-                        var contents = childStorage.GetStream("CONTENTS");
-                        if (contents.Size > 0)
-                            result.Add(SaveByteArrayToFile(contents.GetData(), outputFolder + "embedded word object"));
-                    }
-                    else if (childStorage.ExistsStream("Package"))
-                    {
-                        var package = childStorage.GetStream("Package");
-                        if (package.Size > 0)
-                            result.Add(SaveByteArrayToFile(package.GetData(), outputFolder + "embedded word object"));
-                    }
-                    else if (childStorage.ExistsStream("\x01Ole10Native"))
-                    {
-                        var ole10Native = childStorage.GetStream("\x01Ole10Native");
-                        if (ole10Native.Size > 0)
-                            result.Add(ExtractFileFromOle10Native(ole10Native.GetData(), outputFolder));
-                    }
-
-                    // Workbook
-                    // PowerPoint Document
-                    // WordDocument
-                }
-            }
-
-            return result;
-        }
-        #endregion
-
+        
         #region ExtractFromOfficeOpenXmlFormat
         /// <summary>
         /// Extracts all the embedded object from the Office Open XML <see cref="inputFile"/> to the 
