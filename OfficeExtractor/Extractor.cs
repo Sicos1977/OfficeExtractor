@@ -21,7 +21,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// <exception cref="ArgumentNullException">Raised when the <see cref="inputFile"/> or <see cref="outputFolder"/> is null or empty</exception>
         /// <exception cref="FileNotFoundException">Raised when the <see cref="inputFile"/> does not exists</exception>
         /// <exception cref="DirectoryNotFoundException">Raised when the <see cref="outputFolder"/> does not exists</exception>
-        private void CheckFileNameAndOutputFolder(string inputFile, string outputFolder)
+        private static void CheckFileNameAndOutputFolder(string inputFile, string outputFolder)
         {
             if (string.IsNullOrEmpty(inputFile))
                 throw new ArgumentNullException(inputFile);
@@ -64,7 +64,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                 case ".DOC":
                 case ".DOT":
                     // Word 97 - 2003
-                    return ExtractFromBinaryFormat(inputFile, outputFolder, "ObjectPool");
+                    return ExtractFromWordBinaryFormat(inputFile, outputFolder, "ObjectPool");
 
                 case ".DOCM":
                 case ".DOCX":
@@ -76,7 +76,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                 case ".XLT":
                 case ".XLW":
                     // Excel 97 - 2003
-                    return ExtractFromBinaryFormat(inputFile, outputFolder, "MBD");
+                    return ExtractFromExcelBinaryFormat(inputFile, outputFolder, "MBD");
 
                 case ".XLSB":
                 case ".XLSM":
@@ -89,7 +89,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                 case ".POT":
                 case ".PPS":
                     // PowerPoint 97 - 2003
-                    return ExtractFromBinaryFormat(inputFile, outputFolder, "ObjectPool");
+                    //return ExtractFromBinaryFormat(inputFile, outputFolder, "ObjectPool");
+                    return null;
 
                 case ".POTM":
                 case ".POTX":
@@ -102,82 +103,42 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
 
                 default:
                     throw new OEFileTypeNotSupported("The file '" + Path.GetFileName(inputFile) +
-                                                     "' is not supported, only .DOC, .DOCM, .DOCX, .DOT, .DOTM, .XLS, .XLSB, .XLSM, .XLSX, .XLT, .XLTM, .XLTX, .XLW, .POT, .POTM, .POTX, .PPS, .PPSM, .PPSX, .PPTM and .PPTX are supported");
+                                                     "' is not supported, only .DOC, .DOCM, .DOCX, .DOT, .DOTM, .XLS, .XLSB, .XLSM, .XLSX, .XLT, " +
+                                                     ".XLTM, .XLTX, .XLW, .POT, .POTM, .POTX, .PPS, .PPSM, .PPSX, .PPTM and .PPTX are supported");
             }
         }
         #endregion
 
-        #region ExtractFromBinaryFormat
+        #region ExtractFromWordBinaryFormat
         /// <summary>
-        /// This method saves all the embedded binary objects from the <see cref="inputFile"/> to the
+        /// This method saves all the Word embedded binary objects from the <see cref="inputFile"/> to the
         /// <see cref="outputFolder"/>
         /// </summary>
-        /// <param name="inputFile">The binary office file</param>
+        /// <param name="inputFile">The binary Word file</param>
         /// <param name="outputFolder">The output folder</param>
-        /// <param name="namedEntryName">The named entry where the embedded objects are located</param>
+        /// <param name="storageName">The complete or part of the name from the storage that needs to be saved</param>
         /// <returns></returns>
-        private List<string> ExtractFromBinaryFormat(string inputFile, string outputFolder, string namedEntryName)
+        private List<string> ExtractFromWordBinaryFormat(string inputFile, string outputFolder, string storageName)
         {
             var compoundFile = new CompoundFile(inputFile);
             
             var result = new List<string>();
 
-            // We only want to find the named entries in the rood node so we use -1 as the parent id
-            var namedEntries = compoundFile.GetAllNamedEntries(namedEntryName, -1);
-            foreach (var namedEntry in namedEntries)
+            if (compoundFile.RootStorage.ExistsStorage("ObjectPool"))
             {
-                var storage = namedEntry as CFStorage;
-                if (storage == null) continue;
-
-                // Multiple objects are stored as children of the storage object
-                foreach (var child in storage.Children)
+                var objectPoolStorage = compoundFile.RootStorage.GetStorage("ObjectPool") as CFStorage;
+                if (objectPoolStorage != null)
                 {
-                    var childStorage = child as CFStorage;
-                    if (childStorage == null) continue;
-
-                    // Embedded objects can be stored in 4 ways
-                    // - As a CONTENT stream
-                    // - As a Package
-                    // - As an Ole10Native object
-                    // - Embedded into the same compound file
-                    if (childStorage.ExistsStream("CONTENTS"))
+                    // Multiple objects are stored as children of the storage object
+                    foreach (var child in objectPoolStorage.Children)
                     {
-                        var contents = childStorage.GetStream("CONTENTS");
-                        if (contents.Size > 0)
-                            result.Add(SaveByteArrayToFile(contents.GetData(), outputFolder + "embedded word object"));
-                    }
-                    else if (childStorage.ExistsStream("Package"))
-                    {
-                        var package = childStorage.GetStream("Package");
-                        if (package.Size > 0)
-                            result.Add(SaveByteArrayToFile(package.GetData(), outputFolder + "embedded word object"));
-                    }
-                    else if (childStorage.ExistsStream("\x01Ole10Native"))
-                    {
-                        var ole10Native = childStorage.GetStream("\x01Ole10Native");
-                        if (ole10Native.Size > 0)
-                            result.Add(ExtractFileFromOle10Native(ole10Native.GetData(), outputFolder));
-                    }
-                    else if (childStorage.ExistsStream("WordDocument"))
-                    {
-                        // The embedded object is a Word file
-                        var tempFileName = FileManager.FileExistsMakeNew(outputFolder + "Embedded Word document.doc");
-                        compoundFile.SaveNamedEntryTreeToCompoundFile(childStorage, tempFileName);
-                        result.Add(tempFileName);
-                    }
-                    else if (childStorage.ExistsStream("Workbook"))
-                    {
-                        // The embedded object is an Excel file   
-                        var tempFileName = FileManager.FileExistsMakeNew(outputFolder + "Embedded Excel document.xls");
-                        compoundFile.SaveNamedEntryTreeToCompoundFile(childStorage, tempFileName);
-                        result.Add(tempFileName);
-                    }
-                    else if (childStorage.ExistsStream("PowerPoint Document"))
-                    {
-                        // The embedded object is a PowerPoint file
-                        var tempFileName = outputFolder + FileManager.FileExistsMakeNew("Embedded PowerPoint document.ppt");
-                        compoundFile.SaveNamedEntryTreeToCompoundFile(childStorage, tempFileName);
-                        result.Add(tempFileName);
+                        var childStorage = child as CFStorage;
+                        if (childStorage != null)
+                        {
+                            var extractedFileName = ExtractFromStorageNode(compoundFile, childStorage, outputFolder);
+                            if (extractedFileName != null)
+                                result.Add(extractedFileName);
+                        }
                     }
                 }
             }
@@ -185,7 +146,69 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             return result;
         }
         #endregion
-        
+
+        #region ExtractFromExcelBinaryFormat
+        /// <summary>
+        /// This method saves all the Excel embedded binary objects from the <see cref="inputFile"/> to the
+        /// <see cref="outputFolder"/>
+        /// </summary>
+        /// <param name="inputFile">The binary Excel file</param>
+        /// <param name="outputFolder">The output folder</param>
+        /// <param name="storageName">The complete or part of the name from the storage that needs to be saved</param>
+        /// <returns></returns>
+        private List<string> ExtractFromExcelBinaryFormat(string inputFile, string outputFolder, string storageName)
+        {
+            var compoundFile = new CompoundFile(inputFile);
+            
+            var result = new List<string>();
+
+            foreach (var child in compoundFile.RootStorage.Children)
+            {
+                var childStorage = child as CFStorage;
+                if (childStorage == null) continue;
+                if (!childStorage.Name.StartsWith(storageName)) continue;
+
+                var extractedFileName = ExtractFromStorageNode(compoundFile, childStorage, outputFolder);
+                if (extractedFileName != null)
+                    result.Add(extractedFileName);
+
+            }
+
+            return result;
+        }
+        #endregion
+
+        #region ExtractFromPowerPointBinaryFormat
+        /// <summary>
+        /// This method saves all the PowerPoint embedded binary objects from the <see cref="inputFile"/> to the
+        /// <see cref="outputFolder"/>
+        /// </summary>
+        /// <param name="inputFile">The binary PowerPoint file</param>
+        /// <param name="outputFolder">The output folder</param>
+        /// <param name="storageName">The complete or part of the name from the storage that needs to be saved</param>
+        /// <returns></returns>
+        private List<string> ExtractFromPowerPointBinaryFormat(string inputFile, string outputFolder, string storageName)
+        {
+            var compoundFile = new CompoundFile(inputFile);
+
+            var result = new List<string>();
+
+            foreach (var child in compoundFile.RootStorage.Children)
+            {
+                var childStorage = child as CFStorage;
+                
+                if (childStorage == null) continue;
+                if (!childStorage.Name.StartsWith(storageName)) continue;
+                
+                var extractedFileName = ExtractFromStorageNode(compoundFile, childStorage, outputFolder);
+                if (extractedFileName != null)
+                    result.Add(extractedFileName);
+            }
+
+            return result;
+        }
+        #endregion
+
         #region ExtractFromOfficeOpenXmlFormat
         /// <summary>
         /// Extracts all the embedded object from the Office Open XML <see cref="inputFile"/> to the 
@@ -215,6 +238,65 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         }
         #endregion
 
+        #region ExtractFromStorageNode
+        /// <summary>
+        /// This method will extract and save the data from the given <see cref="storage"/> node to the <see cref="outputFolder"/>
+        /// </summary>
+        /// <param name="compoundFile">The <see cref="CompoundFile"/></param>
+        /// <param name="storage">The <see cref="CFStorage"/> node</param>
+        /// <param name="outputFolder">The outputFolder</param>
+        /// <returns></returns>
+        private string ExtractFromStorageNode(CompoundFile compoundFile, CFStorage storage, string outputFolder)
+        {
+            // Embedded objects can be stored in 4 ways
+            // - As a CONTENT stream
+            // - As a Package
+            // - As an Ole10Native object
+            // - Embedded into the same compound file
+            if (storage.ExistsStream("CONTENTS"))
+            {
+                var contents = storage.GetStream("CONTENTS");
+                if (contents.Size > 0)
+                    return SaveByteArrayToFile(contents.GetData(), outputFolder + "Embedded object");
+            }
+            else if (storage.ExistsStream("Package"))
+            {
+                var package = storage.GetStream("Package");
+                if (package.Size > 0)
+                    return SaveByteArrayToFile(package.GetData(), outputFolder + "Embedded object");
+            }
+            else if (storage.ExistsStream("\x01Ole10Native"))
+            {
+                var ole10Native = storage.GetStream("\x01Ole10Native");
+                if (ole10Native.Size > 0)
+                    return ExtractFileFromOle10Native(ole10Native.GetData(), outputFolder);
+            }
+            else if (storage.ExistsStream("WordDocument"))
+            {
+                // The embedded object is a Word file
+                var tempFileName = FileManager.FileExistsMakeNew(outputFolder + "Embedded Word document.doc");
+                compoundFile.SaveStorageTreeToCompoundFile(storage, tempFileName);
+                return tempFileName;
+            }
+            else if (storage.ExistsStream("Workbook"))
+            {
+                // The embedded object is an Excel file   
+                var tempFileName = FileManager.FileExistsMakeNew(outputFolder + "Embedded Excel document.xls");
+                compoundFile.SaveStorageTreeToCompoundFile(storage, tempFileName);
+                return tempFileName;
+            }
+            else if (storage.ExistsStream("PowerPoint Document"))
+            {
+                // The embedded object is a PowerPoint file
+                var tempFileName = outputFolder + FileManager.FileExistsMakeNew("Embedded PowerPoint document.ppt");
+                compoundFile.SaveStorageTreeToCompoundFile(storage, tempFileName);
+                return tempFileName;
+            }
+
+            return null;
+        }
+        #endregion
+        
         #region SaveByteArrayToFile
         /// <summary>
         /// Saves the <see cref="data"/> byte array to the <see cref="outputFile"/>
@@ -277,8 +359,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                     if (chr[0] == 0)
                         break;
                 }
-
-                //var originalFilePath = new string(tempOriginalFilePath, 0, i);
 
                 // We need to skip the next four bytes
                 oleStream.Position += 4;

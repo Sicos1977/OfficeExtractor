@@ -70,10 +70,14 @@
     <None Include="testfiles\1.doc" />
     <None Include="testfiles\2.doc" />
     <None Include="testfiles\Excel met embedded word 2003 document.xls" />
+    <None Include="testfiles\excel sub document.xls" />
     <None Include="testfiles\kees.doc" />
     <None Include="testfiles\Map1.xls" />
     <None Include="testfiles\Map1.xlsx" />
     <None Include="testfiles\oleObject1.bin" />
+    <None Include="testfiles\Root document.doc" />
+    <None Include="testfiles\Root document2.doc" />
+    <None Include="testfiles\Test met embedded excel en word document.ppt" />
     <None Include="testfiles\Test met embedded pdf.doc" />
     <None Include="testfiles\Test met embedded PowerPoint.doc" />
     <None Include="testfiles\Test met normaal embedded object.doc" />

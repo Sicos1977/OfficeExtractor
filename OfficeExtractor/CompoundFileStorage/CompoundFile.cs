@@ -726,14 +726,14 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
         #endregion
 
-        #region SaveNamedEntryTreeToCompoundFile
+        #region SaveStorageTreeToCompoundFile
         /// <summary>
         /// This will save the complete tree from the given <see cref="storage"/> to a new <see cref="CompoundFile"/>
         /// </summary>
         /// <param name="storage"></param>
         /// <param name="fileName">The filename with path for the new compound file</param>
         /// <exception cref="ArgumentNullException">Raised when <see cref="storage"/> or <see cref="fileName"/> is null</exception>
-        public void SaveNamedEntryTreeToCompoundFile(CFStorage storage, string fileName)
+        public void SaveStorageTreeToCompoundFile(CFStorage storage, string fileName)
         {
             var compoundFile = new CompoundFile();
 
