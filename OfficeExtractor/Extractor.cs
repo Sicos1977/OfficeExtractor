@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage;
 using DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions;
 using DocumentServices.Modules.Extractors.OfficeExtractor.Helpers;
@@ -87,10 +88,10 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                     return ExtractFromOfficeOpenXmlFormat(inputFile, "/excel/embeddings/", outputFolder);
 
                 case ".POT":
+                case ".PPT":
                 case ".PPS":
                     // PowerPoint 97 - 2003
-                    //return ExtractFromBinaryFormat(inputFile, outputFolder, "ObjectPool");
-                    return null;
+                    return ExtractFromPowerPointBinaryFormat(inputFile, outputFolder);
 
                 case ".POTM":
                 case ".POTX":
@@ -104,7 +105,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                 default:
                     throw new OEFileTypeNotSupported("The file '" + Path.GetFileName(inputFile) +
                                                      "' is not supported, only .DOC, .DOCM, .DOCX, .DOT, .DOTM, .XLS, .XLSB, .XLSM, .XLSX, .XLT, " +
-                                                     ".XLTM, .XLTX, .XLW, .POT, .POTM, .POTX, .PPS, .PPSM, .PPSX, .PPTM and .PPTX are supported");
+                                                     ".XLTM, .XLTX, .XLW, .POT, .PPT, .POTM, .POTX, .PPS, .PPSM, .PPSX, .PPTM and .PPTX are supported");
             }
         }
         #endregion
@@ -185,27 +186,137 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// </summary>
         /// <param name="inputFile">The binary PowerPoint file</param>
         /// <param name="outputFolder">The output folder</param>
-        /// <param name="storageName">The complete or part of the name from the storage that needs to be saved</param>
         /// <returns></returns>
-        private List<string> ExtractFromPowerPointBinaryFormat(string inputFile, string outputFolder, string storageName)
+        private List<string> ExtractFromPowerPointBinaryFormat(string inputFile, string outputFolder)
         {
             var compoundFile = new CompoundFile(inputFile);
 
             var result = new List<string>();
 
-            foreach (var child in compoundFile.RootStorage.Children)
+            if (compoundFile.RootStorage.ExistsStream("PowerPoint Document"))
             {
-                var childStorage = child as CFStorage;
-                
-                if (childStorage == null) continue;
-                if (!childStorage.Name.StartsWith(storageName)) continue;
-                
-                var extractedFileName = ExtractFromStorageNode(compoundFile, childStorage, outputFolder);
-                if (extractedFileName != null)
-                    result.Add(extractedFileName);
+                var stream = compoundFile.RootStorage.GetStream("PowerPoint Document") as CFStream;
+                var memoryStream = new MemoryStream(stream.GetData());
+                using (var binaryReader = new BinaryReader(memoryStream))
+                {
+                    while (binaryReader.BaseStream.Position != memoryStream.Length)
+                    {
+                        var verAndInstance = binaryReader.ReadUInt16();
+                        var version = verAndInstance & 0x000FU;         // first 4 bit of field verAndInstance
+                        var instance = (verAndInstance & 0xFFF0U) >> 4; // last 12 bit of field verAndInstance
+                        
+                        var typeCode = binaryReader.ReadUInt16();
+                        var size = binaryReader.ReadUInt32();
+                        var isContainer = (version == 0xF);
+
+                        // Embedded OLE objects start with code 4045
+                        if (typeCode == 4113)
+                        {
+                            //Int32 exColorFollow = binaryReader.ReadInt32();
+                            //byte fCantLockServer = binaryReader.ReadByte();
+                            //byte fNoSizeToServer = binaryReader.ReadByte();
+                            //byte fIsTable = binaryReader.ReadByte();
+                            var decompressedSize = binaryReader.ReadUInt32();
+                            //len = size - 4;
+                            //data = this.Reader.ReadBytes((int)len);
+                            //File.WriteAllBytes("d:\\keesje.bin", DecompressData());
+                        }
+                        else
+                        {
+                            //binaryReader.BaseStream.Position += size;
+                        }
+                    }
+                }
             }
 
+
             return result;
+        }
+        #endregion
+
+        //public static Record ReadRecord(BinaryReader reader)
+        //{
+        //    try
+        //    {
+        //        UInt16 verAndInstance = reader.ReadUInt16();
+        //        uint version = verAndInstance & 0x000FU;         // first 4 bit of field verAndInstance
+        //        uint instance = (verAndInstance & 0xFFF0U) >> 4; // last 12 bit of field verAndInstance
+
+        //        UInt16 typeCode = reader.ReadUInt16();
+        //        UInt32 size = reader.ReadUInt32();
+
+        //        bool isContainer = (version == 0xF);
+
+        //        Record result;
+        //        Type cls;
+
+        //        if (TypeToRecordClassMapping.TryGetValue(typeCode, out cls))
+        //        {
+        //            ConstructorInfo constructor = cls.GetConstructor(new Type[] {
+        //            typeof(BinaryReader), typeof(uint), typeof(uint), typeof(uint), typeof(uint) });
+
+        //            if (constructor == null)
+        //            {
+        //                throw new Exception(String.Format(
+        //                    "Internal error: Could not find a matching constructor for class {0}",
+        //                    cls));
+        //            }
+
+        //            //TraceLogger.DebugInternal("Going to read record of type {0} ({1})", cls, typeCode);
+
+        //            try
+        //            {
+        //                result = (Record)constructor.Invoke(new object[] {
+        //                reader, size, typeCode, version, instance
+        //            });
+
+        //                //TraceLogger.DebugInternal("Here it is: {0}", result);
+        //            }
+        //            catch (TargetInvocationException e)
+        //            {
+        //                TraceLogger.DebugInternal(e.InnerException.ToString());
+        //                throw e.InnerException;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            //TraceLogger.DebugInternal("Going to read record of type UnknownRecord ({1})", cls, typeCode);
+        //            result = new UnknownRecord(reader, size, typeCode, version, instance);
+        //        }
+
+        //        return result;
+        //    }
+        //    catch (OutOfMemoryException e)
+        //    {
+        //        throw new InvalidRecordException("Invalid record", e);
+        //    }
+        //}
+
+        #region DecompressPowerPointData
+        private byte[] DecompressPowerPointOleData(byte[] data)
+        {
+            // http://www.idea2ic.com/File_Formats/PowerPoint%2097%20File%20Format.pdf
+            // 4044 ExOleEmbedContainer
+            // ExEmbedAtom (4045)
+            var memoryStream = new MemoryStream(data);
+
+            //var decompressedSize = this.Reader.ReadUInt32();
+            //len = size - 4;
+            //data = this.Reader.ReadBytes((int)len);
+            //File.WriteAllBytes("d:\\keesje.bin", DecompressData());
+
+
+            // skip the first 2 bytes
+            memoryStream.ReadByte();
+            memoryStream.ReadByte();
+
+            // decompress the bytes
+            //byte[] decompressedBytes = new byte[decompressedSize];
+            DeflateStream deflateStream = new DeflateStream(memoryStream, CompressionMode.Decompress, true);
+            //deflateStream.Read(decompressedBytes, 0, decompressedBytes.Length);
+
+            //return decompressedBytes;
+            return null;
         }
         #endregion
 
