@@ -212,18 +212,31 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                         // Embedded OLE objects start with code 4045
                         if (typeCode == 4113)
                         {
-                            //Int32 exColorFollow = binaryReader.ReadInt32();
-                            //byte fCantLockServer = binaryReader.ReadByte();
-                            //byte fNoSizeToServer = binaryReader.ReadByte();
-                            //byte fIsTable = binaryReader.ReadByte();
-                            var decompressedSize = binaryReader.ReadUInt32();
-                            //len = size - 4;
-                            //data = this.Reader.ReadBytes((int)len);
-                            //File.WriteAllBytes("d:\\keesje.bin", DecompressData());
+                            if (instance == 0)
+                            {
+                                // Uncompressed
+                                File.WriteAllBytes("d:\\keesje.bin", binaryReader.ReadBytes((int)size));
+                            }
+                            else
+                            {
+                                var decompressedSize = binaryReader.ReadUInt32();
+                                var data = binaryReader.ReadBytes((int) size - 4);
+                                var compressedMemoryStream = new MemoryStream(data);
+
+                                // Skip the first 2 bytes
+                                memoryStream.ReadByte();
+                                memoryStream.ReadByte();
+
+                                // Decompress the bytes
+                                var decompressedBytes = new byte[decompressedSize];
+                                var deflateStream = new DeflateStream(compressedMemoryStream, CompressionMode.Decompress, true);
+                                deflateStream.Read(decompressedBytes, 0, decompressedBytes.Length);
+                                File.WriteAllBytes("d:\\keesje.bin", decompressedBytes);
+                            }
                         }
                         else
                         {
-                            //binaryReader.BaseStream.Position += size;
+                            binaryReader.BaseStream.Position += size;
                         }
                     }
                 }
@@ -234,85 +247,12 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         }
         #endregion
 
-        //public static Record ReadRecord(BinaryReader reader)
-        //{
-        //    try
-        //    {
-        //        UInt16 verAndInstance = reader.ReadUInt16();
-        //        uint version = verAndInstance & 0x000FU;         // first 4 bit of field verAndInstance
-        //        uint instance = (verAndInstance & 0xFFF0U) >> 4; // last 12 bit of field verAndInstance
-
-        //        UInt16 typeCode = reader.ReadUInt16();
-        //        UInt32 size = reader.ReadUInt32();
-
-        //        bool isContainer = (version == 0xF);
-
-        //        Record result;
-        //        Type cls;
-
-        //        if (TypeToRecordClassMapping.TryGetValue(typeCode, out cls))
-        //        {
-        //            ConstructorInfo constructor = cls.GetConstructor(new Type[] {
-        //            typeof(BinaryReader), typeof(uint), typeof(uint), typeof(uint), typeof(uint) });
-
-        //            if (constructor == null)
-        //            {
-        //                throw new Exception(String.Format(
-        //                    "Internal error: Could not find a matching constructor for class {0}",
-        //                    cls));
-        //            }
-
-        //            //TraceLogger.DebugInternal("Going to read record of type {0} ({1})", cls, typeCode);
-
-        //            try
-        //            {
-        //                result = (Record)constructor.Invoke(new object[] {
-        //                reader, size, typeCode, version, instance
-        //            });
-
-        //                //TraceLogger.DebugInternal("Here it is: {0}", result);
-        //            }
-        //            catch (TargetInvocationException e)
-        //            {
-        //                TraceLogger.DebugInternal(e.InnerException.ToString());
-        //                throw e.InnerException;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            //TraceLogger.DebugInternal("Going to read record of type UnknownRecord ({1})", cls, typeCode);
-        //            result = new UnknownRecord(reader, size, typeCode, version, instance);
-        //        }
-
-        //        return result;
-        //    }
-        //    catch (OutOfMemoryException e)
-        //    {
-        //        throw new InvalidRecordException("Invalid record", e);
-        //    }
-        //}
-
+ 
         #region DecompressPowerPointData
         private byte[] DecompressPowerPointOleData(byte[] data)
         {
             // http://www.idea2ic.com/File_Formats/PowerPoint%2097%20File%20Format.pdf
-            // 4044 ExOleEmbedContainer
-            // ExEmbedAtom (4045)
-            var memoryStream = new MemoryStream(data);
-
-            //var decompressedSize = this.Reader.ReadUInt32();
-            //len = size - 4;
-            //data = this.Reader.ReadBytes((int)len);
-            //File.WriteAllBytes("d:\\keesje.bin", DecompressData());
-
-
-            // skip the first 2 bytes
-            memoryStream.ReadByte();
-            memoryStream.ReadByte();
-
-            // decompress the bytes
-            //byte[] decompressedBytes = new byte[decompressedSize];
-            DeflateStream deflateStream = new DeflateStream(memoryStream, CompressionMode.Decompress, true);
+           
             //deflateStream.Read(decompressedBytes, 0, decompressedBytes.Length);
 
             //return decompressedBytes;
