@@ -3,7 +3,7 @@
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions
 {
     /// <summary>
-    /// Raised when the Microsoft Office File Type is not supported
+    /// Raised when the Microsoft Office file type is not supported
     /// </summary>
     public class OEFileTypeNotSupported : Exception
     {

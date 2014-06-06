@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.BinaryTree;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Exceptions;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Interfaces;
+using DocumentServices.Modules.Extractors.OfficeExtractor.Helpers;
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
@@ -722,112 +722,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             catch (Exception ex)
             {
                 throw new CFException("Internal error while saving compound file to stream ", ex);
-            }
-        }
-        #endregion
-
-        #region SaveStorageTreeToCompoundFile
-        /// <summary>
-        /// This will save the complete tree from the given <see cref="storage"/> to a new <see cref="CompoundFile"/>
-        /// </summary>
-        /// <param name="storage"></param>
-        /// <param name="fileName">The filename with path for the new compound file</param>
-        /// <exception cref="ArgumentNullException">Raised when <see cref="storage"/> or <see cref="fileName"/> is null</exception>
-        public void SaveStorageTreeToCompoundFile(CFStorage storage, string fileName)
-        {
-            var compoundFile = new CompoundFile();
-
-            if (storage == null)
-                throw new ArgumentNullException("storage");
-
-            if (string.IsNullOrEmpty(fileName))
-                throw new ArgumentNullException("fileName");
-
-            GetStorageChain(compoundFile.RootStorage, storage);
-            compoundFile.Save(fileName);
-        }
-
-        /// <summary>
-        /// Returns the complete tree with all the <see cref="CFStorage"/> and <see cref="CFStream"/> children
-        /// </summary>
-        /// <param name="rootStorage"></param>
-        /// <param name="storage"></param>
-        public void GetStorageChain(CFStorage rootStorage, CFStorage storage)
-        {
-            foreach (var child in storage.Children)
-            {
-                if (child.IsStorage)
-                {
-                    var newRootStorage = rootStorage.AddStorage(child.Name);
-                    GetStorageChain(newRootStorage, child as CFStorage);
-                }
-                else if (child.IsStream)
-                {
-                    var childStream = child as CFStream;
-                    if (childStream == null) continue;
-                    var stream = rootStorage.AddStream(child.Name);
-                    var bytes = childStream.GetData();
-
-                    if (stream.Name == "Workbook")
-                        SetWorkbookVisibility(ref bytes);
-                    
-                    stream.SetData(bytes);
-                }
-            }
-        }
-
-        /// <summary>
-        /// When a Excel document is embedded in for example a Word document the Workbook
-        /// is set to hidden. Don't know why Microsoft does this but they do. To solve this
-        /// problem we seek the WINDOW1 record in the BOF record of the stream. In there a
-        /// gbit structure is located. The first bit in this structure controls the visibility
-        /// of the workbook, so we check if this bit is set to 1 (hidden) en is so set it to 0.
-        /// Normally a Workbook stream only contains one WINDOW record but when it is embedded
-        /// it will contain 2 or more records.
-        /// </summary>
-        /// <param name="bytes"></param>
-        private static void SetWorkbookVisibility(ref byte[] bytes)
-        {
-            // Get the record type, at the beginning of the stream this should always be the BOF
-            var rType = new byte[2];
-            rType[0] = bytes[1];
-            rType[1] = bytes[0];
-
-            // Get the record length of the BOF
-            var rLength = new byte[2];
-            rLength[0] = bytes[3];
-            rLength[1] = bytes[2];
-            var recordType = BitConverter.ToUInt16(rType, 0);
-
-            // Something seems to be wrong, we would expect a BOF but for some reason it isn't so stop it
-            if (recordType == 0x908)
-            {
-                var recordLength = BitConverter.ToUInt16(rLength, 0);
-
-                if (recordLength < bytes.Length)
-                {
-                    // Search in the BOF for the WINDOW1 record, this starts with 3D hex
-                    for (var i = 0; i < recordLength; i++)
-                    {
-                        if (bytes[i] != 0x3D) continue;
-                        // The hidden bit is found 12 positions after the offset
-                        var b = new byte[1];
-                        Buffer.BlockCopy(bytes, i + 12, b, 0, 1);
-                        var bitArray = new BitArray(b);
-
-                        // When the bit is set then unset it
-                        if (bitArray.Get(0))
-                        {
-                            bitArray.Set(0, false);
-
-                            // Copy the byte back into the stream
-                            bitArray.CopyTo(bytes, i + 12);
-                        }
-
-                        // A WINDOW1 record is always 18 bytes so skip it
-                        i += 18;
-                    }
-                }
             }
         }
         #endregion
