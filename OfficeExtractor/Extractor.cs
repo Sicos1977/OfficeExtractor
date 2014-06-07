@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.IO.Packaging;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage;
 using DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions;
 using DocumentServices.Modules.Extractors.OfficeExtractor.Helpers;
@@ -150,6 +151,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// </summary>
         /// <param name="compoundFile"></param>
         /// <returns></returns>
+        /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
         public static bool ExcelBinaryFormatIsPasswordProtected(CompoundFile compoundFile)
         {
             if (!compoundFile.RootStorage.ExistsStream("WorkBook")) return false;
@@ -157,33 +159,23 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             if (stream == null) return false;
 
             var bytes = stream.GetData();
-
-            // Get the record type, at the beginning of the stream this should always be the BOF
-            var rType = new byte[2];
-            rType[0] = bytes[1];
-            rType[1] = bytes[0];
-
-            // Get the record length of the BOF
-            var rLength = new byte[2];
-            rLength[0] = bytes[3];
-            rLength[1] = bytes[2];
-            var recordType = BitConverter.ToUInt16(rType, 0);
-
-            // Something seems to be wrong, we would expect a BOF but for some reason it isn't so stop it
-            if (recordType != 0x908) return false;
-            var recordLength = BitConverter.ToUInt16(rLength, 0);
-
-            if (recordLength > bytes.Length)
-                recordLength = (ushort)bytes.Length;
-
-            // Search after the BOF for the FilePass record, this starts with 2F hex
-            for (var i = 0; i < recordLength; i++)
+            using (var memoryStream = new MemoryStream(bytes))
+            using (var binaryReader = new BinaryReader(memoryStream))
             {
-                if (bytes[i] != 0x2F) continue;
-                return true;
-            }
+                // Get the record type, at the beginning of the stream this should always be the BOF
+                var recordType = binaryReader.ReadUInt16();
 
-            return false;
+                // Something seems to be wrong, we would expect a BOF but for some reason it isn't so stop it
+                if (recordType != 0x809) 
+                    throw new OEFileIsCorrupt("The file '" + Path.GetFileName(compoundFile.FileName) + "' is corrupt");
+
+                var recordLength = binaryReader.ReadUInt16();
+                binaryReader.BaseStream.Position += recordLength;
+
+                // Search after the BOF for the FilePass record, this starts with 2F hex
+                recordType = binaryReader.ReadUInt16();
+                return (recordType == 0x2F);
+            }
         }
         #endregion
 
@@ -197,46 +189,63 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// Normally a Workbook stream only contains one WINDOW record but when it is embedded
         /// it will contain 2 or more records.
         /// </summary>
-        /// <param name="bytes"></param>
-        public static void ExcelBinaryFormatSetWorkbookVisibility(ref byte[] bytes)
+        /// <param name="compoundFile"></param>
+        public static void ExcelBinaryFormatSetWorkbookVisibility(ref CompoundFile compoundFile)
         {
-            // Get the record type, at the beginning of the stream this should always be the BOF
-            var rType = new byte[2];
-            rType[0] = bytes[1];
-            rType[1] = bytes[0];
+            if (!compoundFile.RootStorage.ExistsStream("WorkBook")) return;
+            var stream = compoundFile.RootStorage.GetStream("WorkBook") as CFStream;
+            if (stream == null) return;
 
-            // Get the record length of the BOF
-            var rLength = new byte[2];
-            rLength[0] = bytes[3];
-            rLength[1] = bytes[2];
-            var recordType = BitConverter.ToUInt16(rType, 0);
+            var bytes = stream.GetData();
 
-            // Something seems to be wrong, we would expect a BOF but for some reason it isn't so stop it
-            if (recordType != 0x908) return;
-            var recordLength = BitConverter.ToUInt16(rLength, 0);
-
-            if (recordLength > bytes.Length) return;
-            // Search after the BOF for the WINDOW1 record, this starts with 3D hex
-            for (var i = 0; i < recordLength; i++)
+            using (var memoryStream = new MemoryStream(bytes))
+            using (var binaryReader = new BinaryReader(memoryStream))
             {
-                if (bytes[i] != 0x3D) continue;
-                // The hidden bit is found 12 positions after the offset
-                var b = new byte[1];
-                Buffer.BlockCopy(bytes, i + 12, b, 0, 1);
-                var bitArray = new BitArray(b);
+                // Get the record type, at the beginning of the stream this should always be the BOF
+                var recordType = binaryReader.ReadUInt16();
+                var recordLength = binaryReader.ReadUInt16();
 
-                // When the bit is set then unset it
-                if (bitArray.Get(0))
+                // Something seems to be wrong, we would expect a BOF but for some reason it isn't 
+                if (recordType != 0x809)
+                    throw new OEFileIsCorrupt("The file is corrupt");
+
+                binaryReader.BaseStream.Position += recordLength;
+
+                while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
                 {
-                    bitArray.Set(0, false);
+                    recordType = binaryReader.ReadUInt16();
+                    recordLength = binaryReader.ReadUInt16();
+                    
+                    // Window1 record (0x3D)
+                    if (recordType == 0x3D)
+                    {
+                        // ReSharper disable UnusedVariable
+                        var xWn = binaryReader.ReadUInt16();
+                        var yWn = binaryReader.ReadUInt16();
+                        var dxWn = binaryReader.ReadUInt16();
+                        var dyWn = binaryReader.ReadUInt16();
+                        // ReSharper restore UnusedVariable
 
-                    // Copy the byte back into the stream
-                    bitArray.CopyTo(bytes, i + 12);
+                        // The grbit contains the bit that hides the sheet
+                        var grbit = binaryReader.ReadBytes(2);
+                        var bitArray = new BitArray(grbit);
+
+                        // When the bit is set then unset it (bitArray.Get(0) == true)
+                        if (bitArray.Get(0))
+                        {
+                            bitArray.Set(0, false);
+
+                            // Copy the byte back into the stream, 2 positions back so that we overwrite the old bytes
+                            bitArray.CopyTo(bytes, (int) binaryReader.BaseStream.Position - 2);
+                        }
+
+                        break;
+                    }
+                    binaryReader.BaseStream.Position += recordLength;
                 }
-
-                // A WINDOW1 record is always 18 bytes so skip it
-                i += 18;
             }
+
+            stream.SetData(bytes);
         }
         #endregion
 
@@ -250,6 +259,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// <param name="storageName">The complete or part of the name from the storage that needs to be saved</param>
         /// <returns></returns>
         /// <exception cref="OEFileIsPasswordProtected">Raised when the <see cref="inputFile"/> is password protected</exception>
+        /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
         private List<string> ExtractFromExcelBinaryFormat(string inputFile, string outputFolder, string storageName)
         {
             var compoundFile = new CompoundFile(inputFile);
@@ -338,6 +348,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             if (!compoundFile.RootStorage.ExistsStream("PowerPoint Document")) return result;
             var stream = compoundFile.RootStorage.GetStream("PowerPoint Document") as CFStream;
             if (stream == null) return result;
+
             using (var memoryStream = new MemoryStream(stream.GetData()))
             using (var binaryReader = new BinaryReader(memoryStream))
             {
@@ -359,6 +370,10 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                         {
                             // Uncompressed
                             var bytes = binaryReader.ReadBytes((int) size);
+
+                            // Check if the ole object is another compound storage node with a package stream
+                            if (bytes[0] == 0xD0 && bytes[1] == 0xCF)
+                                bytes = CheckIfIsCompoundFileWithPackageStream(bytes);
                             SaveByteArrayToFile(bytes, outputFolder + "Embedded object");
                         }
                         else
@@ -375,6 +390,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                             var decompressedBytes = new byte[decompressedSize];
                             var deflateStream = new DeflateStream(compressedMemoryStream, CompressionMode.Decompress, true);
                             deflateStream.Read(decompressedBytes, 0, decompressedBytes.Length);
+
+                            // Check if the ole object is another compound storage node with a package stream
+                            if (decompressedBytes[0] == 0xD0 && decompressedBytes[1] == 0xCF)
+                                decompressedBytes = CheckIfIsCompoundFileWithPackageStream(decompressedBytes);
+
                             SaveByteArrayToFile(decompressedBytes, outputFolder + "Embedded object");
                         }
                     }
@@ -387,32 +407,77 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         }
         #endregion
 
+        #region CheckIfIsCompoundFileWithPackageStream
+        /// <summary>
+        /// Checks if the <see cref="bytes"/> is a compound file and if so then tries to extract
+        /// the package stream from it. If it fails it will return the original <see cref="bytes"/>
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
+        private static byte[] CheckIfIsCompoundFileWithPackageStream(byte[] bytes)
+        {
+            try
+            {
+                using (var memoryStream = new MemoryStream(bytes))
+                {
+                    var compoundFile = new CompoundFile(memoryStream);
+                    if (!compoundFile.RootStorage.ExistsStream("Package"))
+                        return bytes;
+
+                    var package = compoundFile.RootStorage.GetStream("Package");
+                    return package.GetData();
+                }
+            }
+            catch (Exception)
+            {
+                return bytes;
+            }    
+        }
+        #endregion
+
         #region ExtractFromOfficeOpenXmlFormat
         /// <summary>
         /// Extracts all the embedded object from the Office Open XML <see cref="inputFile"/> to the 
         /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
         /// </summary>
         /// <param name="inputFile">The Office Open XML format file</param>
-        /// <param name="zipFolder">The folder in the Office Open XML format (zip) file</param>
+        /// <param name="embeddingPartString">The folder in the Office Open XML format (zip) file</param>
         /// <param name="outputFolder">The output folder</param>
         /// <returns>List with files or en empty list when there are nog embedded files</returns>
-        public List<string> ExtractFromOfficeOpenXmlFormat(string inputFile, string zipFolder, string outputFolder)
+        public List<string> ExtractFromOfficeOpenXmlFormat(string inputFile, string embeddingPartString, string outputFolder)
         {
-            throw new NotImplementedException("Not yet implemented");
-            //Package pkg = Package.Open(fileName);
+            var result = new List<string>();
 
+            //throw new NotImplementedException("Not yet completely implemented");
+            var package = Package.Open(inputFile);
+            
+            // Get the embedded files names. 
+            foreach (var packagePart in package.GetParts())
+            {
+                if (packagePart.Uri.ToString().StartsWith(embeddingPartString))
+                {
+                    var stream = packagePart.GetStream();
+                    var fileName = outputFolder + packagePart.Uri.ToString().Remove(0, embeddingPartString.Length);
 
-            //// Get the embedded files names. 
-            //foreach (PackagePart pkgPart in pkg.GetParts())
-            //{
-            //    if (pkgPart.Uri.ToString().StartsWith(embeddingPartString))
-            //    {
-            //        string fileName1 = pkgPart.Uri.ToString().Remove(0, embeddingPartString.Length);
-            //        chkdLstEmbeddedFiles.Items.Add(fileName1);
-            //    }
-            //}
-            //pkg.Close(); 
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        stream.CopyTo(memoryStream);
+                        if (fileName.ToUpperInvariant().Contains("OLEOBJECT"))
+                        {
+                            result.Add(ExtractFileFromOle10Native(memoryStream.ToArray(), outputFolder));
+                        }
+                        else
+                        {
+                            fileName = FileManager.FileExistsMakeNew(fileName);
+                            File.WriteAllBytes(fileName, memoryStream.ToArray());
+                            result.Add(fileName);
+                        }
+                    }
+                }
+            }
+            package.Close();
 
+            return result;
         }
         #endregion
 
@@ -484,7 +549,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         private void SaveStorageTreeToCompoundFile(CFStorage storage, string fileName)
         {
             var compoundFile = new CompoundFile();
-            GetStorageChain(compoundFile.RootStorage, storage, true);
+            GetStorageChain(compoundFile.RootStorage, storage);
             compoundFile.Save(fileName);
         }
 
@@ -493,15 +558,14 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// </summary>
         /// <param name="rootStorage"></param>
         /// <param name="storage"></param>
-        /// <param name="rootLevel"></param>
-        private void GetStorageChain(CFStorage rootStorage, CFStorage storage, bool rootLevel)
+        private void GetStorageChain(CFStorage rootStorage, CFStorage storage)
         {
             foreach (var child in storage.Children)
             {
                 if (child.IsStorage)
                 {
                     var newRootStorage = rootStorage.AddStorage(child.Name);
-                    GetStorageChain(newRootStorage, child as CFStorage, false);
+                    GetStorageChain(newRootStorage, child as CFStorage);
                 }
                 else if (child.IsStream)
                 {
@@ -509,10 +573,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                     if (childStream == null) continue;
                     var stream = rootStorage.AddStream(child.Name);
                     var bytes = childStream.GetData();
-
-                    if (rootLevel && stream.Name == "Workbook")
-                        ExcelBinaryFormatSetWorkbookVisibility(ref bytes);
-
                     stream.SetData(bytes);
                 }
             }
@@ -534,13 +594,30 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             if (fileType != null && !string.IsNullOrEmpty(fileType.Extension))
                 outputFile += "." + fileType.Extension;
 
-            if (fileType != null && fileType.Extension.ToUpperInvariant() == "XLS")
-                ExcelBinaryFormatSetWorkbookVisibility(ref data);
-
             // Check if the output file already exists and if so make a new one
             outputFile = FileManager.FileExistsMakeNew(outputFile);
 
-            File.WriteAllBytes(outputFile, data);
+            if (fileType != null)
+            {
+                switch (fileType.Extension.ToUpperInvariant())
+                {
+                    case "XLS":
+                        using (var memoryStream = new MemoryStream(data))
+                        {
+                            var compoundFile = new CompoundFile(memoryStream);
+                            ExcelBinaryFormatSetWorkbookVisibility(ref compoundFile);
+                            compoundFile.Save(outputFile);
+                        }
+                        break;
+
+                    case "XLSX":
+                        // TODO make workbook visible
+                        break;
+                }
+            }
+            else
+                File.WriteAllBytes(outputFile, data);
+
             return outputFile;
         }
         #endregion

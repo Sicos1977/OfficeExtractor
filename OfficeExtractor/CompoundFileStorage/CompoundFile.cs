@@ -184,6 +184,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// True when the compound file is closed
         /// </summary>
         internal bool IsClosed { get; private set; }
+
+        /// <summary>
+        /// The name of the compound file, null when the compound file is opened from a stream
+        /// </summary>
+        public string FileName { get; private set; }
         #endregion
 
         #region Constructors
@@ -303,6 +308,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             _eraseFreeSectors = false;
 
             LoadFile(fileName);
+            FileName = fileName;
 
             _difatSectorFATEntriesCount = (GetSectorSize()/4) - 1;
             _fatSectorEntriesCount = (GetSectorSize()/4);
@@ -340,6 +346,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             _eraseFreeSectors = eraseFreeSectors;
 
             LoadFile(fileName);
+            FileName = fileName;
 
             _difatSectorFATEntriesCount = (GetSectorSize()/4) - 1;
             _fatSectorEntriesCount = (GetSectorSize()/4);

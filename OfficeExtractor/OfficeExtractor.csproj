@@ -37,6 +37,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CompoundFileStorage\BinaryTree\BinarySearchTree.cs" />
@@ -70,6 +71,7 @@
     <Compile Include="CompoundFileStorage\SectorCollection.cs" />
     <Compile Include="CompoundFileStorage\StreamRW.cs" />
     <Compile Include="CompoundFileStorage\StreamView.cs" />
+    <Compile Include="Exceptions\OEFileIsCorrupt.cs" />
     <Compile Include="Exceptions\OEFileIsPasswordProtected.cs" />
     <Compile Include="Exceptions\OEFileTypeNotSupported.cs" />
     <Compile Include="Extractor.cs" />
