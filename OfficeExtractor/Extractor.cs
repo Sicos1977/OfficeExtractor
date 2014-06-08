@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.IO.Packaging;
+using System.Security.Policy;
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage;
 using DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions;
 using DocumentServices.Modules.Extractors.OfficeExtractor.Helpers;
@@ -249,6 +253,29 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         }
         #endregion
 
+        #region ExcelBinaryFormatSetWorkbookVisibility
+        /// <summary>
+        /// This method set the workbook in an Open XML Format Excel file to visible
+        /// </summary>
+        /// <param name="stream"></param>
+        public static void ExcelOpenXmlFormatSetWorkbookVisibility(ref Stream stream)
+        {
+            using (var spreadsheetDocument = SpreadsheetDocument.Open(stream, true))
+            {
+                var bookViews = spreadsheetDocument.WorkbookPart.Workbook.BookViews;
+                foreach (var bookView in bookViews)
+                {
+                    var workBookView = (WorkbookView) bookView;
+                    if (workBookView.Visibility.Value == VisibilityValues.Hidden ||
+                        workBookView.Visibility.Value == VisibilityValues.Hidden)
+                        workBookView.Visibility.Value = VisibilityValues.Visible;
+                }
+
+                spreadsheetDocument.WorkbookPart.Workbook.Save();
+            }
+        }
+        #endregion
+
         #region ExtractFromExcelBinaryFormat
         /// <summary>
         /// This method saves all the Excel embedded binary objects from the <see cref="inputFile"/> to the
@@ -374,7 +401,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                             // Check if the ole object is another compound storage node with a package stream
                             if (bytes[0] == 0xD0 && bytes[1] == 0xCF)
                                 bytes = CheckIfIsCompoundFileWithPackageStream(bytes);
-                            SaveByteArrayToFile(bytes, outputFolder + "Embedded object");
+                            result.Add(SaveByteArrayToFile(bytes, outputFolder + "Embedded object"));
                         }
                         else
                         {
@@ -395,7 +422,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                             if (decompressedBytes[0] == 0xD0 && decompressedBytes[1] == 0xCF)
                                 decompressedBytes = CheckIfIsCompoundFileWithPackageStream(decompressedBytes);
 
-                            SaveByteArrayToFile(decompressedBytes, outputFolder + "Embedded object");
+                            result.Add(SaveByteArrayToFile(decompressedBytes, outputFolder + "Embedded object"));
                         }
                     }
                     else
@@ -447,10 +474,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         public List<string> ExtractFromOfficeOpenXmlFormat(string inputFile, string embeddingPartString, string outputFolder)
         {
             var result = new List<string>();
-
-            //throw new NotImplementedException("Not yet completely implemented");
             var package = Package.Open(inputFile);
-            
+
             // Get the embedded files names. 
             foreach (var packagePart in package.GetParts())
             {
@@ -609,9 +634,12 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                             compoundFile.Save(outputFile);
                         }
                         break;
-
+                        
                     case "XLSX":
-                        // TODO make workbook visible
+                        using (var memoryStream = new MemoryStream(data))
+                        {
+                            ExcelOpenXmlFormatSetWorkbookVisibility(memoryStream);
+                        }
                         break;
                 }
             }
