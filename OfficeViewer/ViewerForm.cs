@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
-using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage;
 
 namespace OfficeViewer
 {
@@ -35,7 +34,8 @@ namespace OfficeViewer
             var openFileDialog1 = new OpenFileDialog
             {
                 // ReSharper disable once LocalizableElement
-                Filter = "Microsoft Office files(*.doc, *.dot, *.xls, *.ppt)|*.doc;*.dot;*.xls;*.ppt",
+                Filter = "Microsoft Office files|*.DOC;*.DOCM;*.DOCX;*.DOT;*.DOTM;*.XLS;*.XLSB;*.XLSM;*.XLSX;*.XLT;" +
+                                                     "*.XLTM;*.XLTX;*.XLW;*.POT;*.PPT;*.POTM;*.POTX;*.PPS;*.PPSM;*.PPSX;*.PPTM;*.PPTX",
                 FilterIndex = 1,
                 Multiselect = false
             };
