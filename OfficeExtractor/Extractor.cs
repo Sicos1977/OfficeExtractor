@@ -533,19 +533,22 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                     {
                         if (packagePart.Uri.ToString().StartsWith(embeddingPartString))
                         {
-                            using (var packagePartStream = (MemoryStream) packagePart.GetStream())
+                            using (var packagePartStream = packagePart.GetStream())
+                            using (var packagePartMemoryStream = new MemoryStream())
                             {
+                                packagePartStream.CopyTo(packagePartMemoryStream);
+
                                 var fileName = outputFolder +
                                                packagePart.Uri.ToString().Remove(0, embeddingPartString.Length);
-
+                                
                                 if (fileName.ToUpperInvariant().Contains("OLEOBJECT"))
                                 {
-                                    result.Add(ExtractFileFromOle10Native(packagePartStream.ToArray(), outputFolder));
+                                    result.Add(ExtractFileFromOle10Native(packagePartMemoryStream.ToArray(), outputFolder));
                                 }
                                 else
                                 {
                                     fileName = FileManager.FileExistsMakeNew(fileName);
-                                    File.WriteAllBytes(fileName, packagePartStream.ToArray());
+                                    File.WriteAllBytes(fileName, packagePartMemoryStream.ToArray());
                                     result.Add(fileName);
                                 }
                             }
@@ -645,6 +648,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             using (var compoundFile = new CompoundFile())
             {
                 GetStorageChain(compoundFile.RootStorage, storage);
+                ExcelBinaryFormatSetWorkbookVisibility(compoundFile);
                 compoundFile.Save(fileName);
             }
         }
