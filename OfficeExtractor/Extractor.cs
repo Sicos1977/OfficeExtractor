@@ -93,7 +93,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                 case ".XLTM":
                 case ".XLTX":
                     // Excel 2007 - 2013
-                    return ExtractFromOfficeOpenXmlFormat(inputFile, "/excel/embeddings/", outputFolder);
+                    return ExtractFromOfficeOpenXmlFormat(inputFile, "/xl/embeddings/", outputFolder);
 
                 case ".POT":
                 case ".PPT":
@@ -127,7 +127,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
         public static bool WordBinaryFormatIsPasswordProtected(CompoundFile compoundFile)
         {
-            if (!compoundFile.RootStorage.ExistsStream("WordDocument")) return false;
+            if (!compoundFile.RootStorage.ExistsStream("WordDocument")) 
+                throw new OEFileIsCorrupt("Could not find the WordDocument stream in the file '" + compoundFile.FileName + "'");
             var stream = compoundFile.RootStorage.GetStream("WordDocument") as CFStream;
             if (stream == null) return false;
 
@@ -159,7 +160,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// <param name="outputFolder">The output folder</param>
         /// <returns></returns>
         /// <exception cref="OEFileIsPasswordProtected">Raised when the <see cref="inputFile"/> is password protected</exception>
-        private List<string> ExtractFromWordBinaryFormat(string inputFile, string outputFolder)
+        private static List<string> ExtractFromWordBinaryFormat(string inputFile, string outputFolder)
         {
             using (var compoundFile = new CompoundFile(inputFile))
             {
@@ -197,7 +198,9 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
         public static bool ExcelBinaryFormatIsPasswordProtected(CompoundFile compoundFile)
         {
-            if (!compoundFile.RootStorage.ExistsStream("WorkBook")) return false;
+            if (!compoundFile.RootStorage.ExistsStream("WorkBook"))
+                throw new OEFileIsCorrupt("Could not find the WorkBook stream in the file '" + compoundFile.FileName + "'");
+
             var stream = compoundFile.RootStorage.GetStream("WorkBook") as CFStream;
             if (stream == null) return false;
 
@@ -233,62 +236,74 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// it will contain 2 or more records.
         /// </summary>
         /// <param name="compoundFile"></param>
+        /// <exception cref="OEFileIsCorrupt">Raised when the <see cref="compoundFile"/> does not have a Workbook stream</exception>
         public static void ExcelBinaryFormatSetWorkbookVisibility(CompoundFile compoundFile)
         {
-            if (!compoundFile.RootStorage.ExistsStream("WorkBook")) return;
-            var stream = compoundFile.RootStorage.GetStream("WorkBook") as CFStream;
-            if (stream == null) return;
+            if (!compoundFile.RootStorage.ExistsStream("WorkBook"))
+                throw new OEFileIsCorrupt("Could not check workbook visibility because the WorkBook stream is not present");
 
-            var bytes = stream.GetData();
-
-            using (var memoryStream = new MemoryStream(bytes))
-            using (var binaryReader = new BinaryReader(memoryStream))
+            try
             {
-                // Get the record type, at the beginning of the stream this should always be the BOF
-                var recordType = binaryReader.ReadUInt16();
-                var recordLength = binaryReader.ReadUInt16();
+                var stream = compoundFile.RootStorage.GetStream("WorkBook") as CFStream;
+                if (stream == null) return;
 
-                // Something seems to be wrong, we would expect a BOF but for some reason it isn't 
-                if (recordType != 0x809)
-                    throw new OEFileIsCorrupt("The file is corrupt");
+                var bytes = stream.GetData();
 
-                binaryReader.BaseStream.Position += recordLength;
-
-                while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
+                using (var memoryStream = new MemoryStream(bytes))
+                using (var binaryReader = new BinaryReader(memoryStream))
                 {
-                    recordType = binaryReader.ReadUInt16();
-                    recordLength = binaryReader.ReadUInt16();
-                    
-                    // Window1 record (0x3D)
-                    if (recordType == 0x3D)
-                    {
-                        // ReSharper disable UnusedVariable
-                        var xWn = binaryReader.ReadUInt16();
-                        var yWn = binaryReader.ReadUInt16();
-                        var dxWn = binaryReader.ReadUInt16();
-                        var dyWn = binaryReader.ReadUInt16();
-                        // ReSharper restore UnusedVariable
+                    // Get the record type, at the beginning of the stream this should always be the BOF
+                    var recordType = binaryReader.ReadUInt16();
+                    var recordLength = binaryReader.ReadUInt16();
 
-                        // The grbit contains the bit that hides the sheet
-                        var grbit = binaryReader.ReadBytes(2);
-                        var bitArray = new BitArray(grbit);
+                    // Something seems to be wrong, we would expect a BOF but for some reason it isn't 
+                    if (recordType != 0x809)
+                        throw new OEFileIsCorrupt("The file is corrupt");
 
-                        // When the bit is set then unset it (bitArray.Get(0) == true)
-                        if (bitArray.Get(0))
-                        {
-                            bitArray.Set(0, false);
-
-                            // Copy the byte back into the stream, 2 positions back so that we overwrite the old bytes
-                            bitArray.CopyTo(bytes, (int) binaryReader.BaseStream.Position - 2);
-                        }
-
-                        break;
-                    }
                     binaryReader.BaseStream.Position += recordLength;
-                }
-            }
 
-            stream.SetData(bytes);
+                    while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
+                    {
+                        recordType = binaryReader.ReadUInt16();
+                        recordLength = binaryReader.ReadUInt16();
+
+                        // Window1 record (0x3D)
+                        if (recordType == 0x3D)
+                        {
+                            // ReSharper disable UnusedVariable
+                            var xWn = binaryReader.ReadUInt16();
+                            var yWn = binaryReader.ReadUInt16();
+                            var dxWn = binaryReader.ReadUInt16();
+                            var dyWn = binaryReader.ReadUInt16();
+                            // ReSharper restore UnusedVariable
+
+                            // The grbit contains the bit that hides the sheet
+                            var grbit = binaryReader.ReadBytes(2);
+                            var bitArray = new BitArray(grbit);
+
+                            // When the bit is set then unset it (bitArray.Get(0) == true)
+                            if (bitArray.Get(0))
+                            {
+                                bitArray.Set(0, false);
+
+                                // Copy the byte back into the stream, 2 positions back so that we overwrite the old bytes
+                                bitArray.CopyTo(bytes, (int)binaryReader.BaseStream.Position - 2);
+                            }
+
+                            break;
+                        }
+                        binaryReader.BaseStream.Position += recordLength;
+                    }
+                }
+
+                stream.SetData(bytes);
+            }
+            catch (Exception exception)
+            {
+                throw new OEFileIsCorrupt(
+                    "Could not check workbook visibility because the file seems to be corrupt", exception);
+            }
+            
         }
         #endregion
 
@@ -297,23 +312,32 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// This method sets the workbook in an Open XML Format Excel file to visible
         /// </summary>
         /// <param name="spreadSheetDocument">The Open XML Format Excel file as a memorystream</param>
+        /// <exception cref="OEFileIsCorrupt">Raised when the <see cref="spreadSheetDocument"/> is corrupt</exception>
         public static MemoryStream ExcelOpenXmlFormatSetWorkbookVisibility(MemoryStream spreadSheetDocument)
         {
-            using (var spreadsheetDocument = SpreadsheetDocument.Open(spreadSheetDocument, true))
+            try
             {
-                var bookViews = spreadsheetDocument.WorkbookPart.Workbook.BookViews;
-                foreach (var bookView in bookViews)
+                using (var spreadsheetDocument = SpreadsheetDocument.Open(spreadSheetDocument, true))
                 {
-                    var workBookView = (WorkbookView) bookView;
-                    if (workBookView.Visibility.Value == VisibilityValues.Hidden ||
-                        workBookView.Visibility.Value == VisibilityValues.VeryHidden)
-                        workBookView.Visibility.Value = VisibilityValues.Visible;
+                    var bookViews = spreadsheetDocument.WorkbookPart.Workbook.BookViews;
+                    foreach (var bookView in bookViews)
+                    {
+                        var workBookView = (WorkbookView)bookView;
+                        if (workBookView.Visibility.Value == VisibilityValues.Hidden ||
+                            workBookView.Visibility.Value == VisibilityValues.VeryHidden)
+                            workBookView.Visibility.Value = VisibilityValues.Visible;
+                    }
+
+                    spreadsheetDocument.WorkbookPart.Workbook.Save();
                 }
 
-                spreadsheetDocument.WorkbookPart.Workbook.Save();
+                return spreadSheetDocument;
             }
-
-            return spreadSheetDocument;
+            catch (Exception exception)
+            {
+                throw new OEFileIsCorrupt(
+                    "Could not check workbook visibility because the file seems to be corrupt", exception);
+            }
         }
         #endregion
 
@@ -328,7 +352,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// <returns></returns>
         /// <exception cref="OEFileIsPasswordProtected">Raised when the <see cref="inputFile"/> is password protected</exception>
         /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
-        private List<string> ExtractFromExcelBinaryFormat(string inputFile, string outputFolder, string storageName)
+        private static List<string> ExtractFromExcelBinaryFormat(string inputFile, string outputFolder, string storageName)
         {
             using (var compoundFile = new CompoundFile(inputFile))
             {
@@ -543,7 +567,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                                 
                                 if (fileName.ToUpperInvariant().Contains("OLEOBJECT"))
                                 {
-                                    result.Add(ExtractFileFromOle10Native(packagePartMemoryStream.ToArray(), outputFolder));
+                                    using (var compoundFile = new CompoundFile(packagePartStream))
+                                    {
+                                        result.Add(ExtractFromStorageNode(compoundFile.RootStorage, outputFolder));
+                                        //result.Add(ExtractFileFromOle10Native(packagePartMemoryStream.ToArray(), outputFolder));
+                                    }
                                 }
                                 else
                                 {
@@ -648,7 +676,22 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             using (var compoundFile = new CompoundFile())
             {
                 GetStorageChain(compoundFile.RootStorage, storage);
-                ExcelBinaryFormatSetWorkbookVisibility(compoundFile);
+                var extension = Path.GetExtension(fileName);
+
+                if (extension != null)
+                    switch (extension.ToUpperInvariant())
+                    {
+                        case ".XLS":
+                        case ".XLT":
+                        case ".XLW":
+                            ExcelBinaryFormatSetWorkbookVisibility(compoundFile);
+                            break;
+
+                        default:
+                            return;
+                    }
+
+                
                 compoundFile.Save(fileName);
             }
         }
@@ -686,6 +729,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// <param name="data">The stream as byte array</param>
         /// <param name="outputFile">The output filename with path</param>
         /// <returns></returns>
+        /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception> 
         private static string SaveByteArrayToFile(byte[] data, string outputFile)
         {
             // Because the data is stored in a stream we have no name for it so we

@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace OfficeExtractorTest
 {
     [TestClass]
-    public class UnitTest1
+    public class ExtractionTests
     {
         private readonly List<string> _tempFolders = new List<string>();
 
@@ -40,15 +40,6 @@ namespace OfficeExtractorTest
         }
 
         [TestMethod]
-        [ExpectedException(typeof(OEFileIsPasswordProtected))]
-        public void DocWithEmbeddedFilesWithPassword()
-        {
-            var outputFolder = CreateTemporaryFolder();
-            var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\A DOC word document with 2 embedded files with password.doc", outputFolder);
-        }
-
-        [TestMethod]
         public void DocWith7EmbeddedFiles()
         {
             var outputFolder = CreateTemporaryFolder();
@@ -73,15 +64,6 @@ namespace OfficeExtractorTest
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
             var files = extractor.ExtractToFolder("TestFiles\\A DOCX word document without embedded files.docx", outputFolder);
             Assert.IsTrue(files.Count == 0);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(OEFileIsPasswordProtected))]
-        public void DocxWithEmbeddedFilesWithPassword()
-        {
-            var outputFolder = CreateTemporaryFolder();
-            var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\A DOCX word document with 2 embedded files with password.docx", outputFolder);
         }
 
         [TestMethod]
