@@ -63,6 +63,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="TestFiles\A corrupt compound document.doc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\A DOC word document with 2 embedded files with password.doc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="TestFiles\A DOC word document with 7 embedded files.doc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -70,6 +76,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="TestFiles\A DOC word document without embedded files.doc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\A DOCX word document with 2 embedded files with password.docx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="TestFiles\A DOCX word document with 7 embedded files.docx">
@@ -81,10 +90,16 @@
     <None Include="TestFiles\A DOCX word document without embedded files.docx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="TestFiles\A PPT PowerPoint document with 3 embedded files.ppt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="TestFiles\A PPT PowerPoint document with password.ppt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="TestFiles\A PPT PowerPoint document without embedded files.ppt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\A PPTX PowerPoint document with 3 embedded files.pptx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="TestFiles\A PPTX PowerPoint document with password.pptx">
@@ -93,10 +108,16 @@
     <None Include="TestFiles\A PPTX PowerPoint document without embedded files.pptx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="TestFiles\A XLS excel document with 2 embedded files.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="TestFiles\A XLS excel document with password.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="TestFiles\A XLS excel document without embedded files.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\A XLSX excel document with 2 embedded files.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="TestFiles\A XLSX excel document with password.xlsx">

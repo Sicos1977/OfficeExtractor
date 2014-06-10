@@ -586,7 +586,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// <param name="outputFolder">The outputFolder</param>
         /// <returns></returns>
         /// <exception cref="OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
-        private string ExtractFromStorageNode(CFStorage storage, string outputFolder)
+        private static string ExtractFromStorageNode(CFStorage storage, string outputFolder)
         {
             // Embedded objects can be stored in 4 ways
             // - As a CONTENT stream
