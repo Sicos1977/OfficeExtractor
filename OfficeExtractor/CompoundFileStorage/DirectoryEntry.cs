@@ -8,6 +8,7 @@ using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.In
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
+
     #region Enum StgType
     public enum StgType
     {
@@ -18,7 +19,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         StgProperty = 4,
         StgRoot = 5
     }
-
     #endregion
 
     #region Enum StgColor
@@ -32,7 +32,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
     internal class DirectoryEntry : IDirectoryEntry
     {
         #region Fields
-        internal static Int32 Nostream = unchecked((int)0xFFFFFFFF);
+        internal static Int32 Nostream = unchecked((int) 0xFFFFFFFF);
         #endregion
 
         #region Properties
@@ -75,8 +75,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             LeftSibling = Nostream;
             Child = Nostream;
             StorageCLSID = Guid.NewGuid();
-            CreationDate = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-            ModifyDate = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+            CreationDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+            ModifyDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
             StartSector = Sector.Endofchain;
             StgType = stgType;
 
@@ -85,8 +85,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 case StgType.StgStream:
 
                     StorageCLSID = new Guid("00000000000000000000000000000000");
-                    CreationDate = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-                    ModifyDate = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                    CreationDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                    ModifyDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
                     break;
 
                 case StgType.StgStorage:
@@ -94,17 +94,16 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                     break;
 
                 case StgType.StgRoot:
-                    CreationDate = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-                    ModifyDate = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                    CreationDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                    ModifyDate = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
                     break;
             }
-
         }
         #endregion
 
         #region GetEntryName
         /// <summary>
-        /// Gets the name of the directory entry
+        ///     Gets the name of the directory entry
         /// </summary>
         /// <returns></returns>
         public string GetEntryName()
@@ -119,7 +118,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region SetEntryName
         /// <summary>
-        /// Sets the name of the directory entry
+        ///     Sets the name of the directory entry
         /// </summary>
         /// <param name="entryName"></param>
         /// <exception cref="CFException">Raised when an invalid character is used or the length is longer then 31</exception>
@@ -130,7 +129,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 entryName.Contains(@"/") ||
                 entryName.Contains(@":") ||
                 entryName.Contains(@"!")
-
                 )
                 throw new CFException(
                     "Invalid character in entry: the characters '\\', '/', ':','!' cannot be used in entry name");
@@ -147,13 +145,12 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
             EntryName = newName;
             NameLength = (ushort) (temp.Length + 2);
-
         }
         #endregion
 
         #region CompareTo
         /// <summary>
-        /// Compares the object to the current IDirectory entry
+        ///     Compares the object to the current IDirectory entry
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
@@ -202,18 +199,17 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region GetHashCode
         /// <summary>
-        /// FNV hash, short for Fowler/Noll/Vo
+        ///     FNV hash, short for Fowler/Noll/Vo
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns>(not warranted) unique hash for byte array</returns>
         private static ulong fnv_hash(IList<byte> buffer)
         {
-
             ulong h = 2166136261;
             int i;
 
             for (i = 0; i < buffer.Count; i++)
-                h = (h * 16777619) ^ buffer[i];
+                h = (h*16777619) ^ buffer[i];
 
             return h;
         }
@@ -227,7 +223,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region Write
         /// <summary>
-        /// Writes to the <see cref="stream"/>
+        ///     Writes to the <see cref="stream" />
         /// </summary>
         /// <param name="stream"></param>
         public void Write(Stream stream)
@@ -254,7 +250,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region Read
         /// <summary>
-        /// Reads from the <see cref="stream"/>
+        ///     Reads from the <see cref="stream" />
         /// </summary>
         /// <param name="stream"></param>
         public void Read(Stream stream)
@@ -287,7 +283,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region Name
         /// <summary>
-        /// The name of the directory entry
+        ///     The name of the directory entry
         /// </summary>
         public string Name
         {

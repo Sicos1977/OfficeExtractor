@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Interfaces
 {
     /// <summary>
-    /// The CompoundFile interface
+    ///     The CompoundFile interface
     /// </summary>
     public interface ICompoundFile
     {

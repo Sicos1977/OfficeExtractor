@@ -1,9 +1,10 @@
 ﻿using System;
+using System.IO;
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Interfaces
 {
     /// <summary>
-    /// The directory entry interface
+    ///     The directory entry interface
     /// </summary>
     public interface IDirectoryEntry : IComparable
     {
@@ -13,8 +14,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         byte[] EntryName { get; }
 
-        string GetEntryName();
-
         int LeftSibling { get; set; }
 
         byte[] ModifyDate { get; set; }
@@ -23,11 +22,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         ushort NameLength { get; }
 
-        void Read(System.IO.Stream stream);
-
         int RightSibling { get; set; }
-
-        void SetEntryName(string entryName);
 
         int SID { get; set; }
 
@@ -42,7 +37,10 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         StgType StgType { get; set; }
 
         Guid StorageCLSID { get; set; }
+        string GetEntryName();
+        void Read(Stream stream);
+        void SetEntryName(string entryName);
 
-        void Write(System.IO.Stream stream);
+        void Write(Stream stream);
     }
 }

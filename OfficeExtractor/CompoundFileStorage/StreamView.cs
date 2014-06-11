@@ -84,12 +84,15 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region Constructors
         /// <summary>
-        /// Creates this object
+        ///     Creates this object
         /// </summary>
         /// <param name="sectorChain"></param>
         /// <param name="sectorSize"></param>
         /// <param name="stream"></param>
-        /// <exception cref="CFException">Raised when <see cref="sectorChain"/> is null or <see cref="sectorSize"/> is zero or smaller</exception>
+        /// <exception cref="CFException">
+        ///     Raised when <see cref="sectorChain" /> is null or <see cref="sectorSize" /> is zero or
+        ///     smaller
+        /// </exception>
         public StreamView(List<Sector> sectorChain, int sectorSize, Stream stream)
         {
             if (sectorChain == null)
@@ -119,7 +122,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region Flush
         /// <summary>
-        /// Flushes the stream... NOT IMPLEMENTED
+        ///     Flushes the stream... NOT IMPLEMENTED
         /// </summary>
         public override void Flush()
         {
@@ -128,7 +131,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region ReadInt32
         /// <summary>
-        /// Reads a 32 bit integer from the <see cref="_stream"/>
+        ///     Reads a 32 bit integer from the <see cref="_stream" />
         /// </summary>
         /// <returns></returns>
         public int ReadInt32()
@@ -140,7 +143,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region Read
         /// <summary>
-        /// Reads from the <see cref="_stream"/>
+        ///     Reads from the <see cref="_stream" />
         /// </summary>
         /// <param name="buffer"></param>
         /// <param name="offset"></param>
@@ -216,7 +219,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region Seek
         /// <summary>
-        /// Seeks a new position in the <see cref="_stream"/> from the <see cref="origin"/>
+        ///     Seeks a new position in the <see cref="_stream" /> from the <see cref="origin" />
         /// </summary>
         /// <param name="offset"></param>
         /// <param name="origin"></param>
@@ -246,7 +249,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region AdjustLength
         /// <summary>
-        /// Adjusts the length of the <see cref="_stream"/>
+        ///     Adjusts the length of the <see cref="_stream" />
         /// </summary>
         /// <param name="value"></param>
         private void AdjustLength(long value)
@@ -255,7 +258,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
 
         /// <summary>
-        /// Adjusts the length of the <see cref="_stream"/>
+        ///     Adjusts the length of the <see cref="_stream" />
         /// </summary>
         /// <param name="value"></param>
         /// <param name="availableSectors"></param>
@@ -284,7 +287,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
 
         /// <summary>
-        /// Adjusts the length of the <see cref="_stream"/>
+        ///     Adjusts the length of the <see cref="_stream" />
         /// </summary>
         /// <param name="value"></param>
         public override void SetLength(long value)
@@ -295,7 +298,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region Write
         /// <summary>
-        /// Writes the <see cref="buffer"/> to the <see cref="_stream"/> on the <see cref="offset"/>
+        ///     Writes the <see cref="buffer" /> to the <see cref="_stream" /> on the <see cref="offset" />
         /// </summary>
         /// <param name="buffer"></param>
         /// <param name="offset"></param>

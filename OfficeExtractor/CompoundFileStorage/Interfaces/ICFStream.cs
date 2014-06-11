@@ -3,7 +3,7 @@
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Interfaces
 {
     /// <summary>
-    /// The Stream interface
+    ///     The Stream interface
     /// </summary>
     public interface ICFStream : ICFItem
     {

@@ -7,6 +7,7 @@ using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.In
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
+
     #region Enum CFSVersion
     /// <summary>
     ///     Binary File Format Version. Sector size  is 512 byte for version 3,
@@ -81,24 +82,14 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region Fields
         /// <summary>
-        ///     Number of FAT entries in a DIFAT Sector
-        /// </summary>
-        private readonly int _difatSectorFATEntriesCount = 127;
-
-        /// <summary>
-        ///     Sectors ID entries in a FAT Sector
-        /// </summary>
-        private readonly int _fatSectorEntriesCount = 128;
-
-        /// <summary>
         ///     Sector ID Size (int)
         /// </summary>
         private const int SizeOfSID = 4;
 
         /// <summary>
-        ///     Flag for sector recycling.
+        ///     Number of FAT entries in a DIFAT Sector
         /// </summary>
-        private readonly bool _sectorRecycle;
+        private readonly int _difatSectorFATEntriesCount = 127;
 
         /// <summary>
         ///     Flag for unallocated sector zeroing out.
@@ -106,9 +97,38 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         private readonly bool _eraseFreeSectors;
 
         /// <summary>
-        /// File sectors
+        ///     Sectors ID entries in a FAT Sector
         /// </summary>
-        private SectorCollection _sectors = new SectorCollection();
+        private readonly int _fatSectorEntriesCount = 128;
+
+        private readonly Queue<Sector> _flushingQueue = new Queue<Sector>(FlushingQueueSize);
+
+        /// <summary>
+        ///     Flag for sector recycling.
+        /// </summary>
+        private readonly bool _sectorRecycle;
+
+        /// <summary>
+        ///     True when update enabled
+        /// </summary>
+        private readonly UpdateMode _updateMode = UpdateMode.ReadOnly;
+
+        internal int LockSectorId = -1;
+
+        /// <summary>
+        ///     Compound underlying stream. Null when new CF has been created.
+        /// </summary>
+        internal Stream SourceStream = null;
+
+        internal bool TransactionLockAdded = false;
+
+        internal bool TransactionLockAllocated = false;
+        private byte[] _buffer = new byte[FlushingBufferMaxSize];
+
+        /// <summary>
+        ///     Contains a list with all the directory entries
+        /// </summary>
+        private List<IDirectoryEntry> _directoryEntries = new List<IDirectoryEntry>();
 
         /// <summary>
         ///     CompoundFile header
@@ -116,31 +136,14 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         private Header _header;
 
         /// <summary>
-        ///     Compound underlying stream. Null when new CF has been created.
-        /// </summary>
-        internal Stream SourceStream = null;
-
-        /// <summary>
-        /// True when update enabled
-        /// </summary>
-        private readonly UpdateMode _updateMode = UpdateMode.ReadOnly;
-
-        private byte[] _buffer = new byte[FlushingBufferMaxSize];
-        private readonly Queue<Sector> _flushingQueue = new Queue<Sector>(FlushingQueueSize);
-
-        internal bool TransactionLockAdded = false;
-        internal int LockSectorId = -1;
-        internal bool TransactionLockAllocated = false;
-
-        /// <summary>
-        /// Used for thread safe locking
+        ///     Used for thread safe locking
         /// </summary>
         private object _lockObject = new Object();
 
         /// <summary>
-        /// Contains a list with all the directory entries
+        ///     File sectors
         /// </summary>
-        private List<IDirectoryEntry> _directoryEntries = new List<IDirectoryEntry>();
+        private SectorCollection _sectors = new SectorCollection();
         #endregion
 
         #region Properties
@@ -172,7 +175,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         public CFStorage RootStorage { get; private set; }
 
         /// <summary>
-        /// The root entry of all the <see cref="Directory"/> entries
+        ///     The root entry of all the <see cref="Directory" /> entries
         /// </summary>
         internal IDirectoryEntry RootEntry
         {
@@ -180,12 +183,12 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
 
         /// <summary>
-        /// True when the compound file is closed
+        ///     True when the compound file is closed
         /// </summary>
         internal bool IsClosed { get; private set; }
 
         /// <summary>
-        /// The name of the compound file, null when the compound file is opened from a stream
+        ///     The name of the compound file, null when the compound file is opened from a stream
         /// </summary>
         public string FileName { get; private set; }
         #endregion
@@ -579,7 +582,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
                 throw;
             }
         }
-
         #endregion
 
         #region GetSectorSize
@@ -595,12 +597,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region LoadFile
         /// <summary>
-        /// Loads a compound file from a file
+        ///     Loads a compound file from a file
         /// </summary>
         /// <param name="fileName"></param>
         private void LoadFile(string fileName)
         {
-
             FileStream fileStream = null;
 
             try
@@ -624,7 +625,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region LoadStream
         /// <summary>
-        /// Loads a compound file from a <see cref="stream"/>
+        ///     Loads a compound file from a <see cref="stream" />
         /// </summary>
         /// <param name="stream"></param>
         /// <exception cref="CFException">Raised when the stream is null or non-seekable</exception>
@@ -718,7 +719,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
                 for (var i = 0; i < _sectors.Count; i++)
                 {
-                    var sector = _sectors[i] ?? new Sector(sSize, SourceStream) { Id = i };
+                    var sector = _sectors[i] ?? new Sector(sSize, SourceStream) {Id = i};
                     stream.Write(sector.GetData(), 0, sSize);
                 }
 
@@ -766,7 +767,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// </example>
         public void Close()
         {
-            ((IDisposable)this).Dispose();
+            ((IDisposable) this).Dispose();
         }
         #endregion
 
@@ -1433,10 +1434,10 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             }
         }
         #endregion
-        
+
         #region CFSVersion
         /// <summary>
-        /// Returns the version number of the compound file storage
+        ///     Returns the version number of the compound file storage
         /// </summary>
         public CFSVersion Version
         {
@@ -1446,7 +1447,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region InsertNewDirectoryEntry
         /// <summary>
-        /// Inserts a new <see cref="directoryEntry"/>
+        ///     Inserts a new <see cref="directoryEntry" />
         /// </summary>
         /// <param name="directoryEntry"></param>
         internal void InsertNewDirectoryEntry(IDirectoryEntry directoryEntry)
@@ -1486,7 +1487,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region GetChildrenTree
         /// <summary>
-        /// Returns the children tree for the given <see cref="sid"/>
+        ///     Returns the children tree for the given <see cref="sid" />
         /// </summary>
         /// <param name="sid"></param>
         /// <returns></returns>
@@ -1519,7 +1520,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
 
         /// <summary>
-        /// Doubling methods allows iterative behavior while avoiding to insert duplicate items
+        ///     Doubling methods allows iterative behavior while avoiding to insert duplicate items
         /// </summary>
         /// <param name="binarySearchTree"></param>
         /// <param name="directoryEntry"></param>
@@ -1572,7 +1573,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region ValidateSibling
         /// <summary>
-        /// Validates all the siblings
+        ///     Validates all the siblings
         /// </summary>
         /// <param name="sid"></param>
         /// <returns></returns>
@@ -1630,10 +1631,10 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region RemoveDirectoryEntry
         /// <summary>
-        /// Removes an directory entry
+        ///     Removes an directory entry
         /// </summary>
         /// <param name="sid"></param>
-        /// <exception cref="CFException">Raised when the <see cref="sid"/> is invalid</exception>
+        /// <exception cref="CFException">Raised when the <see cref="sid" /> is invalid</exception>
         internal void RemoveDirectoryEntry(int sid)
         {
             if (sid >= _directoryEntries.Count)
@@ -1684,7 +1685,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
             var delta = _directoryEntries.Count;
 
-            while (delta % (GetSectorSize() / directorySize) != 0)
+            while (delta%(GetSectorSize()/directorySize) != 0)
             {
                 var dummy = new DirectoryEntry(StgType.StgInvalid);
                 dummy.Write(sv);
@@ -1707,7 +1708,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region RefreshSIDs
         /// <summary>
-        /// Refreshes all SID's for the give node
+        ///     Refreshes all SID's for the give node
         /// </summary>
         /// <param name="node"></param>
         internal void RefreshSIDs(BinaryTreeNode<CFItem> node)
@@ -1737,7 +1738,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             }
         }
         #endregion
-       
+
         #region FindFreeSectors
         /// <summary>
         ///     Scan FAT o miniFAT for free sectors to reuse.
@@ -1820,7 +1821,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region SetData
         /// <summary>
-        /// Sets the data for the current stream
+        ///     Sets the data for the current stream
         /// </summary>
         /// <param name="cfItem"></param>
         /// <param name="buffer"></param>
@@ -1830,11 +1831,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         }
 
         /// <summary>
-        /// Sets the data for the current stream
+        ///     Sets the data for the current stream
         /// </summary>
         /// <param name="cfItem"></param>
         /// <param name="buffer"></param>
-        /// <exception cref="CFException">Raised when <see cref="buffer"/> is null</exception>
+        /// <exception cref="CFException">Raised when <see cref="buffer" /> is null</exception>
         private void SetStreamData(CFItem cfItem, Byte[] buffer)
         {
             if (buffer == null)
@@ -1861,9 +1862,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             if (directoryEntry.StartSector != Sector.Endofchain)
             {
                 if (
-                    (buffer.Length < _header.MinSizeStandardStream && directoryEntry.Size > _header.MinSizeStandardStream)
+                    (buffer.Length < _header.MinSizeStandardStream &&
+                     directoryEntry.Size > _header.MinSizeStandardStream)
                     ||
-                    (buffer.Length > _header.MinSizeStandardStream && directoryEntry.Size < _header.MinSizeStandardStream)
+                    (buffer.Length > _header.MinSizeStandardStream &&
+                     directoryEntry.Size < _header.MinSizeStandardStream)
                     )
                 {
                     if (directoryEntry.Size < _header.MinSizeStandardStream)
@@ -1918,7 +1921,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region GetData
         /// <summary>
-        /// Gets data from the <see cref="cFStream"/>
+        ///     Gets data from the <see cref="cFStream" />
         /// </summary>
         /// <param name="cFStream"></param>
         /// <param name="offset"></param>
@@ -1935,24 +1938,26 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             if (directoryEntry.Size < _header.MinSizeStandardStream)
             {
                 streamView
-                    = new StreamView(GetSectorChain(directoryEntry.StartSector, SectorType.Mini), Sector.MinisectorSize, directoryEntry.Size,
+                    = new StreamView(GetSectorChain(directoryEntry.StartSector, SectorType.Mini), Sector.MinisectorSize,
+                        directoryEntry.Size,
                         SourceStream);
             }
             else
             {
-                streamView = new StreamView(GetSectorChain(directoryEntry.StartSector, SectorType.Normal), GetSectorSize(), directoryEntry.Size,
+                streamView = new StreamView(GetSectorChain(directoryEntry.StartSector, SectorType.Normal),
+                    GetSectorSize(), directoryEntry.Size,
                     SourceStream);
             }
 
             var result = new byte[count];
             streamView.Seek(offset, SeekOrigin.Begin);
             streamView.Read(result, 0, result.Length);
-            
+
             return result;
         }
 
         /// <summary>
-        /// Gets data from the <see cref="cFStream"/>
+        ///     Gets data from the <see cref="cFStream" />
         /// </summary>
         /// <param name="cFStream"></param>
         /// <returns></returns>
@@ -1969,7 +1974,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             if (directoryEntry.Size < _header.MinSizeStandardStream)
             {
                 var miniView
-                    = new StreamView(GetSectorChain(directoryEntry.StartSector, SectorType.Mini), Sector.MinisectorSize, directoryEntry.Size,
+                    = new StreamView(GetSectorChain(directoryEntry.StartSector, SectorType.Mini), Sector.MinisectorSize,
+                        directoryEntry.Size,
                         SourceStream);
 
                 var br = new BinaryReader(miniView);
@@ -1980,7 +1986,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             else
             {
                 var sView
-                    = new StreamView(GetSectorChain(directoryEntry.StartSector, SectorType.Normal), GetSectorSize(), directoryEntry.Size,
+                    = new StreamView(GetSectorChain(directoryEntry.StartSector, SectorType.Normal), GetSectorSize(),
+                        directoryEntry.Size,
                         SourceStream);
 
                 result = new byte[(int) directoryEntry.Size];
@@ -2005,7 +2012,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             return i > 0 ? i : 0;
         }
         #endregion
-        
+
         #region IDisposable Members
         void IDisposable.Dispose()
         {
@@ -2058,11 +2065,13 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region GetAllNamedEntries
         /// <summary>
-        ///     Get a list of all entries which start with the given <see cref="entryName"/>
+        ///     Get a list of all entries which start with the given <see cref="entryName" />
         /// </summary>
         /// <param name="entryName">Name of entries to retrive</param>
-        /// <param name="parentSibling">The parent id from the node where you want to find the named entries, 
-        /// use null if you want to search in all nodes</param>
+        /// <param name="parentSibling">
+        ///     The parent id from the node where you want to find the named entries,
+        ///     use null if you want to search in all nodes
+        /// </param>
         /// <returns>A list of name-matching entries</returns>
         /// <remarks>
         ///     This function is aimed to speed up entity lookup in
@@ -2076,12 +2085,13 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
             foreach (var directoryEntry in _directoryEntries)
             {
-                if (directoryEntry.StgType == StgType.StgInvalid || !directoryEntry.GetEntryName().StartsWith(entryName)) continue;
+                if (directoryEntry.StgType == StgType.StgInvalid || !directoryEntry.GetEntryName().StartsWith(entryName))
+                    continue;
                 if (directoryEntry.LeftSibling != parentSibling && parentSibling != null) continue;
                 var cfItem = directoryEntry.StgType == StgType.StgStorage
                     ? new CFStorage(this, directoryEntry)
                     : (CFItem) new CFStream(this, directoryEntry);
-                
+
                 result.Add(cfItem);
             }
 

@@ -137,7 +137,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             MinSizeStandardStream = 4096;
             FirstMiniFATSectorId = unchecked((int) 0xFFFFFFFE);
             FirstDIFATSectorId = Sector.Endofchain;
-            
+
             switch (version)
             {
                 case 3:
@@ -197,7 +197,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region Write
         /// <summary>
-        ///     Writes to the <see cref="stream"/>
+        ///     Writes to the <see cref="stream" />
         /// </summary>
         /// <param name="stream"></param>
         public void Write(Stream stream)
@@ -234,7 +234,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             streamRw.Close();
         }
         #endregion
-        
+
         #region CheckVersion
         private void CheckVersion()
         {

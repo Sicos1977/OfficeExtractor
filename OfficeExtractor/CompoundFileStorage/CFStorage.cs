@@ -16,7 +16,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region Constructor
         /// <summary>
-        /// Create a new CFStorage
+        ///     Create a new CFStorage
         /// </summary>
         /// <param name="compFile">The Storage Owner - CompoundFile</param>
         internal CFStorage(CompoundFile compFile)
@@ -64,7 +64,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// </summary>
         /// <param name="streamName">Name of the stream to look for</param>
         /// <returns>A stream reference if existing</returns>
-        /// <exception cref="CFItemNotFound">Raised if <see cref="streamName"/> is not found</exception>
+        /// <exception cref="CFItemNotFound">Raised if <see cref="streamName" /> is not found</exception>
         public ICFStream GetStream(string streamName)
         {
             CheckDisposed();
@@ -82,7 +82,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
 
         #region AddStream
         /// <summary>
-        /// Create a new child stream inside the current <see cref="T:OpenMcdf.CFStorage">storage</see>
+        ///     Create a new child stream inside the current <see cref="T:OpenMcdf.CFStorage">storage</see>
         /// </summary>
         /// <param name="streamName">The new stream name</param>
         /// <returns>The new <see cref="T:OpenMcdf.CFStream">stream</see> reference</returns>
@@ -90,20 +90,20 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// <exception cref="CFDisposedException">Raised when adding a stream to a closed compound file</exception>
         /// <exception cref="CFException">Raised when adding a stream with null or empty name</exception>
         /// <example>
-        /// <code>
-        /// 
-        ///  String filename = "A_NEW_COMPOUND_FILE_YOU_CAN_WRITE_TO.cfs";
-        ///
-        ///  CompoundFile cf = new CompoundFile();
-        ///
-        ///  CFStorage st = cf.RootStorage.AddStorage("MyStorage");
-        ///  CFStream sm = st.AddStream("MyStream");
-        ///  byte[] b = Helpers.GetBuffer(220, 0x0A);
-        ///  sm.SetData(b);
-        ///
-        ///  cf.Save(filename);
+        ///     <code>
         ///  
-        /// </code>
+        ///   String filename = "A_NEW_COMPOUND_FILE_YOU_CAN_WRITE_TO.cfs";
+        /// 
+        ///   CompoundFile cf = new CompoundFile();
+        /// 
+        ///   CFStorage st = cf.RootStorage.AddStorage("MyStorage");
+        ///   CFStream sm = st.AddStream("MyStream");
+        ///   byte[] b = Helpers.GetBuffer(220, 0x0A);
+        ///   sm.SetData(b);
+        /// 
+        ///   cf.Save(filename);
+        ///   
+        ///  </code>
         /// </example>
         public CFStream AddStream(string streamName)
         {
@@ -138,7 +138,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             return stream;
         }
         #endregion
-        
+
         #region ExistsStream
         /// <summary>
         ///     Checks whether a child stream exists in the parent.
@@ -182,7 +182,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// </summary>
         /// <param name="storageName">Name of the storage to look for</param>
         /// <returns>A storage reference if existing.</returns>
-        /// <exception cref="CFItemNotFound">Raised if <see cref="storageName"/> is not found</exception>
+        /// <exception cref="CFItemNotFound">Raised if <see cref="storageName" /> is not found</exception>
         public ICFStorage GetStorage(string storageName)
         {
             CheckDisposed();
@@ -192,14 +192,14 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             CFItem directoryEntry;
             if (Children.TryFind(cfMock, out directoryEntry) && directoryEntry.DirEntry.StgType == StgType.StgStorage)
                 return directoryEntry as CFStorage;
-            
+
             throw new CFItemNotFound("Cannot find item [" + storageName + "] within the current storage");
         }
         #endregion
 
         #region AddStorage
         /// <summary>
-        /// Create new child storage directory inside the current storage.
+        ///     Create new child storage directory inside the current storage.
         /// </summary>
         /// <param name="storageName">The new storage name</param>
         /// <returns>Reference to the new <see cref="T:OpenMcdf.CFStorage">storage</see></returns>
@@ -207,20 +207,20 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         /// <exception cref="T:OpenMcdf.CFDisposedException">Raised when adding a storage to a closed compound file</exception>
         /// <exception cref="T:OpenMcdf.CFException">Raised when adding a storage with null or empty name</exception>
         /// <example>
-        /// <code>
-        /// 
-        ///  String filename = "A_NEW_COMPOUND_FILE_YOU_CAN_WRITE_TO.cfs";
-        ///
-        ///  CompoundFile cf = new CompoundFile();
-        ///
-        ///  CFStorage st = cf.RootStorage.AddStorage("MyStorage");
-        ///  CFStream sm = st.AddStream("MyStream");
-        ///  byte[] b = Helpers.GetBuffer(220, 0x0A);
-        ///  sm.SetData(b);
-        ///
-        ///  cf.Save(filename);
+        ///     <code>
         ///  
-        /// </code>
+        ///   String filename = "A_NEW_COMPOUND_FILE_YOU_CAN_WRITE_TO.cfs";
+        /// 
+        ///   CompoundFile cf = new CompoundFile();
+        /// 
+        ///   CFStorage st = cf.RootStorage.AddStorage("MyStorage");
+        ///   CFStream sm = st.AddStream("MyStream");
+        ///   byte[] b = Helpers.GetBuffer(220, 0x0A);
+        ///   sm.SetData(b);
+        /// 
+        ///   cf.Save(filename);
+        ///   
+        ///  </code>
         /// </example>
         public CFStorage AddStorage(string storageName)
         {
@@ -240,7 +240,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             }
             catch (BSTDuplicatedException)
             {
-
                 CompoundFile.ResetDirectoryEntry(storage.DirEntry.SID);
                 throw new CFDuplicatedItemException("An entry with name '" + storageName +
                                                     "' is already present in storage '" + Name + "' ");

@@ -1,9 +1,7 @@
-using System;
-
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Interfaces
 {
     /// <summary>
-    /// The compound file storage interface
+    ///     The compound file storage interface
     /// </summary>
     public interface ICFStorage : ICFItem
     {

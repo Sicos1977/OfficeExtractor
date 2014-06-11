@@ -3,6 +3,7 @@ using System.IO;
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
+
     #region Enum SectorType
     internal enum SectorType
     {
@@ -99,6 +100,12 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
         #endregion
 
         #region IDisposable Members
+        void IDisposable.Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
         /// <summary>
         ///     When called from user code, release all resources, otherwise, in the case runtime called it,
         ///     only unmanagd resources are released.
@@ -126,12 +133,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorag
             {
                 _disposed = true;
             }
-        }
-        
-        void IDisposable.Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
         #endregion
     }
