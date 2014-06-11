@@ -6,9 +6,9 @@ using System.IO.Compression;
 using System.IO.Packaging;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage;
 using DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions;
 using DocumentServices.Modules.Extractors.OfficeExtractor.Helpers;
+using CompoundFileStorage;
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor
 {

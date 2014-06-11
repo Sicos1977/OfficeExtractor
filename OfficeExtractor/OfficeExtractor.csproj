@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CompoundFileStorage">
+      <HintPath>..\packages\CompoundFileStorage.1.0.0\lib\CompoundFileStorage.dll</HintPath>
+    </Reference>
     <Reference Include="DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
       <HintPath>..\packages\DocumentFormat.OpenXml.2.5\lib\DocumentFormat.OpenXml.dll</HintPath>
@@ -46,37 +49,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CompoundFileStorage\BinaryTree\BinarySearchTree.cs" />
-    <Compile Include="CompoundFileStorage\BinaryTree\BinaryTreeNode.cs" />
-    <Compile Include="CompoundFileStorage\BinaryTree\Exceptions\BSTDuplicatedException.cs" />
-    <Compile Include="CompoundFileStorage\BinaryTree\Node.cs" />
-    <Compile Include="CompoundFileStorage\BinaryTree\NodeList.cs" />
-    <Compile Include="CompoundFileStorage\BinaryTree\TraversalMethods.cs" />
-    <Compile Include="CompoundFileStorage\CFItemComparer.cs" />
-    <Compile Include="CompoundFileStorage\Exceptions\CFFileFormatException.cs" />
-    <Compile Include="CompoundFileStorage\Exceptions\CFInvalidOperation.cs" />
-    <Compile Include="CompoundFileStorage\CFItem.cs" />
-    <Compile Include="CompoundFileStorage\CFMock.cs" />
-    <Compile Include="CompoundFileStorage\CFStorage.cs" />
-    <Compile Include="CompoundFileStorage\CFStream.cs" />
-    <Compile Include="CompoundFileStorage\CompoundFile.cs" />
-    <Compile Include="CompoundFileStorage\DirectoryEntry.cs" />
-    <Compile Include="CompoundFileStorage\Exceptions\CFCorruptedFileException.cs" />
-    <Compile Include="CompoundFileStorage\Exceptions\CFDisposedException.cs" />
-    <Compile Include="CompoundFileStorage\Exceptions\CFDuplicatedItemException.cs" />
-    <Compile Include="CompoundFileStorage\Exceptions\CFException.cs" />
-    <Compile Include="CompoundFileStorage\Exceptions\CFFormatException.cs" />
-    <Compile Include="CompoundFileStorage\Exceptions\CFItemNotFound.cs" />
-    <Compile Include="CompoundFileStorage\Header.cs" />
-    <Compile Include="CompoundFileStorage\Interfaces\ICFItem.cs" />
-    <Compile Include="CompoundFileStorage\Interfaces\ICFStorage.cs" />
-    <Compile Include="CompoundFileStorage\Interfaces\ICFStream.cs" />
-    <Compile Include="CompoundFileStorage\Interfaces\ICompoundFile.cs" />
-    <Compile Include="CompoundFileStorage\Interfaces\IDirectoryEntry.cs" />
-    <Compile Include="CompoundFileStorage\Sector.cs" />
-    <Compile Include="CompoundFileStorage\SectorCollection.cs" />
-    <Compile Include="CompoundFileStorage\StreamRW.cs" />
-    <Compile Include="CompoundFileStorage\StreamView.cs" />
     <Compile Include="Exceptions\OEFileIsCorrupt.cs" />
     <Compile Include="Exceptions\OEFileIsPasswordProtected.cs" />
     <Compile Include="Exceptions\OEFileTypeNotSupported.cs" />
