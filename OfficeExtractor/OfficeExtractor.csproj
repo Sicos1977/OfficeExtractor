@@ -81,7 +81,6 @@
     <Compile Include="Exceptions\OEFileIsPasswordProtected.cs" />
     <Compile Include="Exceptions\OEFileTypeNotSupported.cs" />
     <Compile Include="Extractor.cs" />
-    <Compile Include="Helpers\ByteExtensions.cs" />
     <Compile Include="Helpers\ExceptionHelpers.cs" />
     <Compile Include="Helpers\FileManager.cs" />
     <Compile Include="Helpers\FileTypeSelector.cs" />

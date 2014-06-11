@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
+﻿namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
     /// <summary>
     ///     Used as internal template object for binary tree searches.

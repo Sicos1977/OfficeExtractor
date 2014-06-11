@@ -4,7 +4,6 @@ using System.IO;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.BinaryTree;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Exceptions;
 using DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage.Interfaces;
-using DocumentServices.Modules.Extractors.OfficeExtractor.Helpers;
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor.CompoundFileStorage
 {
