@@ -9,6 +9,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions;
 using DocumentServices.Modules.Extractors.OfficeExtractor.Helpers;
 using CompoundFileStorage;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace DocumentServices.Modules.Extractors.OfficeExtractor
 {
@@ -70,6 +71,9 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
 
             switch (extension)
             {
+                case ".ODT":
+                    return ExtractFromOpenDocumentFormat(inputFile, "/word/embeddings/", outputFolder);
+
                 case ".DOC":
                 case ".DOT":
                     // Word 97 - 2003
@@ -606,6 +610,48 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         }
         #endregion
 
+        #region ExtractFromOpenDocumentFormat
+        /// <summary>
+        /// Extracts all the embedded object from the OpenDocument <see cref="inputFile"/> to the 
+        /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
+        /// </summary>
+        /// <param name="inputFile">The OpenDocument format file</param>
+        /// <param name="embeddingPartString">The folder in the Office Open XML format (zip) file</param>
+        /// <param name="outputFolder">The output folder</param>
+        /// <returns>List with files or en empty list when there are nog embedded files</returns>
+        /// <exception cref="OEFileIsPasswordProtected">Raised when the OpenDocument format file is password protected</exception>
+        public List<string> ExtractFromOpenDocumentFormat(string inputFile, string embeddingPartString,
+            string outputFolder)
+        {
+            var result = new List<string>();
+
+            var zipFile = new ZipFile(inputFile);
+  
+            foreach (ZipEntry zipEntry in zipFile)
+            {
+                if (!zipEntry.IsFile) continue;
+                if (zipEntry.IsCrypted)
+                    throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
+                                                                "' is password protected");
+
+                var name = zipEntry.Name.ToUpperInvariant();
+                if (!name.StartsWith("OBJECT") || name.Contains("/"))
+                    continue;
+
+                using (var zipEntryStream = zipFile.GetInputStream(zipEntry))
+                using (var zipEntryMemoryStream = new MemoryStream())
+                {
+                    zipEntryStream.CopyTo(zipEntryMemoryStream);
+
+                    using (var compoundFile = new CompoundFile(zipEntryMemoryStream))
+                        result.Add(ExtractFromStorageNode(compoundFile.RootStorage, outputFolder));
+                }
+            }
+
+            return result;
+        }
+        #endregion
+
         #region ExtractFromStorageNode
         /// <summary>
         /// This method will extract and save the data from the given <see cref="storage"/> node to the <see cref="outputFolder"/>
@@ -686,9 +732,6 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                         case ".XLW":
                             ExcelBinaryFormatSetWorkbookVisibility(compoundFile);
                             break;
-
-                        default:
-                            return;
                     }
 
                 

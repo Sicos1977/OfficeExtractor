@@ -34,7 +34,7 @@ namespace OfficeViewer
             var openFileDialog1 = new OpenFileDialog
             {
                 // ReSharper disable once LocalizableElement
-                Filter = "Microsoft Office files|*.DOC;*.DOCM;*.DOCX;*.DOT;*.DOTM;*.XLS;*.XLSB;*.XLSM;*.XLSX;*.XLT;" +
+                Filter = "Microsoft Office files|*.ODT;*.DOC;*.DOCM;*.DOCX;*.DOT;*.DOTM;*.XLS;*.XLSB;*.XLSM;*.XLSX;*.XLT;" +
                                                      "*.XLTM;*.XLTX;*.XLW;*.POT;*.PPT;*.POTM;*.POTX;*.PPS;*.PPSM;*.PPSX;*.PPTM;*.PPTX",
                 FilterIndex = 1,
                 Multiselect = false
