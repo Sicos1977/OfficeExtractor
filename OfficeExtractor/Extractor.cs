@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.IO.Packaging;
+using System.Text;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions;
@@ -610,6 +611,68 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         }
         #endregion
 
+        #region ExtractFileNameFromObjectReplacementFile
+        /// <summary>
+        /// Tries to extracts the original filename for the OLE object out of the ObjectReplacement file
+        /// </summary>
+        /// <param name="zipFile"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        private static string ExtractFileNameFromObjectReplacementFile(ZipFile zipFile, int index)
+        {
+            try
+            {
+                var zipEntry = zipFile[index];
+                using (var zipEntryStream = zipFile.GetInputStream(zipEntry))
+                using (var zipEntryMemoryStream = new MemoryStream())
+                {
+                    zipEntryStream.CopyTo(zipEntryMemoryStream);
+                    zipEntryMemoryStream.Position = 0x4470;
+                    using (var binaryReader = new BinaryReader(zipEntryMemoryStream))
+                    {
+                        while (binaryReader.BaseStream.Position != binaryReader.BaseStream.Length)
+                        {
+                            var value = binaryReader.ReadUInt16();
+
+                            // We have found the start position from where we are going to read
+                            // the original filename
+                            if (value != 0x8000 || binaryReader.PeekChar() != 0x46) continue;
+                            // Skip the peeked char
+                            zipEntryMemoryStream.Position += 2;
+
+                            // Read until we find the next 0x46 value
+                            while (binaryReader.BaseStream.Position != binaryReader.BaseStream.Length)
+                            {
+                                value = binaryReader.ReadUInt16();
+                                if (value != 0x46) continue;
+                                // Skip the next 6 bytes
+                                binaryReader.ReadBytes(6);
+
+                                // Get the length of name string
+                                var length = binaryReader.ReadUInt16();
+
+                                // Skip the next 2 bytes
+                                zipEntryMemoryStream.Position += 2;
+
+                                // Read the filename bytes
+                                var fileNameBytes = binaryReader.ReadBytes(length);
+                                var fileName = Encoding.Unicode.GetString(fileNameBytes);
+                                fileName = fileName.Replace("\0", string.Empty);
+                                return fileName;
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                return null;
+            }
+
+            return null;
+        }
+        #endregion
+
         #region ExtractFromOpenDocumentFormat
         /// <summary>
         /// Extracts all the embedded object from the OpenDocument <see cref="inputFile"/> to the 
@@ -638,13 +701,19 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                 if (!name.StartsWith("OBJECT") || name.Contains("/"))
                     continue;
 
+                string fileName = null;
+
+                var objectReplacementFileIndex = zipFile.FindEntry("ObjectReplacements/" + name, true);
+                if (objectReplacementFileIndex != -1)
+                    fileName = ExtractFileNameFromObjectReplacementFile(zipFile, objectReplacementFileIndex);
+                
                 using (var zipEntryStream = zipFile.GetInputStream(zipEntry))
                 using (var zipEntryMemoryStream = new MemoryStream())
                 {
                     zipEntryStream.CopyTo(zipEntryMemoryStream);
 
                     using (var compoundFile = new CompoundFile(zipEntryMemoryStream))
-                        result.Add(ExtractFromStorageNode(compoundFile.RootStorage, outputFolder));
+                        result.Add(ExtractFromStorageNode(compoundFile.RootStorage, outputFolder, fileName));
                 }
             }
 
@@ -662,6 +731,19 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// <exception cref="OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
         private static string ExtractFromStorageNode(CFStorage storage, string outputFolder)
         {
+            return ExtractFromStorageNode(storage, outputFolder, null);
+        }
+
+        /// <summary>
+        /// This method will extract and save the data from the given <see cref="storage"/> node to the <see cref="outputFolder"/>
+        /// </summary>
+        /// <param name="storage">The <see cref="CFStorage"/> node</param>
+        /// <param name="outputFolder">The outputFolder</param>
+        /// <param name="fileName">The fileName to use, null when the fileName is unknown</param>
+        /// <returns></returns>
+        /// <exception cref="OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
+        private static string ExtractFromStorageNode(CFStorage storage, string outputFolder, string fileName)
+        {
             // Embedded objects can be stored in 4 ways
             // - As a CONTENT stream
             // - As a Package
@@ -671,13 +753,13 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             {
                 var contents = storage.GetStream("CONTENTS");
                 if (contents.Size > 0)
-                    return SaveByteArrayToFile(contents.GetData(), outputFolder + "Embedded object");
+                    return SaveByteArrayToFile(contents.GetData(), outputFolder + (fileName ?? "Embedded object"));
             }
             else if (storage.ExistsStream("Package"))
             {
                 var package = storage.GetStream("Package");
                 if (package.Size > 0)
-                    return SaveByteArrayToFile(package.GetData(), outputFolder + "Embedded object");
+                    return SaveByteArrayToFile(package.GetData(), outputFolder + (fileName ?? "Embedded object"));
             }
             else if (storage.ExistsStream("\x01Ole10Native"))
             {
@@ -688,21 +770,21 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             else if (storage.ExistsStream("WordDocument"))
             {
                 // The embedded object is a Word file
-                var tempFileName = FileManager.FileExistsMakeNew(outputFolder + "Embedded Word document.doc");
+                var tempFileName = outputFolder + (fileName ?? FileManager.FileExistsMakeNew("Embedded Word document.doc"));
                 SaveStorageTreeToCompoundFile(storage, tempFileName);
                 return tempFileName;
             }
             else if (storage.ExistsStream("Workbook"))
             {
                 // The embedded object is an Excel file   
-                var tempFileName = FileManager.FileExistsMakeNew(outputFolder + "Embedded Excel document.xls");
+                var tempFileName = outputFolder + (fileName ?? FileManager.FileExistsMakeNew("Embedded Excel document.xls"));
                 SaveStorageTreeToCompoundFile(storage, tempFileName);
                 return tempFileName;
             }
             else if (storage.ExistsStream("PowerPoint Document"))
             {
                 // The embedded object is a PowerPoint file
-                var tempFileName = outputFolder + FileManager.FileExistsMakeNew("Embedded PowerPoint document.ppt");
+                var tempFileName = outputFolder + (fileName ?? FileManager.FileExistsMakeNew("Embedded PowerPoint document.ppt"));
                 SaveStorageTreeToCompoundFile(storage, tempFileName);
                 return tempFileName;
             }
@@ -777,20 +859,29 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         {
             // Because the data is stored in a stream we have no name for it so we
             // have to check the magic bytes to see with what kind of file we are dealing
-            var fileType = FileTypeSelector.GetFileTypeFileInfo(data);
-            if (fileType != null && !string.IsNullOrEmpty(fileType.Extension))
-                outputFile += "." + fileType.Extension;
+
+            var extension = Path.GetExtension(outputFile);
+
+            if (string.IsNullOrEmpty(extension))
+            {
+                var fileType = FileTypeSelector.GetFileTypeFileInfo(data);
+                if (fileType != null && !string.IsNullOrEmpty(fileType.Extension))
+                    outputFile += "." + fileType.Extension;
+
+                if (fileType != null) 
+                    extension = "." + fileType.Extension;
+            }
 
             // Check if the output file already exists and if so make a new one
             outputFile = FileManager.FileExistsMakeNew(outputFile);
 
-            if (fileType != null)
+            if (extension != null)
             {
-                switch (fileType.Extension.ToUpperInvariant())
+                switch (extension.ToUpperInvariant())
                 {
-                    case "XLS":
-                    case "XLT":
-                    case "XLW":
+                    case ".XLS":
+                    case ".XLT":
+                    case ".XLW":
                         using (var memoryStream = new MemoryStream(data))
                         using (var compoundFile = new CompoundFile(memoryStream))
                         {
@@ -799,11 +890,11 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                         }
                         break;
 
-                    case "XLSB":
-                    case "XLSM":
-                    case "XLSX":
-                    case "XLTM":
-                    case "XLTX":
+                    case ".XLSB":
+                    case ".XLSM":
+                    case ".XLSX":
+                    case ".XLTM":
+                    case ".XLTX":
                         using (var memoryStream = new MemoryStream(data))
                         {
                             var file = ExcelOpenXmlFormatSetWorkbookVisibility(memoryStream);
