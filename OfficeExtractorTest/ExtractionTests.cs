@@ -197,6 +197,35 @@ namespace OfficeExtractorTest
         }
         #endregion
 
+        #region Writer tests
+        [TestMethod]
+        public void OdtWithoutEmbeddedFiles()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
+            var files = extractor.ExtractToFolder("TestFiles\\An ODT document without embedded files.odt", outputFolder);
+            Assert.IsTrue(files.Count == 0);
+        }
+
+        [TestMethod]
+        public void OdtWith8EmbeddedFiles()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
+            var files = extractor.ExtractToFolder("TestFiles\\An ODT document with 8 embedded files.odt", outputFolder);
+            Assert.IsTrue(files.Count == 8);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(OEFileIsPasswordProtected))]
+        public void OdtWithPassword()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
+            extractor.ExtractToFolder("TestFiles\\An ODT document with password.odt", outputFolder);
+        }
+        #endregion
+
         #region Helper methods
         /// <summary>
         /// Creates a new temporary folder and returns the path to it

@@ -122,6 +122,15 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="TestFiles\An ODT document with 8 embedded files.odt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\An ODT document with password.odt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\An ODT document without embedded files.odt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="TestFiles\filetypenotsupported.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

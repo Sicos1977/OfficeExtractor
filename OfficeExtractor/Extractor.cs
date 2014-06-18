@@ -690,6 +690,25 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
 
             var zipFile = new ZipFile(inputFile);
   
+            // Check if the file is password protected
+            var manifestEntry = zipFile.FindEntry("META-INF/manifest.xml", true);
+            if (manifestEntry != -1)
+            {
+                using (var manifestEntryStream = zipFile.GetInputStream(manifestEntry))
+                using (var manifestEntryMemoryStream = new MemoryStream())
+                {
+                    manifestEntryStream.CopyTo(manifestEntryMemoryStream);
+                    manifestEntryMemoryStream.Position = 0;
+                    using (var streamReader = new StreamReader(manifestEntryMemoryStream))
+                    {
+                        var manifest = streamReader.ReadToEnd();
+                        if (manifest.ToUpperInvariant().Contains("ENCRYPTION-DATA"))
+                            throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
+                                                                "' is password protected");
+                    }
+                }
+            }
+
             foreach (ZipEntry zipEntry in zipFile)
             {
                 if (!zipEntry.IsFile) continue;
