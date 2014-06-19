@@ -117,7 +117,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
 
                 default:
                     throw new OEFileTypeNotSupported("The file '" + Path.GetFileName(inputFile) +
-                                                     "' is not supported, only .DOC, .DOCM, .DOCX, .DOT, .DOTM, .XLS, .XLSB, .XLSM, .XLSX, .XLT, " +
+                                                     "' is not supported, only .ODT, .DOC, .DOCM, .DOCX, .DOT, .DOTM, .XLS, .XLSB, .XLSM, .XLSX, .XLT, " +
                                                      ".XLTM, .XLTX, .XLW, .POT, .PPT, .POTM, .POTX, .PPS, .PPSM, .PPSX, .PPTM and .PPTX are supported");
             }
         }
