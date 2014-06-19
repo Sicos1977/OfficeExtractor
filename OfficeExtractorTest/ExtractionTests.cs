@@ -225,7 +225,7 @@ namespace OfficeExtractorTest
             extractor.ExtractToFolder("TestFiles\\An ODT document with password.odt", outputFolder);
         }
         #endregion
-
+        
         #region Open Office Calc tests
         [TestMethod]
         public void OdsWithoutEmbeddedFiles()
@@ -243,6 +243,44 @@ namespace OfficeExtractorTest
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
             var files = extractor.ExtractToFolder("TestFiles\\An ODS document with 2 embedded files.ods", outputFolder);
             Assert.IsTrue(files.Count == 2);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(OEFileIsPasswordProtected))]
+        public void OdsWithPassword()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
+            extractor.ExtractToFolder("TestFiles\\An ODS document with password.ods", outputFolder);
+        }
+        #endregion
+
+        #region Open Office Impress tests
+        [TestMethod]
+        public void OdpWithoutEmbeddedFiles()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
+            var files = extractor.ExtractToFolder("TestFiles\\An ODP document without embedded files.odp", outputFolder);
+            Assert.IsTrue(files.Count == 0);
+        }
+
+        [TestMethod]
+        public void OdpWith3EmbeddedFiles()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
+            var files = extractor.ExtractToFolder("TestFiles\\An ODP document with 3 embedded files.odp", outputFolder);
+            Assert.IsTrue(files.Count == 3);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(OEFileIsPasswordProtected))]
+        public void OdpWithPassword()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
+            extractor.ExtractToFolder("TestFiles\\An ODP document with password.odp", outputFolder);
         }
         #endregion
 

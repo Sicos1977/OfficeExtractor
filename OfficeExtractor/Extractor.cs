@@ -74,6 +74,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             {
                 case ".ODT":
                 case ".ODS":
+                case ".ODP":
                     return ExtractFromOpenDocumentFormat(inputFile, outputFolder);
 
                 case ".DOC":

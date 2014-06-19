@@ -122,7 +122,19 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="TestFiles\An ODP document with 3 embedded files.odp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\An ODP document with password.odp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\An ODP document without embedded files.odp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="TestFiles\An ODS document with 2 embedded files.ods">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\An ODS document with password.ods">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="TestFiles\An ODS document without embedded files.ods">
