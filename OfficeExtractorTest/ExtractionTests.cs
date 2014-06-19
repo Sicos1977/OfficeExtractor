@@ -29,7 +29,7 @@ namespace OfficeExtractorTest
             extractor.ExtractToFolder("TestFiles\\A corrupt compound document.doc", outputFolder);
         }
 
-        #region Word tests
+        #region Microsoft Office Word tests
         [TestMethod]
         public void DocWithoutEmbeddedFiles()
         {
@@ -85,7 +85,7 @@ namespace OfficeExtractorTest
         }
         #endregion
 
-        #region Excel tests
+        #region Microsoft Office Excel tests
         [TestMethod]
         public void XlsWithoutEmbeddedFiles()
         {
@@ -141,7 +141,7 @@ namespace OfficeExtractorTest
         }
         #endregion
 
-        #region PowerPoint tests
+        #region Microsoft Office PowerPoint tests
         [TestMethod]
         public void PptWithoutEmbeddedFiles()
         {
@@ -197,7 +197,7 @@ namespace OfficeExtractorTest
         }
         #endregion
 
-        #region Writer tests
+        #region Open Office Writer tests
         [TestMethod]
         public void OdtWithoutEmbeddedFiles()
         {
@@ -223,6 +223,26 @@ namespace OfficeExtractorTest
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
             extractor.ExtractToFolder("TestFiles\\An ODT document with password.odt", outputFolder);
+        }
+        #endregion
+
+        #region Open Office Calc tests
+        [TestMethod]
+        public void OdsWithoutEmbeddedFiles()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
+            var files = extractor.ExtractToFolder("TestFiles\\An ODS document without embedded files.ods", outputFolder);
+            Assert.IsTrue(files.Count == 0);
+        }
+
+        [TestMethod]
+        public void OdsWith2EmbeddedFiles()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
+            var files = extractor.ExtractToFolder("TestFiles\\An ODS document with 2 embedded files.ods", outputFolder);
+            Assert.IsTrue(files.Count == 2);
         }
         #endregion
 

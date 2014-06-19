@@ -122,6 +122,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="TestFiles\An ODS document with 2 embedded files.ods">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\An ODS document without embedded files.ods">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="TestFiles\An ODT document with 8 embedded files.odt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

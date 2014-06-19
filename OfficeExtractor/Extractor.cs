@@ -73,7 +73,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             switch (extension)
             {
                 case ".ODT":
-                    return ExtractFromOpenDocumentFormat(inputFile, "/word/embeddings/", outputFolder);
+                case ".ODS":
+                    return ExtractFromOpenDocumentFormat(inputFile, outputFolder);
 
                 case ".DOC":
                 case ".DOT":
@@ -679,12 +680,10 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
         /// </summary>
         /// <param name="inputFile">The OpenDocument format file</param>
-        /// <param name="embeddingPartString">The folder in the Office Open XML format (zip) file</param>
         /// <param name="outputFolder">The output folder</param>
         /// <returns>List with files or en empty list when there are nog embedded files</returns>
         /// <exception cref="OEFileIsPasswordProtected">Raised when the OpenDocument format file is password protected</exception>
-        public List<string> ExtractFromOpenDocumentFormat(string inputFile, string embeddingPartString,
-            string outputFolder)
+        public List<string> ExtractFromOpenDocumentFormat(string inputFile, string outputFolder)
         {
             var result = new List<string>();
 
