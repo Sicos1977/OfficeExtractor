@@ -33,5 +33,6 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 
 Core Team
----------
+=========
+
     Sicos1977 (Kees van Spelde)
