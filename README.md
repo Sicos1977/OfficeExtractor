@@ -1,7 +1,7 @@
 OfficeExtractor
 ===============
 
-Extracts embedded OLE objects from Word, Excel and PowerPoint files without needing the original programs.
+Extracts embedded OLE objects from Word, Excel, PowerPoint and Open Office files without needing the original programs.
 
 - 2014-06-11 Version 1.2
   - Added support for Open Office files; .ODT, .ODS and .ODP
