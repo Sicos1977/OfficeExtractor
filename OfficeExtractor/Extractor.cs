@@ -963,7 +963,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
             {
                 // The name of the file start at postion 7 so move to there
                 oleStream.Position = 6;
-                var tempFileName = new char[260];
+                var fileName = string.Empty;
 
                 // Read until we find a null character
                 int i;
@@ -971,12 +971,24 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
                 for (i = 0; i < 260; i++)
                 {
                     oleStream.Read(chr, 0, 1);
-                    tempFileName[i] = (char) chr[0];
                     if (chr[0] == 0)
                         break;
-                }
 
-                var fileName = new string(tempFileName, 0, i);
+                    // Unicode char found
+                    if (chr[0] >= 0xc2 && chr[0] <= 0xdf)
+                    {
+                        i += 1; 
+                        
+                        var chr2 = new byte[2];
+                        chr2[1] = chr[0];
+                        oleStream.Read(chr, 0, 1);
+                        chr2[0] = chr[0];
+
+                        fileName += Encoding.GetEncoding("ANSI6").GetString(chr2);
+                    }
+                    else
+                        fileName += (char) chr[0];
+                }
 
                 // We don't need this but we need to read it to know where we
                 // are located in the stream
