@@ -43,9 +43,9 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// </summary>
         /// <param name="inputFile"></param>
         /// <param name="outputFolder"></param>
-        /// <exception cref="ArgumentNullException">Raised when the <see cref="inputFile"/> or <see cref="outputFolder"/> is null or empty</exception>
-        /// <exception cref="FileNotFoundException">Raised when the <see cref="inputFile"/> does not exists</exception>
-        /// <exception cref="DirectoryNotFoundException">Raised when the <see cref="outputFolder"/> does not exists</exception>
+        /// <exception cref="ArgumentNullException">Raised when the <paramref name="inputFile"/> or <paramref name="outputFolder"/> is null or empty</exception>
+        /// <exception cref="FileNotFoundException">Raised when the <paramref name="inputFile"/> does not exists</exception>
+        /// <exception cref="DirectoryNotFoundException">Raised when the <paramref name="outputFolder"/> does not exists</exception>
         private static void CheckFileNameAndOutputFolder(string inputFile, string outputFolder)
         {
             if (string.IsNullOrEmpty(inputFile))
@@ -64,18 +64,18 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
 
         #region ExtractToFolder
         /// <summary>
-        /// Extracts all the embedded object from the Microsoft Office <see cref="inputFile"/> to the 
+        /// Extracts all the embedded object from the Microsoft Office <paramref name="inputFile"/> to the 
         /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
         /// </summary>
         /// <param name="inputFile">The Microsoft Office file</param>
         /// <param name="outputFolder">The output folder</param>
         /// <returns>List with files or en empty list when there are nog embedded files</returns>
-        /// <exception cref="ArgumentNullException">Raised when the <see cref="inputFile"/> or <see cref="outputFolder"/> is null or empty</exception>
-        /// <exception cref="FileNotFoundException">Raised when the <see cref="inputFile"/> does not exist</exception>
-        /// <exception cref="DirectoryNotFoundException">Raised when the <see cref="outputFolder"/> does not exists</exception>
-        /// <exception cref="OEFileIsCorrupt">Raised when the <see cref="inputFile" /> is corrupt</exception>
-        /// <exception cref="OEFileTypeNotSupported">Raised when the <see cref="inputFile"/> is not supported</exception>
-        /// <exception cref="OEFileIsPasswordProtected">Raised when the <see cref="inputFile"/> is password protected</exception>
+        /// <exception cref="ArgumentNullException">Raised when the <paramref name="inputFile"/> or <paramref name="outputFolder"/> is null or empty</exception>
+        /// <exception cref="FileNotFoundException">Raised when the <sparamref name="inputFile"/> does not exist</exception>
+        /// <exception cref="DirectoryNotFoundException">Raised when the <paramref name="outputFolder"/> does not exists</exception>
+        /// <exception cref="OEFileIsCorrupt">Raised when the <paramref name="inputFile" /> is corrupt</exception>
+        /// <exception cref="OEFileTypeNotSupported">Raised when the <paramref name="inputFile"/> is not supported</exception>
+        /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile"/> is password protected</exception>
         public List<string> ExtractToFolder(string inputFile, string outputFolder)
         {
             CheckFileNameAndOutputFolder(inputFile, outputFolder);
@@ -176,7 +176,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
 
         #region ExtractFromWordBinaryFormat
         /// <summary>
-        /// This method saves all the Word embedded binary objects from the <see cref="inputFile"/> to the
+        /// This method saves all the Word embedded binary objects from the <paramref name="inputFile"/> to the
         /// <see cref="outputFolder"/>
         /// </summary>
         /// <param name="inputFile">The binary Word file</param>
@@ -259,7 +259,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// it will contain 2 or more records.
         /// </summary>
         /// <param name="compoundFile"></param>
-        /// <exception cref="OEFileIsCorrupt">Raised when the <see cref="compoundFile"/> does not have a Workbook stream</exception>
+        /// <exception cref="OEFileIsCorrupt">Raised when the <paramref name="compoundFile"/> does not have a Workbook stream</exception>
         public static void ExcelBinaryFormatSetWorkbookVisibility(CompoundFile compoundFile)
         {
             if (!compoundFile.RootStorage.ExistsStream("WorkBook"))
@@ -335,7 +335,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// This method sets the workbook in an Open XML Format Excel file to visible
         /// </summary>
         /// <param name="spreadSheetDocument">The Open XML Format Excel file as a memorystream</param>
-        /// <exception cref="OEFileIsCorrupt">Raised when the <see cref="spreadSheetDocument"/> is corrupt</exception>
+        /// <exception cref="OEFileIsCorrupt">Raised when the <paramref name="spreadSheetDocument"/> is corrupt</exception>
         public static MemoryStream ExcelOpenXmlFormatSetWorkbookVisibility(MemoryStream spreadSheetDocument)
         {
             try
@@ -366,14 +366,14 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
 
         #region ExtractFromExcelBinaryFormat
         /// <summary>
-        /// This method saves all the Excel embedded binary objects from the <see cref="inputFile"/> to the
+        /// This method saves all the Excel embedded binary objects from the <paramref name="inputFile"/> to the
         /// <see cref="outputFolder"/>
         /// </summary>
         /// <param name="inputFile">The binary Excel file</param>
         /// <param name="outputFolder">The output folder</param>
         /// <param name="storageName">The complete or part of the name from the storage that needs to be saved</param>
         /// <returns></returns>
-        /// <exception cref="OEFileIsPasswordProtected">Raised when the <see cref="inputFile"/> is password protected</exception>
+        /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile"/> is password protected</exception>
         /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
         private static List<string> ExtractFromExcelBinaryFormat(string inputFile, string outputFolder, string storageName)
         {
@@ -446,8 +446,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
 
         #region ExtractFromPowerPointBinaryFormat
         /// <summary>
-        /// This method saves all the PowerPoint embedded binary objects from the <see cref="inputFile"/> to the
-        /// <see cref="outputFolder"/>
+        /// This method saves all the PowerPoint embedded binary objects from the <paramref name="inputFile"/> to the
+        /// <paramref name="outputFolder"/>
         /// </summary>
         /// <param name="inputFile">The binary PowerPoint file</param>
         /// <param name="outputFolder">The output folder</param>
@@ -529,8 +529,8 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
 
         #region CheckIfIsCompoundFileWithPackageStream
         /// <summary>
-        /// Checks if the <see cref="bytes"/> is a compound file and if so then tries to extract
-        /// the package stream from it. If it fails it will return the original <see cref="bytes"/>
+        /// Checks if the <paramref name="bytes"/> is a compound file and if so then tries to extract
+        /// the package stream from it. If it fails it will return the original <paramref name="bytes"/>
         /// </summary>
         /// <param name="bytes"></param>
         /// <returns></returns>
@@ -557,7 +557,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
 
         #region ExtractFromOfficeOpenXmlFormat
         /// <summary>
-        /// Extracts all the embedded object from the Office Open XML <see cref="inputFile"/> to the 
+        /// Extracts all the embedded object from the Office Open XML <paramref name="inputFile"/> to the 
         /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
         /// </summary>
         /// <param name="inputFile">The Office Open XML format file</param>
@@ -693,7 +693,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
 
         #region ExtractFromOpenDocumentFormat
         /// <summary>
-        /// Extracts all the embedded object from the OpenDocument <see cref="inputFile"/> to the 
+        /// Extracts all the embedded object from the OpenDocument <paramref name="inputFile"/> to the 
         /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
         /// </summary>
         /// <param name="inputFile">The OpenDocument format file</param>
@@ -830,7 +830,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
 
         #region SaveStorageTreeToCompoundFile
         /// <summary>
-        /// This will save the complete tree from the given <see cref="storage"/> to a new <see cref="CompoundFile"/>
+        /// This will save the complete tree from the given <paramref name="storage"/> to a new <see cref="CompoundFile"/>
         /// </summary>
         /// <param name="storage"></param>
         /// <param name="fileName">The filename with path for the new compound file</param>
@@ -884,7 +884,7 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
 
         #region SaveByteArrayToFile
         /// <summary>
-        /// Saves the <see cref="data"/> byte array to the <see cref="outputFile"/>
+        /// Saves the <paramref name="data"/> byte array to the <paramref name="outputFile"/>
         /// </summary>
         /// <param name="data">The stream as byte array</param>
         /// <param name="outputFile">The output filename with path</param>
