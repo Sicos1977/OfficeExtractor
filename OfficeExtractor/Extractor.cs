@@ -5,8 +5,10 @@ using System.IO;
 using System.IO.Compression;
 using System.IO.Packaging;
 using System.Text;
+using CompoundFileStorage.Exceptions;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentServices.Modules.Extractors.OfficeExtractor.Biff8;
 using DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions;
 using DocumentServices.Modules.Extractors.OfficeExtractor.Helpers;
 using CompoundFileStorage;
@@ -216,34 +218,56 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         /// <summary>
         /// Returns true when the Excel file is password protected
         /// </summary>
-        /// <param name="compoundFile"></param>
+        /// <param name="compoundFile">The Excel file to check</param>
         /// <returns></returns>
         /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
         public static bool ExcelBinaryFormatIsPasswordProtected(CompoundFile compoundFile)
         {
-            if (!compoundFile.RootStorage.ExistsStream("WorkBook"))
-                throw new OEFileIsCorrupt("Could not find the WorkBook stream in the file '" + compoundFile.FileName + "'");
-
-            var stream = compoundFile.RootStorage.GetStream("WorkBook") as CFStream;
-            if (stream == null) return false;
-
-            var bytes = stream.GetData();
-            using (var memoryStream = new MemoryStream(bytes))
-            using (var binaryReader = new BinaryReader(memoryStream))
+            try
             {
-                // Get the record type, at the beginning of the stream this should always be the BOF
-                var recordType = binaryReader.ReadUInt16();
+                if (compoundFile.RootStorage.ExistsStream("EncryptedPackage")) return true;
+                if (!compoundFile.RootStorage.ExistsStream("WorkBook"))
+                    throw new OEFileIsCorrupt("Could not find the WorkBook stream in the file '" +
+                                              compoundFile.FileName + "'");
 
-                // Something seems to be wrong, we would expect a BOF but for some reason it isn't so stop it
-                if (recordType != 0x809) 
-                    throw new OEFileIsCorrupt("The file '" + Path.GetFileName(compoundFile.FileName) + "' is corrupt");
+                var stream = compoundFile.RootStorage.GetStream("WorkBook") as CFStream;
+                if (stream == null) return false;
 
-                var recordLength = binaryReader.ReadUInt16();
-                binaryReader.BaseStream.Position += recordLength;
+                var bytes = stream.GetData();
+                using (var memoryStream = new MemoryStream(bytes))
+                using (var binaryReader = new BinaryReader(memoryStream))
+                {
+                    // Get the record type, at the beginning of the stream this should always be the BOF
+                    var recordType = binaryReader.ReadUInt16();
 
-                // Search after the BOF for the FilePass record, this starts with 2F hex
-                recordType = binaryReader.ReadUInt16();
-                return (recordType == 0x2F);
+                    // Something seems to be wrong, we would expect a BOF but for some reason it isn't so stop it
+                    if (recordType != 0x809)
+                        throw new OEFileIsCorrupt("The file '" + Path.GetFileName(compoundFile.FileName) +
+                                                  "' is corrupt");
+
+                    var recordLength = binaryReader.ReadUInt16();
+                    binaryReader.BaseStream.Position += recordLength;
+
+                    // Search after the BOF for the FilePass record, this starts with 2F hex
+                    recordType = binaryReader.ReadUInt16();
+                    if (recordType != 0x2F) return false;
+                    binaryReader.ReadUInt16();
+                    var filePassRecord = new FilePassRecord(memoryStream);
+                    var key = Biff8EncryptionKey.Create(filePassRecord.DocId);
+                    return !key.Validate(filePassRecord.SaltData, filePassRecord.SaltHash);
+                }
+            }
+            catch (OEExcelConfiguration)
+            {
+                // If we get an OCExcelConfiguration exception it means we have an unknown encryption
+                // type so we return a false so that Excel itself can figure out if the file is password
+                // protected
+                return false;
+            }
+            catch (CFFileFormatException)
+            {
+                // It seems the file is just a normal Microsoft Office 2007 and up Open XML file
+                return false;
             }
         }
         #endregion
@@ -379,9 +403,16 @@ namespace DocumentServices.Modules.Extractors.OfficeExtractor
         {
             using (var compoundFile = new CompoundFile(inputFile))
             {
-                if (ExcelBinaryFormatIsPasswordProtected(compoundFile))
-                    throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
-                                                        "' is password protected");
+                try
+                {
+                    if (ExcelBinaryFormatIsPasswordProtected(compoundFile))
+                        throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
+                                                            "' is password protected");
+                }
+                catch (CFCorruptedFileException)
+                {
+                    throw new OEFileIsCorrupt("The file '" + Path.GetFileName(inputFile) + "' is corrupt");
+                }
 
                 var result = new List<string>();
 

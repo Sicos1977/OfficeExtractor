@@ -47,6 +47,17 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Biff8\Arrays.cs" />
+    <Compile Include="Biff8\Biff8EncryptionKey.cs" />
+    <Compile Include="Biff8\Biff8RC4.cs" />
+    <Compile Include="Biff8\FIlePassRecord.cs" />
+    <Compile Include="Biff8\Interfaces\IBiffHeaderInput.cs" />
+    <Compile Include="Biff8\Interfaces\ILittleEndianInput.cs" />
+    <Compile Include="Biff8\Interfaces\ILittleEndianOutput.cs" />
+    <Compile Include="Biff8\LittleEndianInputStream.cs" />
+    <Compile Include="Biff8\LittleEndianOutputStream.cs" />
+    <Compile Include="Biff8\RC4.cs" />
+    <Compile Include="Exceptions\OEExcelConfiguration.cs" />
     <Compile Include="Exceptions\OEFileIsCorrupt.cs" />
     <Compile Include="Exceptions\OEFileIsPasswordProtected.cs" />
     <Compile Include="Exceptions\OEFileTypeNotSupported.cs" />
@@ -59,6 +70,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
