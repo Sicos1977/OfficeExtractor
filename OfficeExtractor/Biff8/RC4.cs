@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace DocumentServices.Modules.Extractors.OfficeExtractor.Biff8
+namespace OfficeExtractor.Biff8
 {
     /// <summary>
     /// Excel RC4 encryption or decryption

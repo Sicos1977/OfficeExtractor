@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DocumentServices.Modules.Extractors.OfficeExtractor.Biff8
+namespace OfficeExtractor.Biff8
 {
     /// <summary>
     ///     Used for both encrypting and decrypting BIFF8 streams. The internal <see cref="RC4" />

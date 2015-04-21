@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DocumentServices.Modules.Extractors.OfficeExtractor")]
+[assembly: AssemblyTitle("OfficeExtractor")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("DocumentServices.Modules.Extractors.OfficeExtractor")]
+[assembly: AssemblyProduct("OfficeExtractor")]
 [assembly: AssemblyCopyright("Copyright © 2014 Kees van Spelde")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

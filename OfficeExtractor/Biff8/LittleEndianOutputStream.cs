@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
-using DocumentServices.Modules.Extractors.OfficeExtractor.Biff8.Interfaces;
+using OfficeExtractor.Biff8.Interfaces;
 
-namespace DocumentServices.Modules.Extractors.OfficeExtractor.Biff8
+namespace OfficeExtractor.Biff8
 {
     /// <summary>
     ///     Wraps an <see cref="T:System.IO.Stream" /> providing <see cref="ILittleEndianOutput" />

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions
+namespace OfficeExtractor.Exceptions
 {
     /// <summary>
     ///     Raised when the Microsoft Office file type is not supported

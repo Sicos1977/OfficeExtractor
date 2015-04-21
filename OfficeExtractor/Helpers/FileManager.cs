@@ -3,7 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 
-namespace DocumentServices.Modules.Extractors.OfficeExtractor.Helpers
+namespace OfficeExtractor.Helpers
 {
     /// <summary>
     /// This class contains file management functions that are not available in the .NET framework

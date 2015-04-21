@@ -67,7 +67,7 @@ namespace OfficeViewer
                     tempFolder = GetTemporaryFolder();
                     _tempFolders.Add(tempFolder);
 
-                    var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
+                    var extractor = new OfficeExtractor.Extractor();
                     var files = extractor.SaveToFolder(openFileDialog1.FileName, tempFolder);
                     FilesListBox.Items.Clear();
 

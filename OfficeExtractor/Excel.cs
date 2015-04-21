@@ -6,11 +6,11 @@ using CompoundFileStorage;
 using CompoundFileStorage.Exceptions;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentServices.Modules.Extractors.OfficeExtractor.Biff8;
-using DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions;
-using DocumentServices.Modules.Extractors.OfficeExtractor.Helpers;
+using OfficeExtractor.Biff8;
+using OfficeExtractor.Exceptions;
+using OfficeExtractor.Helpers;
 
-namespace DocumentServices.Modules.Extractors.OfficeExtractor
+namespace OfficeExtractor
 {
     /// <summary>
     /// This class is used as a placeholder for all Excel related methods

@@ -1,4 +1,4 @@
-﻿namespace DocumentServices.Modules.Extractors.OfficeExtractor.Biff8.Interfaces
+﻿namespace OfficeExtractor.Biff8.Interfaces
 {
     internal interface ILittleEndianInput
     {

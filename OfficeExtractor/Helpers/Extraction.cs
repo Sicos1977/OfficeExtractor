@@ -2,10 +2,10 @@
 using System.IO;
 using System.Text;
 using CompoundFileStorage;
-using DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions;
+using OfficeExtractor.Exceptions;
 using ICSharpCode.SharpZipLib.Zip;
 
-namespace DocumentServices.Modules.Extractors.OfficeExtractor.Helpers
+namespace OfficeExtractor.Helpers
 {
     /// <summary>
     /// This class contain helpers method for extraction

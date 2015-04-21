@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Packaging;
-using DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions;
-using DocumentServices.Modules.Extractors.OfficeExtractor.Helpers;
+using OfficeExtractor.Exceptions;
+using OfficeExtractor.Helpers;
 using CompoundFileStorage;
 using ICSharpCode.SharpZipLib.Zip;
 
@@ -23,7 +23,7 @@ using ICSharpCode.SharpZipLib.Zip;
    limitations under the License.
 */
 
-namespace DocumentServices.Modules.Extractors.OfficeExtractor
+namespace OfficeExtractor
 {
     /// <summary>
     /// This class is used to extract embedded files from Word, Excel and PowerPoint files. It only extracts

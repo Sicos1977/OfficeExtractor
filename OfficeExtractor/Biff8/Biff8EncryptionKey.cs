@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
-using DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions;
+using OfficeExtractor.Exceptions;
 
-namespace DocumentServices.Modules.Extractors.OfficeExtractor.Biff8
+namespace OfficeExtractor.Biff8
 {
     /// <summary>
     /// Used to create or validate the Excel encryption key

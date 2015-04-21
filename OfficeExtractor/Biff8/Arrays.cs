@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace DocumentServices.Modules.Extractors.OfficeExtractor.Biff8
+namespace OfficeExtractor.Biff8
 {
     /// <summary>
     ///     Excel array helper methods

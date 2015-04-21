@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
-using DocumentServices.Modules.Extractors.OfficeExtractor.Biff8.Interfaces;
-using DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions;
+using OfficeExtractor.Biff8.Interfaces;
+using OfficeExtractor.Exceptions;
 
-namespace DocumentServices.Modules.Extractors.OfficeExtractor.Biff8
+namespace OfficeExtractor.Biff8
 {
 
     /// <summary>

@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using CompoundFileStorage;
-using DocumentServices.Modules.Extractors.OfficeExtractor.Exceptions;
-using DocumentServices.Modules.Extractors.OfficeExtractor.Helpers;
+using OfficeExtractor.Exceptions;
+using OfficeExtractor.Helpers;
 
-namespace DocumentServices.Modules.Extractors.OfficeExtractor
+namespace OfficeExtractor
 {
     /// <summary>
     /// This class is used as a placeholder for all Word related methods
