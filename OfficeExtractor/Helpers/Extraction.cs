@@ -374,5 +374,95 @@ namespace OfficeExtractor.Helpers
             return outputFile;
         }
         #endregion
+
+        /*
+        // Utility class to parse an OLE1.0 OLEOBJECT
+        public class PackagedObject
+        {
+            private PackagedObject()
+            {
+            }
+
+            public string DisplayName { get; private set; }
+            public string IconFilePath { get; private set; }
+            public int IconIndex { get; private set; }
+            public string FilePath { get; private set; }
+            public byte[] Data { get; private set; }
+
+            private static string ReadAnsiString(BinaryReader reader)
+            {
+                StringBuilder sb = new StringBuilder();
+                do
+                {
+                    byte b = reader.ReadByte();
+                    if (b == 0)
+                        return sb.ToString();
+
+                    sb.Append((char)b);
+                }
+                while (true);
+            }
+
+            public static PackagedObject Extract(Stream inputStream)
+            {
+                if (inputStream == null)
+                    throw new ArgumentNullException("inputStream");
+
+                BinaryReader reader = new BinaryReader(inputStream);
+                reader.ReadUInt16(); // sig
+                PackagedObject po = new PackagedObject();
+                po.DisplayName = ReadAnsiString(reader);
+                po.IconFilePath = ReadAnsiString(reader);
+                po.IconIndex = reader.ReadUInt16();
+                int type = reader.ReadUInt16();
+                if (type != 3) // 3 is file, 1 is link
+                    throw new NotSupportedException();
+
+                reader.ReadInt32(); // nextsize
+                po.FilePath = ReadAnsiString(reader);
+                var dataSize = reader.ReadInt32();
+                po.Data = reader.ReadBytes(dataSize);
+                // note after that, there may be unicode + long path info
+                return po;
+            }
+        }
+         
+        // Extracts an EmbeddedObject/ObjectHeader from a stream
+        // see [MS -OLEDS]: Object Linking and Embedding (OLE) Data Structures for more information
+        // chapter 2.2: OLE1.0 Format Structures 
+        public static void ExtractObjectData(Stream inputStream, Stream outputStream)
+        {
+            if (inputStream == null)
+                throw new ArgumentNullException("inputStream");
+
+            if (outputStream == null)
+                throw new ArgumentNullException("outputStream");
+
+            var reader = new BinaryReader(inputStream);
+            reader.ReadInt32(); // OLEVersion
+            var formatId = reader.ReadInt32(); // FormatID
+            if (formatId != 2) // see 2.2.4 Object Header. 2 means EmbeddedObject
+                throw new NotSupportedException();
+
+            ReadLengthPrefixedAnsiString(reader); // className
+            ReadLengthPrefixedAnsiString(reader); // topicName
+            ReadLengthPrefixedAnsiString(reader); // itemName
+
+            var nativeDataSize = reader.ReadInt32();
+            var bytes = reader.ReadBytes(nativeDataSize);
+            outputStream.Write(bytes, 0, bytes.Length);
+        }
+
+        // see chapter 2.1.4 LengthPrefixedAnsiString
+        private static string ReadLengthPrefixedAnsiString(BinaryReader reader)
+        {
+            var length = reader.ReadInt32();
+            if (length == 0)
+                return string.Empty;
+
+            var bytes = reader.ReadBytes(length);
+            return Encoding.Default.GetString(bytes, 0, length - 1);
+        } 
+        */
     }
 }
