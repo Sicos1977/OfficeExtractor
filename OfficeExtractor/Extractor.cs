@@ -99,6 +99,9 @@ namespace OfficeExtractor
                     // Word 2007 - 2013
                     return ExtractFromOfficeOpenXmlFormat(inputFile, "/word/embeddings/", outputFolder);
 
+                case ".RTF":
+                    return ExtractFromRtf(inputFile, outputFolder);
+
                 case ".XLS":
                 case ".XLT":
                 case ".XLW":
@@ -130,7 +133,7 @@ namespace OfficeExtractor
 
                 default:
                     throw new OEFileTypeNotSupported("The file '" + Path.GetFileName(inputFile) +
-                                                     "' is not supported, only .ODT, .DOC, .DOCM, .DOCX, .DOT, .DOTM, .XLS, .XLSB, .XLSM, .XLSX, .XLT, " +
+                                                     "' is not supported, only .ODT, .DOC, .DOCM, .DOCX, .DOT, .DOTM, .RTF, .XLS, .XLSB, .XLSM, .XLSX, .XLT, " +
                                                      ".XLTM, .XLTX, .XLW, .POT, .PPT, .POTM, .POTX, .PPS, .PPSM, .PPSX, .PPTM and .PPTX are supported");
             }
         }
@@ -268,6 +271,57 @@ namespace OfficeExtractor
 
                     using (var compoundFile = new CompoundFile(zipEntryMemoryStream))
                         result.Add(Extraction.SaveFromStorageNode(compoundFile.RootStorage, outputFolder, fileName));
+                }
+            }
+
+            return result;
+        }
+        #endregion
+
+        #region ExtractFromRtf
+        /// <summary>
+        /// Extracts all the embedded object from the RTF <paramref name="inputFile"/> to the 
+        /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
+        /// </summary>
+        /// <param name="inputFile">The RTF file</param>
+        /// <param name="outputFolder">The output folder</param>
+        /// <returns>List with files or en empty list when there are nog embedded files</returns>
+        internal List<string> ExtractFromRtf(string inputFile, string outputFolder)
+        {
+            var result = new List<string>();
+
+            using (var streamReader = new StreamReader(inputFile))
+            {
+                var rtfReader = new Rtf.Reader(streamReader);
+                var enumerator = rtfReader.Read().GetEnumerator();
+                while (enumerator.MoveNext())
+                {
+                    if (enumerator.Current.Text != "object") continue;
+                    var objectType = Rtf.Reader.GetNextText(enumerator);
+                    if (Rtf.Reader.MoveToNextControlWord(enumerator, "objdata"))
+                    {
+                        var data = Rtf.Reader.GetNextTextAsByteArray(enumerator);
+                        using (var stream = new MemoryStream(data))
+                        {
+                            switch (objectType)
+                            {
+                                case "Package":
+                                    var ole10Object = new Ole10Object(stream);
+                                    if (ole10Object.Type == Ole10ObjectType.File)
+                                    {
+                                        var fileName = Path.Combine(outputFolder, ole10Object.DisplayName);
+                                        fileName = FileManager.FileExistsMakeNew(fileName);
+                                        File.WriteAllBytes(fileName, ole10Object.Data);
+                                        result.Add(fileName);
+                                    }
+                                    break;
+
+                                case "objemb":
+                                    var compoundFile = new CompoundFile(stream);
+                                    break;
+                            }
+                        }
+                    }
                 }
             }
 

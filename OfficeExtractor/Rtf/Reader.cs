@@ -59,7 +59,7 @@ namespace OfficeExtractor.Rtf
 
         #region Read
         /// <summary>
-        /// Reads from the RTF file
+        /// Reads all the tokens from the RTF file and returns it as a IEnumerable list of objects
         /// </summary>
         /// <returns></returns>
         public IEnumerable<Object> Read()
@@ -78,7 +78,7 @@ namespace OfficeExtractor.Rtf
                         yield return new ControlWord(controlWord.ToString());
 
                     if (!string.IsNullOrWhiteSpace(text.ToString()))
-                        yield return new RtfText(text.ToString());
+                        yield return new Text(text.ToString());
 
                     yield break;
                 }
@@ -106,7 +106,7 @@ namespace OfficeExtractor.Rtf
                     case RtfParseState.ControlWord:
                         if (c == '\\')
                         {
-                            // another controlWord
+                            // Another controlWord
                             if (!string.IsNullOrWhiteSpace(controlWord.ToString()))
                             {
                                 yield return new ControlWord(controlWord.ToString());
@@ -117,7 +117,7 @@ namespace OfficeExtractor.Rtf
 
                         if (c == '{')
                         {
-                            // a new group
+                            // New group
                             state = RtfParseState.Group;
                             if (!string.IsNullOrWhiteSpace(controlWord.ToString()))
                             {
@@ -129,7 +129,7 @@ namespace OfficeExtractor.Rtf
 
                         if (c == '}')
                         {
-                            // close group
+                            // Close group
                             state = stack.Count > 0 ? stack.Pop() : RtfParseState.Group;
                             if (!string.IsNullOrWhiteSpace(controlWord.ToString()))
                             {
@@ -165,7 +165,7 @@ namespace OfficeExtractor.Rtf
                         {
                             if (!string.IsNullOrWhiteSpace(text.ToString()))
                             {
-                                yield return new RtfText(text.ToString());
+                                yield return new Text(text.ToString());
                                 text.Clear();
                             }
 
@@ -178,7 +178,7 @@ namespace OfficeExtractor.Rtf
                         {
                             if (!string.IsNullOrWhiteSpace(text.ToString()))
                             {
-                                yield return new RtfText(text.ToString());
+                                yield return new Text(text.ToString());
                                 text.Clear();
                             }
 
@@ -206,11 +206,11 @@ namespace OfficeExtractor.Rtf
 
                         if (!string.IsNullOrWhiteSpace(text.ToString()))
                         {
-                            yield return new RtfText(text.ToString());
+                            yield return new Text(text.ToString());
                             text.Clear();
                         }
 
-                        // Normal controlWord
+                        // Normal control word
                         controlWord.Append(c);
                         state = RtfParseState.ControlWord;
                         break;
@@ -254,7 +254,7 @@ namespace OfficeExtractor.Rtf
 
             while (enumerator.MoveNext())
             {
-                var rtfText = enumerator.Current as RtfText;
+                var rtfText = enumerator.Current as Text;
                 if (rtfText != null)
                     return rtfText.Text;
             }
@@ -276,7 +276,7 @@ namespace OfficeExtractor.Rtf
 
             while (enumerator.MoveNext())
             {
-                var rtfText = enumerator.Current as RtfText;
+                var rtfText = enumerator.Current as Text;
                 if (rtfText == null) continue;
                 var bytes = new List<byte>();
 

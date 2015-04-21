@@ -70,6 +70,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rtf\ControlWord.cs" />
     <Compile Include="Rtf\Object.cs" />
+    <Compile Include="Helpers\Ole10Object.cs" />
     <Compile Include="Rtf\Reader.cs" />
     <Compile Include="Rtf\Text.cs" />
     <Compile Include="Word.cs" />

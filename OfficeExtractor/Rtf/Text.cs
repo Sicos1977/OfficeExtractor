@@ -1,7 +1,7 @@
 ﻿namespace OfficeExtractor.Rtf
 {
-    public class RtfText : Object 
+    public class Text : Object 
     { 
-        public RtfText(string text) : base(text) { }
+        public Text(string text) : base(text) { }
     }
 }
