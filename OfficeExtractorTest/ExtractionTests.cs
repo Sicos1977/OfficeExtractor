@@ -17,7 +17,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            extractor.ExtractToFolder("TestFiles\\filetypenotsupported.txt", outputFolder);
+            extractor.SaveToFolder("TestFiles\\filetypenotsupported.txt", outputFolder);
         }
 
         [TestMethod]
@@ -26,7 +26,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            extractor.ExtractToFolder("TestFiles\\A corrupt compound document.doc", outputFolder);
+            extractor.SaveToFolder("TestFiles\\A corrupt compound document.doc", outputFolder);
         }
 
         #region Microsoft Office Word tests
@@ -35,7 +35,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\A DOC word document without embedded files.doc", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\A DOC word document without embedded files.doc", outputFolder);
             Assert.IsTrue(files.Count == 0);
         }
 
@@ -44,7 +44,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\A DOC word document with 7 embedded files.doc", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\A DOC word document with 7 embedded files.doc", outputFolder);
             Assert.IsTrue(files.Count == 7);
         }
 
@@ -54,7 +54,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            extractor.ExtractToFolder("TestFiles\\A DOC word document with password.doc", outputFolder);
+            extractor.SaveToFolder("TestFiles\\A DOC word document with password.doc", outputFolder);
         }
 
         [TestMethod]
@@ -62,7 +62,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\A DOCX word document without embedded files.docx", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\A DOCX word document without embedded files.docx", outputFolder);
             Assert.IsTrue(files.Count == 0);
         }
 
@@ -71,7 +71,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\A DOCX word document with 7 embedded files.docx", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\A DOCX word document with 7 embedded files.docx", outputFolder);
             Assert.IsTrue(files.Count == 7);
         }
 
@@ -81,7 +81,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            extractor.ExtractToFolder("TestFiles\\A DOCX word document with password.docx", outputFolder);
+            extractor.SaveToFolder("TestFiles\\A DOCX word document with password.docx", outputFolder);
         }
         #endregion
 
@@ -91,7 +91,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\A XLS excel document without embedded files.xls", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\A XLS excel document without embedded files.xls", outputFolder);
             Assert.IsTrue(files.Count == 0);
         }
 
@@ -100,7 +100,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\A XLS excel document with 2 embedded files.xls", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\A XLS excel document with 2 embedded files.xls", outputFolder);
             Assert.IsTrue(files.Count == 2);
         }
 
@@ -110,7 +110,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            extractor.ExtractToFolder("TestFiles\\A XLS excel document with password.xls", outputFolder);
+            extractor.SaveToFolder("TestFiles\\A XLS excel document with password.xls", outputFolder);
         }
 
         [TestMethod]
@@ -118,7 +118,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\A XLSX excel document without embedded files.xlsx", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\A XLSX excel document without embedded files.xlsx", outputFolder);
             Assert.IsTrue(files.Count == 0);
         }
 
@@ -127,7 +127,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\A XLSX excel document with 2 embedded files.xlsx", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\A XLSX excel document with 2 embedded files.xlsx", outputFolder);
             Assert.IsTrue(files.Count == 2);
         }
 
@@ -137,7 +137,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            extractor.ExtractToFolder("TestFiles\\A XLSX excel document with password.xlsx", outputFolder);
+            extractor.SaveToFolder("TestFiles\\A XLSX excel document with password.xlsx", outputFolder);
         }
         #endregion
 
@@ -147,7 +147,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\A PPT PowerPoint document without embedded files.ppt", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\A PPT PowerPoint document without embedded files.ppt", outputFolder);
             Assert.IsTrue(files.Count == 0);
         }
 
@@ -156,7 +156,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\A PPT powerpoint document with 3 embedded files.ppt", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\A PPT powerpoint document with 3 embedded files.ppt", outputFolder);
             Assert.IsTrue(files.Count == 3);
         }
 
@@ -166,7 +166,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            extractor.ExtractToFolder("TestFiles\\A PPT PowerPoint document with password.ppt", outputFolder);
+            extractor.SaveToFolder("TestFiles\\A PPT PowerPoint document with password.ppt", outputFolder);
         }
 
         [TestMethod]
@@ -174,7 +174,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\A PPTX PowerPoint document without embedded files.pptx", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\A PPTX PowerPoint document without embedded files.pptx", outputFolder);
             Assert.IsTrue(files.Count == 0);
         }
 
@@ -183,7 +183,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\A PPTX powerpoint document with 3 embedded files.pptx", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\A PPTX powerpoint document with 3 embedded files.pptx", outputFolder);
             Assert.IsTrue(files.Count == 3);
         }
 
@@ -193,7 +193,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            extractor.ExtractToFolder("TestFiles\\A PPTX PowerPoint document with password.pptx", outputFolder);
+            extractor.SaveToFolder("TestFiles\\A PPTX PowerPoint document with password.pptx", outputFolder);
         }
         #endregion
 
@@ -203,7 +203,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\An ODT document without embedded files.odt", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\An ODT document without embedded files.odt", outputFolder);
             Assert.IsTrue(files.Count == 0);
         }
 
@@ -212,7 +212,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\An ODT document with 8 embedded files.odt", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\An ODT document with 8 embedded files.odt", outputFolder);
             Assert.IsTrue(files.Count == 8);
         }
 
@@ -222,7 +222,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            extractor.ExtractToFolder("TestFiles\\An ODT document with password.odt", outputFolder);
+            extractor.SaveToFolder("TestFiles\\An ODT document with password.odt", outputFolder);
         }
         #endregion
         
@@ -232,7 +232,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\An ODS document without embedded files.ods", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\An ODS document without embedded files.ods", outputFolder);
             Assert.IsTrue(files.Count == 0);
         }
 
@@ -241,7 +241,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\An ODS document with 2 embedded files.ods", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\An ODS document with 2 embedded files.ods", outputFolder);
             Assert.IsTrue(files.Count == 2);
         }
 
@@ -251,7 +251,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            extractor.ExtractToFolder("TestFiles\\An ODS document with password.ods", outputFolder);
+            extractor.SaveToFolder("TestFiles\\An ODS document with password.ods", outputFolder);
         }
         #endregion
 
@@ -261,7 +261,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\An ODP document without embedded files.odp", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\An ODP document without embedded files.odp", outputFolder);
             Assert.IsTrue(files.Count == 0);
         }
 
@@ -270,7 +270,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            var files = extractor.ExtractToFolder("TestFiles\\An ODP document with 3 embedded files.odp", outputFolder);
+            var files = extractor.SaveToFolder("TestFiles\\An ODP document with 3 embedded files.odp", outputFolder);
             Assert.IsTrue(files.Count == 3);
         }
 
@@ -280,7 +280,7 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new DocumentServices.Modules.Extractors.OfficeExtractor.Extractor();
-            extractor.ExtractToFolder("TestFiles\\An ODP document with password.odp", outputFolder);
+            extractor.SaveToFolder("TestFiles\\An ODP document with password.odp", outputFolder);
         }
         #endregion
 

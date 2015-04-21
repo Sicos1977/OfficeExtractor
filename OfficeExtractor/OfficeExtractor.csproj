@@ -57,15 +57,19 @@
     <Compile Include="Biff8\LittleEndianInputStream.cs" />
     <Compile Include="Biff8\LittleEndianOutputStream.cs" />
     <Compile Include="Biff8\RC4.cs" />
+    <Compile Include="Excel.cs" />
     <Compile Include="Exceptions\OEExcelConfiguration.cs" />
     <Compile Include="Exceptions\OEFileIsCorrupt.cs" />
     <Compile Include="Exceptions\OEFileIsPasswordProtected.cs" />
     <Compile Include="Exceptions\OEFileTypeNotSupported.cs" />
     <Compile Include="Extractor.cs" />
-    <Compile Include="Helpers\ExceptionHelpers.cs" />
+    <Compile Include="Helpers\Extraction.cs" />
     <Compile Include="Helpers\FileManager.cs" />
     <Compile Include="Helpers\FileTypeSelector.cs" />
+    <Compile Include="PowerPoint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RtfReader.cs" />
+    <Compile Include="Word.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
