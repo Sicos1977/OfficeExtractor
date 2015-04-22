@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace OfficeExtractor.Helpers
+namespace OfficeExtractor.Ole
 {
     #region Ole10ObjectType
     /// <summary>
@@ -33,7 +33,7 @@ namespace OfficeExtractor.Helpers
     /// See the Microsoft documentation at https://msdn.microsoft.com/en-us/library/dd942402.aspx
     /// </remarks>
     /// </summary>
-    internal class Ole10Object
+    internal class ObjectV10
     {
         #region Properties
         /// <summary>
@@ -42,9 +42,9 @@ namespace OfficeExtractor.Helpers
         public UInt16 Signature { get; private set; }
 
         /// <summary>
-        /// The displayname for the object
+        /// The name of the file
         /// </summary>
-        public string DisplayName { get; private set; }
+        public string FileName { get; private set; }
         
         /// <summary>
         /// The path to the icon for the file that is inside the packaged object
@@ -57,7 +57,7 @@ namespace OfficeExtractor.Helpers
         public int IconIndex { get; private set; }
 
         /// <summary>
-        /// The name of the packaged file
+        /// The original locatation of the file (before it was embedded)
         /// </summary>
         public string FilePath { get; private set; }
 
@@ -97,14 +97,16 @@ namespace OfficeExtractor.Helpers
         /// Creates this object and sets all its properties
         /// </summary>
         /// <param name="inputStream">The OLE version 1.0 object as a stream</param>
-        public Ole10Object(Stream inputStream)
+        public ObjectV10(Stream inputStream)
         {
             if (inputStream == null)
                 throw new ArgumentNullException("inputStream");
 
+            inputStream.Position = 0;
+
             var reader = new BinaryReader(inputStream);
             Signature = reader.ReadUInt16(); // Signature
-            DisplayName = ReadAnsiString(reader);
+            FileName = ReadAnsiString(reader);
             IconFilePath = ReadAnsiString(reader);
             IconIndex = reader.ReadUInt16();
 

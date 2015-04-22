@@ -4,6 +4,7 @@ using System.Text;
 using CompoundFileStorage;
 using OfficeExtractor.Exceptions;
 using ICSharpCode.SharpZipLib.Zip;
+using OfficeExtractor.Ole;
 
 namespace OfficeExtractor.Helpers
 {
@@ -109,7 +110,7 @@ namespace OfficeExtractor.Helpers
         /// <param name="ole10Native">The Ole10Native object as an byte array</param>
         /// <param name="outputFolder">The output folder</param>
         /// <returns>The filename with path from the extracted file</returns>
-        internal static string SaveFileFromOle10Native(byte[] ole10Native, string outputFolder)
+        internal static string SaveFileFromOle10Native1(byte[] ole10Native, string outputFolder)
         {
             // Convert the byte array to a stream
             using (Stream oleStream = new MemoryStream(ole10Native))
@@ -227,7 +228,14 @@ namespace OfficeExtractor.Helpers
             {
                 var ole10Native = storage.GetStream("\x01Ole10Native");
                 if (ole10Native.Size > 0)
-                    return SaveFileFromOle10Native(ole10Native.GetData(), outputFolder);
+                {
+                    using (var stream = new MemoryStream(ole10Native.GetData()))
+                    {
+                        var oleObjectV20 = new ObjectV20(stream);
+                        var outputFile = Path.Combine(outputFolder, oleObjectV20.FileName ?? "Embedded object");
+                        return SaveByteArrayToFile(oleObjectV20.Data, outputFile);
+                    } 
+                }
             }
             else if (storage.ExistsStream("WordDocument"))
             {

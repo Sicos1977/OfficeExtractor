@@ -6,6 +6,7 @@ using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
 using CompoundFileStorage;
 using ICSharpCode.SharpZipLib.Zip;
+using OfficeExtractor.Ole;
 
 /*
    Copyright 2013-2015 Kees van Spelde
@@ -296,35 +297,38 @@ namespace OfficeExtractor
                 var enumerator = rtfReader.Read().GetEnumerator();
                 while (enumerator.MoveNext())
                 {
-                    if (enumerator.Current.Text != "object") continue;
-                    var objectType = Rtf.Reader.GetNextText(enumerator);
-                    if (Rtf.Reader.MoveToNextControlWord(enumerator, "objdata"))
+                    // {\object\objemb\objw1440\objh1125{\
+                    if (enumerator.Current.Text == "object")
                     {
-                        var data = Rtf.Reader.GetNextTextAsByteArray(enumerator);
-                        using (var stream = new MemoryStream(data))
+                        if (Rtf.Reader.MoveToNextControlWord(enumerator, "objclass"))
                         {
-                            switch (objectType)
+                            var className = Rtf.Reader.GetNextText(enumerator);
+
+                            switch (className)
                             {
                                 case "Package":
-                                    var ole10Object = new Ole10Object(stream);
-                                    if (ole10Object.Type == Ole10ObjectType.File)
+                                    if (Rtf.Reader.MoveToNextControlWord(enumerator, "objdata"))
                                     {
-                                        var fileName = Path.Combine(outputFolder, ole10Object.DisplayName);
-                                        fileName = FileManager.FileExistsMakeNew(fileName);
-                                        File.WriteAllBytes(fileName, ole10Object.Data);
-                                        result.Add(fileName);
+                                        var data = Rtf.Reader.GetNextTextAsByteArray(enumerator);
+                                        using (var stream = new MemoryStream(data))
+                                        {
+                                            var oleObjectV10 = new ObjectV10(stream);
+                                            var fileName = Path.Combine(outputFolder, oleObjectV10.FileName);
+                                            fileName = FileManager.FileExistsMakeNew(fileName);
+                                            File.WriteAllBytes(fileName, oleObjectV10.Data);
+                                            result.Add(fileName);
+                                        }
                                     }
                                     break;
 
-                                case "objemb":
-                                    var compoundFile = new CompoundFile(stream);
+                                default:
+
                                     break;
                             }
                         }
                     }
                 }
             }
-
             return result;
         }
         #endregion
