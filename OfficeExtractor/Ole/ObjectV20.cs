@@ -6,10 +6,10 @@ namespace OfficeExtractor.Ole
 {
     /// <summary>
     /// This class represents an OLE version 2.0 object
+    /// </summary>
     /// <remarks>
     /// See the Microsoft documentation at https://msdn.microsoft.com/en-us/library/dd942280.aspx
     /// </remarks>
-    /// </summary>
     internal class ObjectV20
     {
         #region Properties
@@ -36,7 +36,7 @@ namespace OfficeExtractor.Ole
 
         #region ReadAnsiString
         /// <summary>
-        /// Reads an ansi string from the given <paramref name="inputStream"/>
+        /// Reads an fixed length ansi string from the given <paramref name="inputStream"/>
         /// </summary>
         /// <param name="inputStream"></param>
         /// <returns></returns>

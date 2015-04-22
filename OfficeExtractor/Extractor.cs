@@ -321,8 +321,33 @@ namespace OfficeExtractor
                                     }
                                     break;
 
-                                default:
+                                case "\x01Ole10Native":
+                                    if (Rtf.Reader.MoveToNextControlWord(enumerator, "objdata"))
+                                    {
+                                        var data = Rtf.Reader.GetNextTextAsByteArray(enumerator);
+                                        using (var stream = new MemoryStream(data))
+                                        {
+                                            var oleObjectV20 = new ObjectV20(stream);
+                                            var outputFile = Path.Combine(outputFolder, oleObjectV20.FileName ?? "Embedded object");
+                                            result.Add(Extraction.SaveByteArrayToFile(oleObjectV20.Data, outputFile));
+                                        }
+                                    }
+                                    break;
 
+                                default:
+                                    if (Rtf.Reader.MoveToNextControlWord(enumerator, "objdata"))
+                                    {
+                                        var data = Rtf.Reader.GetNextTextAsByteArray(enumerator);
+                                        //File.WriteAllBytes("d:\\kees.txt", data);
+                                        using (var stream = new MemoryStream(data))
+                                        {
+                                            var oleObjectV10 = new ObjectV10(stream);
+                                            var fileName = Path.Combine(outputFolder, oleObjectV10.FileName);
+                                            fileName = FileManager.FileExistsMakeNew(fileName);
+                                            File.WriteAllBytes(fileName, oleObjectV10.Data);
+                                            result.Add(fileName);
+                                        }
+                                    }
                                     break;
                             }
                         }
