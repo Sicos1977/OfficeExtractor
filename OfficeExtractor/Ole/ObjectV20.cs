@@ -40,7 +40,7 @@ namespace OfficeExtractor.Ole
         /// </summary>
         /// <param name="inputStream"></param>
         /// <returns></returns>
-        private static string ReadAnsiString(Stream inputStream)
+        private static string ReadString(Stream inputStream)
         {
             var result = string.Empty;
 
@@ -90,8 +90,8 @@ namespace OfficeExtractor.Ole
             // The name of the file start at postion 7 so move to there
             inputStream.Position += 4;
 
-            FileName = ReadAnsiString(inputStream);
-            FilePath = ReadAnsiString(inputStream);
+            FileName = ReadString(inputStream);
+            FilePath = ReadString(inputStream);
 
             // We need to skip the next four bytes
             inputStream.Position += 4;

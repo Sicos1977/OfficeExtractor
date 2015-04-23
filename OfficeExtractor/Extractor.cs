@@ -313,9 +313,9 @@ namespace OfficeExtractor
                                         using (var stream = new MemoryStream(data))
                                         {
                                             var oleObjectV10 = new ObjectV10(stream);
-                                            var fileName = Path.Combine(outputFolder, oleObjectV10.FileName);
+                                            var fileName = Path.Combine(outputFolder, oleObjectV10.ItemName);
                                             fileName = FileManager.FileExistsMakeNew(fileName);
-                                            File.WriteAllBytes(fileName, oleObjectV10.Data);
+                                            File.WriteAllBytes(fileName, oleObjectV10.NativeData);
                                             result.Add(fileName);
                                         }
                                     }
@@ -342,9 +342,9 @@ namespace OfficeExtractor
                                         using (var stream = new MemoryStream(data))
                                         {
                                             var oleObjectV10 = new ObjectV10(stream);
-                                            var fileName = Path.Combine(outputFolder, oleObjectV10.FileName);
+                                            var fileName = Path.Combine(outputFolder, oleObjectV10.ItemName);
                                             fileName = FileManager.FileExistsMakeNew(fileName);
-                                            File.WriteAllBytes(fileName, oleObjectV10.Data);
+                                            File.WriteAllBytes(fileName, oleObjectV10.NativeData);
                                             result.Add(fileName);
                                         }
                                     }
