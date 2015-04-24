@@ -66,6 +66,7 @@
     <Compile Include="Helpers\Extraction.cs" />
     <Compile Include="Helpers\FileManager.cs" />
     <Compile Include="Helpers\FileTypeSelector.cs" />
+    <Compile Include="Helpers\Strings.cs" />
     <Compile Include="Ole\ObjectV20.cs" />
     <Compile Include="PowerPoint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

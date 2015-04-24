@@ -13,6 +13,11 @@ namespace OfficeExtractor.Helpers
     /// </summary>
     internal static class Extraction
     {
+        /// <summary>
+        /// Default name for embedded object without a name
+        /// </summary>
+        public const string DefaultEmbeddedObjectName = "Embedded object";
+
         #region GetBytesFromCompoundPackageStream
         /// <summary>
         /// Checks if the <paramref name="bytes"/> is a compound file and if so then tries to extract
@@ -135,13 +140,13 @@ namespace OfficeExtractor.Helpers
             {
                 var contents = storage.GetStream("CONTENTS");
                 if (contents.Size > 0)
-                    return SaveByteArrayToFile(contents.GetData(), outputFolder + (fileName ?? "Embedded object"));
+                    return SaveByteArrayToFile(contents.GetData(), outputFolder + (fileName ?? DefaultEmbeddedObjectName));
             }
             else if (storage.ExistsStream("Package"))
             {
                 var package = storage.GetStream("Package");
                 if (package.Size > 0)
-                    return SaveByteArrayToFile(package.GetData(), outputFolder + (fileName ?? "Embedded object"));
+                    return SaveByteArrayToFile(package.GetData(), outputFolder + (fileName ?? DefaultEmbeddedObjectName));
             }
             else if (storage.ExistsStream("\x01Ole10Native"))
             {
@@ -151,7 +156,7 @@ namespace OfficeExtractor.Helpers
                     using (var stream = new MemoryStream(ole10Native.GetData()))
                     {
                         var oleObjectV20 = new ObjectV20(stream);
-                        var outputFile = Path.Combine(outputFolder, oleObjectV20.FileName ?? "Embedded object");
+                        var outputFile = Path.Combine(outputFolder, oleObjectV20.FileName ?? DefaultEmbeddedObjectName);
                         return SaveByteArrayToFile(oleObjectV20.Data, outputFile);
                     } 
                 }
@@ -177,6 +182,13 @@ namespace OfficeExtractor.Helpers
                 SaveStorageTreeToCompoundFile(storage, tempFileName);
                 return tempFileName;
             }
+            else if (storage.ExistsStream("EmbeddedOdf"))
+            {
+                // The embedded object is an Embedded ODF file
+                var tempFileName = outputFolder + (fileName ?? FileManager.FileExistsMakeNew("Embedded ODF document.odf"));
+                SaveStorageTreeToCompoundFile(storage, tempFileName);
+                return tempFileName;
+            }
 
             return null;
         }
@@ -193,17 +205,8 @@ namespace OfficeExtractor.Helpers
             using (var compoundFile = new CompoundFile())
             {
                 GetStorageChain(compoundFile.RootStorage, storage);
-                var extension = Path.GetExtension(fileName);
-
-                if (extension != null)
-                    switch (extension.ToUpperInvariant())
-                    {
-                        case ".XLS":
-                        case ".XLT":
-                        case ".XLW":
-                            Excel.SetWorkbookVisibility(compoundFile);
-                            break;
-                    }
+                if(compoundFile.RootStorage.ExistsStream("WorkBook"))
+                    Excel.SetWorkbookVisibility(compoundFile);
 
                 compoundFile.Save(fileName);
             }

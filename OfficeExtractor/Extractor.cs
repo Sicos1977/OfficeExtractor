@@ -101,7 +101,7 @@ namespace OfficeExtractor
                     return ExtractFromOfficeOpenXmlFormat(inputFile, "/word/embeddings/", outputFolder);
 
                 case ".RTF":
-                    return ExtractFromRtf(inputFile, outputFolder);
+                    return Rtf.SaveToFolder(inputFile, outputFolder);
 
                 case ".XLS":
                 case ".XLT":
@@ -275,84 +275,6 @@ namespace OfficeExtractor
                 }
             }
 
-            return result;
-        }
-        #endregion
-
-        #region ExtractFromRtf
-        /// <summary>
-        /// Extracts all the embedded object from the RTF <paramref name="inputFile"/> to the 
-        /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
-        /// </summary>
-        /// <param name="inputFile">The RTF file</param>
-        /// <param name="outputFolder">The output folder</param>
-        /// <returns>List with files or en empty list when there are nog embedded files</returns>
-        internal List<string> ExtractFromRtf(string inputFile, string outputFolder)
-        {
-            var result = new List<string>();
-
-            using (var streamReader = new StreamReader(inputFile))
-            {
-                var rtfReader = new Rtf.Reader(streamReader);
-                var enumerator = rtfReader.Read().GetEnumerator();
-                while (enumerator.MoveNext())
-                {
-                    if (enumerator.Current.Text == "object")
-                    {
-                        if (Rtf.Reader.MoveToNextControlWord(enumerator, "objclass"))
-                        {
-                            var className = Rtf.Reader.GetNextText(enumerator);
-
-                            switch (className)
-                            {
-                                case "Package":
-                                    if (Rtf.Reader.MoveToNextControlWord(enumerator, "objdata"))
-                                    {
-                                        var data = Rtf.Reader.GetNextTextAsByteArray(enumerator);
-                                        using (var stream = new MemoryStream(data))
-                                        {
-                                            var oleObjectV10 = new ObjectV10(stream);
-                                            var fileName = Path.Combine(outputFolder, oleObjectV10.ItemName);
-                                            fileName = FileManager.FileExistsMakeNew(fileName);
-                                            File.WriteAllBytes(fileName, oleObjectV10.NativeData);
-                                            result.Add(fileName);
-                                        }
-                                    }
-                                    break;
-
-                                case "\x01Ole10Native":
-                                    if (Rtf.Reader.MoveToNextControlWord(enumerator, "objdata"))
-                                    {
-                                        var data = Rtf.Reader.GetNextTextAsByteArray(enumerator);
-                                        using (var stream = new MemoryStream(data))
-                                        {
-                                            var oleObjectV20 = new ObjectV20(stream);
-                                            var outputFile = Path.Combine(outputFolder, oleObjectV20.FileName ?? "Embedded object");
-                                            result.Add(Extraction.SaveByteArrayToFile(oleObjectV20.Data, outputFile));
-                                        }
-                                    }
-                                    break;
-
-                                default:
-                                    if (Rtf.Reader.MoveToNextControlWord(enumerator, "objdata"))
-                                    {
-                                        var data = Rtf.Reader.GetNextTextAsByteArray(enumerator);
-                                        //File.WriteAllBytes("d:\\kees.txt", data);
-                                        using (var stream = new MemoryStream(data))
-                                        {
-                                            var oleObjectV10 = new ObjectV10(stream);
-                                            var fileName = Path.Combine(outputFolder, oleObjectV10.ItemName);
-                                            fileName = FileManager.FileExistsMakeNew(fileName);
-                                            File.WriteAllBytes(fileName, oleObjectV10.NativeData);
-                                            result.Add(fileName);
-                                        }
-                                    }
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
             return result;
         }
         #endregion

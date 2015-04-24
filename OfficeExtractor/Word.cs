@@ -60,6 +60,7 @@ namespace OfficeExtractor
         {
             if (!compoundFile.RootStorage.ExistsStream("WordDocument")) 
                 throw new OEFileIsCorrupt("Could not find the WordDocument stream in the file '" + compoundFile.FileName + "'");
+
             var stream = compoundFile.RootStorage.GetStream("WordDocument") as CFStream;
             if (stream == null) return false;
 

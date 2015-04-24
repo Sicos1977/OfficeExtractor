@@ -34,7 +34,7 @@ namespace OfficeExtractor.Ole
         public byte[] Data { get; private set; }
         #endregion
 
-        #region ReadAnsiString
+        #region ReadString
         /// <summary>
         /// Reads an fixed length ansi string from the given <paramref name="inputStream"/>
         /// </summary>
@@ -84,8 +84,8 @@ namespace OfficeExtractor.Ole
 
             inputStream.Position = 0;
 
-            var reader = new BinaryReader(inputStream);
-            Signature = reader.ReadUInt16(); // Signature
+            var binaryReader = new BinaryReader(inputStream);
+            Signature = binaryReader.ReadUInt16(); // Signature
 
             // The name of the file start at postion 7 so move to there
             inputStream.Position += 4;

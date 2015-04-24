@@ -61,7 +61,7 @@ namespace OfficeExtractor
                                 if (bytes[0] == 0xD0 && bytes[1] == 0xCF)
                                     bytes = Extraction.GetBytesFromCompoundPackageStream(bytes);
 
-                                result.Add(Extraction.SaveByteArrayToFile(bytes, outputFolder + "Embedded object"));
+                                result.Add(Extraction.SaveByteArrayToFile(bytes, outputFolder + Extraction.DefaultEmbeddedObjectName));
                             }
                             else
                             {
@@ -83,7 +83,7 @@ namespace OfficeExtractor
                                 if (decompressedBytes[0] == 0xD0 && decompressedBytes[1] == 0xCF)
                                     decompressedBytes = Extraction.GetBytesFromCompoundPackageStream(decompressedBytes);
 
-                                result.Add(Extraction.SaveByteArrayToFile(decompressedBytes, outputFolder + "Embedded object"));
+                                result.Add(Extraction.SaveByteArrayToFile(decompressedBytes, outputFolder + Extraction.DefaultEmbeddedObjectName));
                             }
                         }
                         else
