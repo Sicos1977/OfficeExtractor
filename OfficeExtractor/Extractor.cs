@@ -297,7 +297,6 @@ namespace OfficeExtractor
                 var enumerator = rtfReader.Read().GetEnumerator();
                 while (enumerator.MoveNext())
                 {
-                    // {\object\objemb\objw1440\objh1125{\
                     if (enumerator.Current.Text == "object")
                     {
                         if (Rtf.Reader.MoveToNextControlWord(enumerator, "objclass"))

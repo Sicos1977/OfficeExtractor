@@ -1,4 +1,4 @@
-﻿namespace OfficeExtractor.Rtf
+﻿namespace OfficeExtractor.RtfParser
 {
     public class ControlWord : Object
     {

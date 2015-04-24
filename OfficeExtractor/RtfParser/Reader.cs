@@ -4,7 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 
-namespace OfficeExtractor.Rtf
+namespace OfficeExtractor.RtfParser
 {
     /// <summary>
     /// Used to read from an RTF file

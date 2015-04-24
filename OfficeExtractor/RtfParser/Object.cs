@@ -1,6 +1,6 @@
 using System;
 
-namespace OfficeExtractor.Rtf
+namespace OfficeExtractor.RtfParser
 {
     public class Object
     {
