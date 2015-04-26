@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using OfficeExtractor.Helpers;
 
 namespace OfficeExtractor.Ole
 {
@@ -14,9 +15,20 @@ namespace OfficeExtractor.Ole
     {
         #region Properties
         /// <summary>
-        /// The signature of the file
+        /// This MUST be a LengthPrefixedUnicodeString which contain a registered clipboard format name
         /// </summary>
-        public UInt16 Signature { get; private set; }
+        public string StringFormatData { get; private set; }
+
+        /// <summary>
+        /// Identifies the <see cref="NativeData"/> when this file is a Clipboard object
+        /// </summary>
+        public OleClipboardFormat ClipboardFormat { get; private set; }
+
+        /// <summary>
+        /// This MUST be a LengthPrefixedAnsiString that contains a value identifying the creating application. 
+        /// The value is mapped to the creating application in an implementation-specific manner
+        /// </summary>
+        public string ClassName { get; private set; }
 
         /// <summary>
         /// The name of the file
@@ -85,10 +97,31 @@ namespace OfficeExtractor.Ole
             inputStream.Position = 0;
 
             var binaryReader = new BinaryReader(inputStream);
-            Signature = binaryReader.ReadUInt16(); // Signature
+            
+            // MarkerOrLength (4 bytes): If this is set to 0x00000000, the FormatOrAnsiString field MUST NOT 
+            // be present. If this field is set to 0xFFFFFFFF or 0xFFFFFFFE, the FormatOrAnsiString field MUST 
+            // be 4 bytes in size and MUST contain a standard clipboard format identifier. 
+            var markerOrLength = binaryReader.ReadUInt32();
+
+            switch (markerOrLength)
+            {
+                case 0x00000000:
+                    // Skip
+                    break;
+
+                case 0xFFFFFFFF:
+                case 0xFFFFFFFE:
+                    ClipboardFormat = (OleClipboardFormat)binaryReader.ReadUInt32();
+                    break;
+
+                default:
+                    inputStream.Position -= 4;
+                    StringFormatData = Strings.Read4ByteLengthPrefixedString(binaryReader);
+                    break;
+            }
 
             // The name of the file start at postion 7 so move to there
-            inputStream.Position += 4;
+            //inputStream.Position += 4;
 
             FileName = ReadString(inputStream);
             FilePath = ReadString(inputStream);

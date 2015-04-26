@@ -112,16 +112,11 @@ namespace OfficeExtractor
             using (var memoryStream = new MemoryStream(bytes))
             using (var binaryReader = new BinaryReader(memoryStream))
             {
-                var version = binaryReader.ReadUInt16();
-                var longPathName = Strings.Read1ByteLengthPrefixedString(binaryReader);
-                var pathName = Strings.Read1ByteLengthPrefixedString(binaryReader);
-                var displayName = Strings.Read1ByteLengthPrefixedString(binaryReader);
-                var longFileName = Strings.Read1ByteLengthPrefixedString(binaryReader);
-                var fileName = Strings.Read1ByteLengthPrefixedString(binaryReader);
+                var ad = new AttachDescStream(binaryReader);
 
-                if (!string.IsNullOrEmpty(longFileName)) return longFileName;
-                if (!string.IsNullOrEmpty(displayName)) return displayName;
-                if (!string.IsNullOrEmpty(fileName)) return fileName;
+                if (!string.IsNullOrEmpty(ad.LongFileName)) return ad.LongFileName;
+                if (!string.IsNullOrEmpty(ad.DisplayName)) return ad.DisplayName;
+                if (!string.IsNullOrEmpty(ad.FileName)) return ad.FileName;
             }
 
             return null;
@@ -173,8 +168,7 @@ namespace OfficeExtractor
         {
             using (var binaryReader = new BinaryReader(stream))
             {
-                var type = binaryReader.ReadByte();
-                stream.Position -= 1;
+                var type = binaryReader.PeekChar();
 
                 switch (type)
                 {

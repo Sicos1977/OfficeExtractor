@@ -5,72 +5,6 @@ using OfficeExtractor.Helpers;
 
 namespace OfficeExtractor.Ole
 {
-    #region Enum Ole10ObjectFormat
-    /// <summary>
-    /// Type OLE version 1.0 object type
-    /// </summary>
-    internal enum Ole10ObjectFormat
-    {
-        /// <summary>
-        /// The format is NOT set
-        /// </summary>
-        NotSet = 0x00000000,
-
-        /// <summary>
-        /// The embedded object is a link
-        /// </summary>
-        Link = 0x00000001,
-
-        /// <summary>
-        /// The embedded object is a file
-        /// </summary>
-        File = 0x00000002,
-
-        /// <summary>
-        /// The embedded object is a presentation (e.g. a image)
-        /// </summary>
-        Presentation = 0x00000005
-    }
-    #endregion
-
-    #region Enum ClipboardFormat
-    /// <summary>
-    /// The standard clipboard formsts
-    /// </summary>
-    internal enum ClipboardFormat
-    {
-        /// <summary>
-        /// The format is a registered clipboard format
-        /// </summary>
-        /// <remarks>
-        /// The format is set into the <see cref="ObjectV10.StringFormatData"/> field
-        /// </remarks>
-        Registered = 0x00000000,
-
-        // ReSharper disable InconsistentNaming
-        /// <summary>
-        /// Bitmap16 Object structure 
-        /// </summary>
-        CF_BITMAP = 0x00000002,
-
-        /// <summary>
-        /// 
-        /// </summary>
-        CF_METAFILEPICT = 0x00000003,
-
-        /// <summary>
-        /// DeviceIndependentBitmap Object structure
-        /// </summary>
-        CF_DIB = 0x00000008,
-
-        /// <summary>
-        /// Enhanced Metafile
-        /// </summary>
-        CF_ENHMETAFILE = 0x0000000E
-        // ReSharper restore InconsistentNaming
-    }
-    #endregion
-
     /// <summary>
     /// This class represents an OLE version 1.0 object
     /// </summary>
@@ -83,17 +17,17 @@ namespace OfficeExtractor.Ole
         /// <summary>
         /// OLEVersion (4 bytes): This can be set to any arbitrary value and MUST be ignored on processing
         /// </summary>
-        public UInt32 Version { get; private set; }
+        public uint Version { get; private set; }
 
         /// <summary>
-        /// This MUST be set to <see cref="Ole10ObjectFormat.Link"/> (0x00000001) or <see cref="Ole10ObjectFormat.File"/> (0x00000002). 
+        /// This MUST be set to <see cref="OleObjectFormat.Link"/> (0x00000001) or <see cref="OleObjectFormat.File"/> (0x00000002). 
         /// Otherwise, the ObjectHeader structure is invalid
         /// </summary>
         /// <remarks>
         /// 0x00000001 = The ObjectHeader structure MUST be followed by a LinkedObject structure.
         /// 0x00000002 = The ObjectHeader structure MUST be followed by an EmbeddedObject structure.
         /// </remarks>
-        public Ole10ObjectFormat Format { get; private set; }
+        public OleObjectFormat Format { get; private set; }
 
         /// <summary>
         /// This MUST be a LengthPrefixedAnsiString that contains a value identifying the creating application. 
@@ -108,7 +42,7 @@ namespace OfficeExtractor.Ole
         /// case-sensitive value "DIB", this MUST be a DIBPresentationDataWidth.
         /// </summary>
         /// <remarks>
-        /// If <see cref="Format"/> is set to <see cref="Ole10ObjectFormat.File"/> then this property is empty
+        /// If <see cref="Format"/> is set to <see cref="OleObjectFormat.File"/> then this property is empty
         /// </remarks>
         public long Width { get; private set; }
 
@@ -119,7 +53,7 @@ namespace OfficeExtractor.Ole
         /// case-sensitive value "DIB", this MUST be a DIBPresentationDataWidth.
         /// </summary>
         /// <remarks>
-        /// If <see cref="Format"/> is set to <see cref="Ole10ObjectFormat.File"/> then this property is empty
+        /// If <see cref="Format"/> is set to <see cref="OleObjectFormat.File"/> then this property is empty
         /// </remarks>
         public long Height { get; private set; }
 
@@ -128,7 +62,7 @@ namespace OfficeExtractor.Ole
         /// registered clipboard format name
         /// </summary>
         /// <remarks>
-        /// Only set when <see cref="Format"/> is set to <see cref="Ole10ObjectFormat.Presentation"/> and the
+        /// Only set when <see cref="Format"/> is set to <see cref="OleObjectFormat.Presentation"/> and the
         /// <see cref="ClassName"/> does not contain "METAFILEPICT", "BITMAP" or "DIB"
         /// </remarks>
         public string StringFormatData { get; private set; }
@@ -137,17 +71,17 @@ namespace OfficeExtractor.Ole
         /// Identifies the <see cref="NativeData"/> when this file is a Clipboard object
         /// </summary>
         /// <remarks>
-        /// Only set when <see cref="Format"/> is set to <see cref="Ole10ObjectFormat.Presentation"/> and the
+        /// Only set when <see cref="Format"/> is set to <see cref="OleObjectFormat.Presentation"/> and the
         /// <see cref="ClassName"/> does not contain "METAFILEPICT", "BITMAP" or "DIB"
         /// </remarks>
-        public ClipboardFormat ClipboardFormat { get; private set; }
+        public OleClipboardFormat ClipboardFormat { get; private set; }
 
         /// <summary>
         /// If the ObjectHeader structure is contained by an EmbeddedObject, 
         /// the TopicName field SHOULD contain an empty string and MUST be ignored on processing
         /// </summary>
         /// <remarks>
-        /// If <see cref="Format"/> is set to <see cref="Ole10ObjectFormat.File"/> then this property is empty
+        /// If <see cref="Format"/> is set to <see cref="OleObjectFormat.File"/> then this property is empty
         /// </remarks>
         public string TopicName { get; private set; }
 
@@ -163,7 +97,7 @@ namespace OfficeExtractor.Ole
         /// individual cell within a spreadsheet application.
         /// </summary>
         /// <remarks>
-        /// If <see cref="Format"/> is set to <see cref="Ole10ObjectFormat.File"/> then this property is empty
+        /// If <see cref="Format"/> is set to <see cref="OleObjectFormat.File"/> then this property is empty
         /// </remarks>
         public string ItemName { get; private set; }
 
@@ -173,7 +107,7 @@ namespace OfficeExtractor.Ole
         /// contain the path name of the linked file in the Universal Naming Convention (UNC) format.
         /// </summary>
         /// <remarks>
-        /// If <see cref="Format"/> is set to <see cref="Ole10ObjectFormat.File"/> then this property is empty
+        /// If <see cref="Format"/> is set to <see cref="OleObjectFormat.File"/> then this property is empty
         /// </remarks>
         public string NetworkName { get; private set; }
 
@@ -183,9 +117,9 @@ namespace OfficeExtractor.Ole
         /// this data structure
         /// </summary>
         /// <remarks>
-        /// If <see cref="Format"/> is set to <see cref="Ole10ObjectFormat.File"/> then this property is empty
+        /// If <see cref="Format"/> is set to <see cref="OleObjectFormat.File"/> then this property is empty
         /// </remarks>
-        public UInt32 LinkUpdateOptions { get; private set; }
+        public uint LinkUpdateOptions { get; private set; }
 
         /// <summary>
         /// Data that is required to display the linked or embedded object within the container application.
@@ -242,29 +176,29 @@ namespace OfficeExtractor.Ole
             var format = binarayReader.ReadUInt32(); // FormatID
             try
             {
-                Format = (Ole10ObjectFormat) format;
+                Format = (OleObjectFormat) format;
             }
             catch (Exception)
             {
                 throw new OEFileIsCorrupt("Invalid OLE version 1.0 format, expected 0x00000000, 0x00000002 or 0x00000005");
             }
 
-            if (Format != Ole10ObjectFormat.NotSet)
+            if (Format != OleObjectFormat.NotSet)
                 ClassName = Strings.Read4ByteLengthPrefixedString(binarayReader);
 
             switch (Format)
             {
-                case Ole10ObjectFormat.Link:
+                case OleObjectFormat.Link:
                     ParseObjectHeader(binarayReader);
                     ParseLinkedObject(binarayReader);
                     break;
 
-                case Ole10ObjectFormat.File:
+                case OleObjectFormat.File:
                     ParseObjectHeader(binarayReader);
                     ParseEmbeddedObject(binarayReader);
                     break;
 
-                case Ole10ObjectFormat.Presentation:
+                case OleObjectFormat.Presentation:
                     switch (ClassName)
                     {
                         // MetaFilePresentationObject
@@ -286,7 +220,7 @@ namespace OfficeExtractor.Ole
        
         #region ParseStandardPresentationObject
         /// <summary>
-        /// Parses the standard presentation object when the <see cref="Format"/> is set to <see cref="Ole10ObjectFormat.Presentation"/> and 
+        /// Parses the standard presentation object when the <see cref="Format"/> is set to <see cref="OleObjectFormat.Presentation"/> and 
         /// the <see cref="ClassName"/> is set to "METAFILEPICT", "BITMAP" or "DIB"
         /// </summary>
         /// <param name="binaryReader"></param>
@@ -349,18 +283,18 @@ namespace OfficeExtractor.Ole
 
         #region ParseGenericPresentationObject
         /// <summary>
-        /// Parses the generic presentation object when the <see cref="Format"/> is set to <see cref="Ole10ObjectFormat.Presentation"/> and 
+        /// Parses the generic presentation object when the <see cref="Format"/> is set to <see cref="OleObjectFormat.Presentation"/> and 
         /// the <see cref="ClassName"/> is <b>NOT</b> set to "METAFILEPICT", "BITMAP" or "DIB"
         /// </summary>
         /// <param name="binaryReader"></param>
         private void ParseGenericPresentationObject(BinaryReader binaryReader)
         {
-            ClipboardFormat = (ClipboardFormat) binaryReader.ReadUInt32();
+            ClipboardFormat = (OleClipboardFormat) binaryReader.ReadUInt32();
             
             switch (ClipboardFormat)
             {
                 // RegisteredClipboardFormatPresentationObject
-                case ClipboardFormat.Registered:
+                case OleClipboardFormat.Registered:
                 {
                     // This MUST be set to the size, in bytes, of the StringFormatData field.
                     // ReSharper disable once UnusedVariable
@@ -371,10 +305,10 @@ namespace OfficeExtractor.Ole
                     break;
                 }
 
-                case ClipboardFormat.CF_BITMAP:
-                case ClipboardFormat.CF_DIB:
-                case ClipboardFormat.CF_ENHMETAFILE:
-                case ClipboardFormat.CF_METAFILEPICT:
+                case OleClipboardFormat.CF_BITMAP:
+                case OleClipboardFormat.CF_DIB:
+                case OleClipboardFormat.CF_ENHMETAFILE:
+                case OleClipboardFormat.CF_METAFILEPICT:
                 {
                     var size = binaryReader.ReadUInt32();
                     NativeData = binaryReader.ReadBytes((int) size);
@@ -390,8 +324,8 @@ namespace OfficeExtractor.Ole
 
         #region ParseObjectHeader
         /// <summary>
-        /// Parses the stream when the <see cref="Format"/> is set to <see cref="Ole10ObjectFormat.File"/>
-        /// or set to <see cref="Ole10ObjectFormat.Link"/>
+        /// Parses the stream when the <see cref="Format"/> is set to <see cref="OleObjectFormat.File"/>
+        /// or set to <see cref="OleObjectFormat.Link"/>
         /// </summary>
         /// <param name="binaryReader"></param>
         private void ParseObjectHeader(BinaryReader binaryReader)
@@ -421,7 +355,7 @@ namespace OfficeExtractor.Ole
 
         #region ParseEmbeddedObject
         /// <summary>
-        /// Parses the stream when it is an <see cref="Ole10ObjectFormat.File"/>
+        /// Parses the stream when it is an <see cref="OleObjectFormat.File"/>
         /// </summary>
         /// <param name="binaryReader"></param>
         private void ParseEmbeddedObject(BinaryReader binaryReader)
@@ -434,7 +368,7 @@ namespace OfficeExtractor.Ole
 
         #region ParseLinkedObject
         /// <summary>
-        /// Parses the stream when it is an <see cref="Ole10ObjectFormat.Link"/>
+        /// Parses the stream when it is an <see cref="OleObjectFormat.Link"/>
         /// </summary>
         /// <param name="binaryReader"></param>
         private void ParseLinkedObject(BinaryReader binaryReader)

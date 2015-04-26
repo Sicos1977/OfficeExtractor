@@ -67,7 +67,10 @@
     <Compile Include="Helpers\FileManager.cs" />
     <Compile Include="Helpers\FileTypeSelector.cs" />
     <Compile Include="Helpers\Strings.cs" />
+    <Compile Include="Ole\AttachDescStream.cs" />
+    <Compile Include="Ole\Enums.cs" />
     <Compile Include="Ole\ObjectV20.cs" />
+    <Compile Include="Ole\OleStream.cs" />
     <Compile Include="PowerPoint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rtf.cs" />
