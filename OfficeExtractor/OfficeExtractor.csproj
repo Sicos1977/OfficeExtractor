@@ -68,7 +68,9 @@
     <Compile Include="Helpers\FileTypeSelector.cs" />
     <Compile Include="Helpers\Strings.cs" />
     <Compile Include="Ole\AttachDescStream.cs" />
+    <Compile Include="Ole\CLSID.cs" />
     <Compile Include="Ole\Enums.cs" />
+    <Compile Include="Ole\MonikerStream.cs" />
     <Compile Include="Ole\ObjectV20.cs" />
     <Compile Include="Ole\OleStream.cs" />
     <Compile Include="PowerPoint.cs" />

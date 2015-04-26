@@ -147,7 +147,7 @@ namespace OfficeExtractor.Ole
             inputStream.Position = 0;
 
             using (var reader = new BinaryReader(inputStream))
-                ParseOle10(reader);
+                ParseOle(reader);
         }
 
         /// <summary>
@@ -160,16 +160,16 @@ namespace OfficeExtractor.Ole
             if (reader == null)
                 throw new ArgumentNullException("reader");
 
-            ParseOle10(reader);
+            ParseOle(reader);
         }        
         #endregion
 
-        #region ParseOle10
+        #region ParseOle
         /// <summary>
         /// Parses the stream and sets all the OLE properties
         /// </summary>
         /// <param name="binarayReader"></param>
-        private void ParseOle10(BinaryReader binarayReader)
+        private void ParseOle(BinaryReader binarayReader)
         {
             Version = binarayReader.ReadUInt32();
 
