@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using CompoundFileStorage;
-using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
 using OfficeExtractor.Ole;
 using Path = System.IO.Path;
@@ -46,16 +45,14 @@ namespace OfficeExtractor
 
                                     switch (className)
                                     {
-                                        case "\x01Ole10Native":
-                                            result.Add(ExtractOleObjectV20(stream, outputFolder));
-                                            break;
-
                                         case "Outlook.FileAttach":
                                             result.Add(ExtractOutlookFileAttachObject(stream, outputFolder));
                                             break;
 
                                         default:
-                                            result.Add(ExtractDefaultObject(stream, outputFolder));
+                                            var fileName = ExtractOle10(stream, outputFolder);
+                                            if (!string.IsNullOrWhiteSpace(fileName))
+                                                result.Add(fileName);
                                             break;
                                     }
                                 }
@@ -68,31 +65,25 @@ namespace OfficeExtractor
         }
         #endregion
 
-        #region ExtractOleObjectV10
+        #region ExtractOle10
         /// <summary>
         /// Extracts a OLE v1.0 object from the given <paramref name="stream"/>
         /// </summary>
         /// <param name="stream"></param>
         /// <param name="outputFolder">The output folder</param>
-        internal static string ExtractOleObjectV10(Stream stream, string outputFolder)
+        internal static string ExtractOle10(Stream stream, string outputFolder)
         {
-            var oleObjectV10 = new ObjectV10(stream);
-            var fileName = Path.Combine(outputFolder, oleObjectV10.ItemName);
-            return Extraction.SaveByteArrayToFile(oleObjectV10.NativeData, fileName);
-        }
-        #endregion
+            var ole10 = new Ole10(stream);
+            var outputFile = string.IsNullOrWhiteSpace(ole10.ItemName)
+                    ? Extraction.DefaultEmbeddedObjectName
+                    : ole10.ItemName;
 
-        #region ExtractOleObjectV20
-        /// <summary>
-        /// Extracts a OLE v2.0 object from the given <paramref name="stream"/>
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="outputFolder">The output folder</param>
-        internal static string ExtractOleObjectV20(Stream stream, string outputFolder)
-        {
-            var oleObjectV20 = new ObjectV20(stream);
-            var outputFile = Path.Combine(outputFolder, oleObjectV20.FileName ?? "Embedded object");
-            return Extraction.SaveByteArrayToFile(oleObjectV20.Data, outputFile);
+            if (ole10.Format == OleObjectFormat.File)
+                return Extraction.IsCompoundFile(ole10.NativeData)
+                    ? Extraction.SaveFromStorageNode(ole10.NativeData, outputFolder, ole10.ItemName)
+                    : Extraction.SaveByteArrayToFile(ole10.NativeData, Path.Combine(outputFolder, outputFile));
+
+            return null;
         }
         #endregion
 
@@ -132,10 +123,10 @@ namespace OfficeExtractor
         internal static string ExtractOutlookFileAttachObject(Stream stream, string outputFolder)
         {
             // Outlook attachments embedded in RTF are firstly embedded in an OLE v1.0 object
-            var oleObjectV10 = new ObjectV10(stream);
+            var ole10 = new Ole10(stream);
 
             // After that it is wrapped in a compound document
-            using (var internalStream = new MemoryStream(oleObjectV10.NativeData))
+            using (var internalStream = new MemoryStream(ole10.NativeData))
             using (var compoundFile = new CompoundFile(internalStream))
             {
                 string fileName = null;
@@ -154,36 +145,6 @@ namespace OfficeExtractor
                 fileName = Path.Combine(outputFolder, fileName);
                 var data = compoundFile.RootStorage.GetStream("AttachContents").GetData();
                 return Extraction.SaveByteArrayToFile(data, fileName);
-            }
-        }
-        #endregion
-
-        #region ExtractDefaultObject
-        /// <summary>
-        /// Extracts a default object from the given <paramref name="stream"/>
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="outputFolder">The output folder</param>
-        internal static string ExtractDefaultObject(Stream stream, string outputFolder)
-        {
-            using (var binaryReader = new BinaryReader(stream))
-            {
-                var type = binaryReader.PeekChar();
-
-                switch (type)
-                {
-                    // OLE v1.0
-                    case 1:
-                        return ExtractOleObjectV10(stream, outputFolder);
-
-                    // OLE v2.0
-                    case 2:
-                        return ExtractOleObjectV20(stream, outputFolder);
-
-                    default:
-                        throw new OEFileIsCorrupt("Invalid embedded object type found '" + type + "', expected 1 or 2");
-                }
-
             }
         }
         #endregion

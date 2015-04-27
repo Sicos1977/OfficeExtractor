@@ -42,12 +42,11 @@ namespace OfficeExtractor
                     {
                         var verAndInstance = binaryReader.ReadUInt16();
                         // ReSharper disable once UnusedVariable
-                        var version = verAndInstance & 0x000FU; // first 4 bit of field verAndInstance
-                        var instance = (verAndInstance & 0xFFF0U) >> 4; // last 12 bit of field verAndInstance
+                        var version = verAndInstance & 0x000FU; // First 4 bit of field verAndInstance
+                        var instance = (verAndInstance & 0xFFF0U) >> 4; // Last 12 bit of field verAndInstance
 
                         var typeCode = binaryReader.ReadUInt16();
                         var size = binaryReader.ReadUInt32();
-                        //var isContainer = (version == 0xF);
 
                         // Embedded OLE objects start with code 4113
                         if (typeCode == 4113)
@@ -58,10 +57,10 @@ namespace OfficeExtractor
                                 var bytes = binaryReader.ReadBytes((int)size);
 
                                 // Check if the ole object is another compound storage node with a package stream
-                                if (bytes[0] == 0xD0 && bytes[1] == 0xCF)
-                                    bytes = Extraction.GetBytesFromCompoundPackageStream(bytes);
-
-                                result.Add(Extraction.SaveByteArrayToFile(bytes, outputFolder + Extraction.DefaultEmbeddedObjectName));
+                                if (Extraction.IsCompoundFile(bytes))
+                                    result.Add(Extraction.SaveFromStorageNode(bytes, outputFolder));
+                                else
+                                    Extraction.SaveByteArrayToFile(bytes, outputFolder + Extraction.DefaultEmbeddedObjectName);
                             }
                             else
                             {
@@ -75,15 +74,14 @@ namespace OfficeExtractor
 
                                 // Decompress the bytes
                                 var decompressedBytes = new byte[decompressedSize];
-                                var deflateStream = new DeflateStream(compressedMemoryStream, CompressionMode.Decompress,
-                                    true);
+                                var deflateStream = new DeflateStream(compressedMemoryStream, CompressionMode.Decompress, true);
                                 deflateStream.Read(decompressedBytes, 0, decompressedBytes.Length);
 
                                 // Check if the ole object is another compound storage node with a package stream
-                                if (decompressedBytes[0] == 0xD0 && decompressedBytes[1] == 0xCF)
-                                    decompressedBytes = Extraction.GetBytesFromCompoundPackageStream(decompressedBytes);
-
-                                result.Add(Extraction.SaveByteArrayToFile(decompressedBytes, outputFolder + Extraction.DefaultEmbeddedObjectName));
+                                if (Extraction.IsCompoundFile(decompressedBytes))
+                                    result.Add(Extraction.SaveFromStorageNode(decompressedBytes, outputFolder));
+                                else
+                                    Extraction.SaveByteArrayToFile(decompressedBytes, outputFolder + Extraction.DefaultEmbeddedObjectName);
                             }
                         }
                         else

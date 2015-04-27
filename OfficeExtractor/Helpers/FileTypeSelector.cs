@@ -3,6 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+/*
+   Copyright 2013-2015 Kees van Spelde
+
+   Licensed under The Code Project Open License (CPOL) 1.02;
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+     http://www.codeproject.com/info/cpol10.aspx
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 namespace OfficeExtractor.Helpers
 {
     /// <summary>
@@ -331,7 +347,7 @@ namespace OfficeExtractor.Helpers
 
         #region GetFileTypeFileInfo
         /// <summary>
-        /// Returns a <see cref="FileTypeFileInfo"/> object by looking to the magic bytes of the <see cref="fileBytes"/> array.
+        /// Returns a <see cref="FileTypeFileInfo"/> object by looking to the magic bytes of the <param ref="fileBytes"/> array.
         /// A <see cref="FileTypeFileInfo"/> object
         /// </summary>
         /// <param name="fileBytes">The bytes of the file</param>
@@ -372,7 +388,7 @@ namespace OfficeExtractor.Helpers
         {
             var fileAscii = Encoding.ASCII.GetString(fileBytes);
             var lines = fileAscii.Split('\n');
-            foreach(var line in lines)
+            foreach (var line in lines)
             {
                 var tempLine = line.ToLowerInvariant();
 
@@ -438,6 +454,15 @@ namespace OfficeExtractor.Helpers
 
             if (fileAscii.Contains("ppt/slides/_rels"))
                 return new FileTypeFileInfo(null, "pptx", "Microsoft PowerPoint open XML document format");
+
+            if (fileAscii.Contains("mimetypeapplication/vnd.oasis.opendocument.presentation"))
+                return new FileTypeFileInfo(null, "odp", "OpenOffice impress document format");
+
+            if (fileAscii.Contains("mimetypeapplication/vnd.oasis.opendocument.spreadsheet"))
+                return new FileTypeFileInfo(null, "ods", "OpenOffice calc document format");
+
+            if (fileAscii.Contains("mimetypeapplication/vnd.oasis.opendocument.text"))
+                return new FileTypeFileInfo(null, "odt", "OpenOffice writer document format");
 
             if (fileAscii.Contains("CHNKWKS"))
                 return new FileTypeFileInfo(null, "wks", "Microsoft Works");

@@ -6,7 +6,6 @@ using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
 using CompoundFileStorage;
 using ICSharpCode.SharpZipLib.Zip;
-using OfficeExtractor.Ole;
 
 /*
    Copyright 2013-2015 Kees van Spelde

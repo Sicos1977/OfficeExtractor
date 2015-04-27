@@ -6,7 +6,7 @@ using OfficeExtractor.Exceptions;
 namespace OfficeExtractor.Biff8
 {
     /// <summary>
-    ///     Wraps an <see cref="T:System.IO.Stream" /> providing <see cref="T:NPOI.Util.ILittleEndianInput" /><p />
+    ///     Wraps an <see cref="Stream" /> providing <see cref="ILittleEndianInput" /><p />
     ///     This class does not buffer any input, so the stream Read position maintained
     ///     by this class is consistent with that of the inner stream.
     /// </summary>

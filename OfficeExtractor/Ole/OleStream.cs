@@ -1,45 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using OfficeExtractor.Exceptions;
-using OfficeExtractor.Helpers;
 
 namespace OfficeExtractor.Ole
 {
+    /// <summary>
+    ///     The OLEStream structure is contained inside an OLE Compound File Stream object. The name of this
+    ///     Compound File Stream object is "\1Ole". The stream object is contained within the OLE Compound File
+    ///     Storage object corresponding to the linked object or embedded object. The OLEStream structure specifies
+    ///     whether the storage object is for a linked object or an embedded object. When this structure specifies a
+    ///     storage object for a linked object, it also specifies the reference to the linked object.
+    /// </summary>
     internal class OleStream
     {
-        #region Properties
-        /// <summary>
-        /// This MUST be set to 0x02000001. Otherwise, the OLEStream structure is invalid
-        /// </summary>
-        public uint Version { get; private set; }
-
-        /// <summary>
-        /// This MUST be set to <see cref="OleObjectFormat.Link"/> (0x00000001) or <see cref="OleObjectFormat.File"/> (0x00000002). 
-        /// Otherwise, the ObjectHeader structure is invalid
-        /// </summary>
-        /// <remarks>
-        /// 0x00000001 = The ObjectHeader structure MUST be followed by a LinkedObject structure.
-        /// 0x00000002 = The ObjectHeader structure MUST be followed by an EmbeddedObject structure.
-        /// </remarks>
-        public OleObjectFormat Format { get; private set; }
-
-        /// <summary>
-        /// This field contains an implementation-specific hint supplied by the application or higher-level 
-        /// protocol responsible for creating the data structure. The hint MAY be ignored on processing of 
-        /// this data structure
-        /// </summary>
-        /// <remarks>
-        /// If <see cref="Format"/> is set to <see cref="OleObjectFormat.File"/> then this property is empty
-        /// </remarks>
-        public UInt32 LinkUpdateOptions { get; private set; }
-        #endregion
-
         #region Constructor
         /// <summary>
-        /// Creates this object and sets all its properties
+        ///     Creates this object and sets all its properties
         /// </summary>
         /// <param name="binaryReader"></param>
         internal OleStream(BinaryReader binaryReader)
@@ -82,7 +58,7 @@ namespace OfficeExtractor.Ole
             binaryReader.ReadBytes(reservedMonikerStreamSize);
 
             // Note The fields that follow MUST NOT be present if the OLEStream structure is for an embedded object.
-            if (Format != OleObjectFormat.File)
+            if (Format == OleObjectFormat.Link)
             {
                 // RelativeSourceMonikerStreamSize (4 bytes): This MUST be set to the size, in bytes, of the RelativeSourceMonikerStream field. 
                 // If this field has a value 0x00000000, the RelativeSourceMonikerStream field MUST NOT be present.
@@ -90,6 +66,8 @@ namespace OfficeExtractor.Ole
 
                 // RelativeSourceMonikerStream (variable): This MUST be a MONIKERSTREAM structure that specifies the relative 
                 // path to the linked object.
+                if (relativeSourceMonikerStreamSize > 0)
+                    RelativeSource = new MonikerStream(binaryReader, relativeSourceMonikerStreamSize);
 
                 // AbsoluteSourceMonikerStreamSize (4 bytes): This MUST be set to the size, in bytes, of the AbsoluteSourceMonikerStream field. 
                 // This field MUST NOT contain the value 0x00000000.
@@ -97,6 +75,8 @@ namespace OfficeExtractor.Ole
 
                 // AbsoluteSourceMonikerStream (variable): This MUST be a MONIKERSTREAM structure that specifies the full path 
                 // to the linked object.
+                if (absoluteSourceMonikerStreamSize > 0)
+                    AbsoluteSource = new MonikerStream(binaryReader, absoluteSourceMonikerStreamSize);
 
                 // If the RelativeSourceMonikerStream field is present, it MUST be used by the container application instead of the 
                 // AbsoluteSourceMonikerStream. If the RelativeSourceMonikerStream field is not present, the AbsoluteSourceMonikerStream MUST be used 
@@ -104,23 +84,106 @@ namespace OfficeExtractor.Ole
 
                 // ClsidIndicator (4 bytes): This MUST be the LONG as specified in section value -1. Otherwise the OLEStream 
                 // structure is invalid.
+                binaryReader.ReadUInt32();
 
                 // Clsid (16 bytes): This MUST be the CLSID (Packet) containing the object class GUID of the creating application.
+                Clsid = new CLSID(binaryReader);
 
                 // ReservedDisplayName (4 bytes): This MUST be a LengthPrefixedUnicodeString that can contain any arbitrary value 
                 // and MUST be ignored on processing.
+                binaryReader.ReadUInt32();
 
                 // Reserved2 (4 bytes): This can contain any arbitrary value and MUST be ignored on processing.
+                binaryReader.ReadUInt32();
 
                 // LocalUpdateTime (4 bytes): This MUST be a FILETIME (Packet) that contains the time when the container application 
                 // last updated the RemoteUpdateTime field.
+                var localUpdateTime = binaryReader.ReadBytes(4).Reverse().ToArray();
+                LocalUpdateTime = DateTime.FromFileTime(BitConverter.ToInt32(localUpdateTime, 0));
 
                 // LocalCheckUpdateTime (4 bytes): This MUST be a FILETIME (Packet) that contains the time when the container application last 
                 // checked the update time of the linked object.
+                var localCheckUpdateTime = binaryReader.ReadBytes(4).Reverse().ToArray();
+                LocalCheckUpdateTime = DateTime.FromFileTime(BitConverter.ToInt32(localCheckUpdateTime, 0));
 
                 // RemoteUpdateTime (4 bytes): This MUST be a FILETIME (Packet) that contains the time when the linked object was last updated.
+                var remoteUpdateTime = binaryReader.ReadBytes(4).Reverse().ToArray();
+                RemoteUpdateTime = DateTime.FromFileTime(BitConverter.ToInt32(remoteUpdateTime, 0));
             }
         }
+        #endregion
+
+        #region Properties
+        /// <summary>
+        ///     This MUST be set to 0x02000001. Otherwise, the OLEStream structure is invalid
+        /// </summary>
+        public uint Version { get; private set; }
+
+        /// <summary>
+        ///     This MUST be set to <see cref="OleObjectFormat.Link" /> (0x00000001) or <see cref="OleObjectFormat.File" />
+        ///     (0x00000002).
+        ///     Otherwise, the ObjectHeader structure is invalid
+        /// </summary>
+        /// <remarks>
+        ///     0x00000001 = The ObjectHeader structure MUST be followed by a LinkedObject structure.
+        ///     0x00000002 = The ObjectHeader structure MUST be followed by an EmbeddedObject structure.
+        /// </remarks>
+        public OleObjectFormat Format { get; private set; }
+
+        /// <summary>
+        ///     This field contains an implementation-specific hint supplied by the application or higher-level
+        ///     protocol responsible for creating the data structure. The hint MAY be ignored on processing of
+        ///     this data structure
+        /// </summary>
+        /// <remarks>
+        ///     Only available when the <see cref="Format" /> is set to <see cref="OleObjectFormat.Link" />, otherwise <c>null</c>
+        /// </remarks>
+        public UInt32 LinkUpdateOptions { get; private set; }
+
+        /// <summary>
+        ///     RelativeSourceMonikerStream (variable): This MUST be a MONIKERSTREAM structure that specifies the relative
+        ///     path to the linked object.
+        /// </summary>
+        /// <remarks>
+        ///     Only available when the <see cref="Format" /> is set to <see cref="OleObjectFormat.Link" />, otherwise <c>null</c>
+        /// </remarks>
+        public MonikerStream RelativeSource { get; private set; }
+
+        /// <summary>
+        ///     AbsoluteSourceMonikerStream (variable): This MUST be a MONIKERSTREAM structure that specifies the full path
+        ///     to the linked object.
+        /// </summary>
+        /// <remarks>
+        ///     Only available when the <see cref="Format" /> is set to <see cref="OleObjectFormat.Link" />, otherwise <c>null</c>
+        /// </remarks>
+        public MonikerStream AbsoluteSource { get; private set; }
+
+        /// <summary>
+        ///     This MUST be the CLSID (Packet) containing the object class GUID of the creating application.
+        /// </summary>
+        /// <remarks>
+        ///     Only available when the <see cref="Format" /> is set to <see cref="OleObjectFormat.Link" />, otherwise <c>null</c>
+        /// </remarks>
+        public CLSID Clsid { get; private set; }
+
+        /// <summary>
+        ///     LocalUpdateTime (4 bytes): This MUST be a FILETIME (Packet) that contains the time when the container application
+        ///     last updated the RemoteUpdateTime field.
+        /// </summary>
+        public DateTime LocalUpdateTime { get; private set; }
+
+        /// <summary>
+        ///     LocalCheckUpdateTime (4 bytes): This MUST be a FILETIME (Packet) that contains the time when the container
+        ///     application last
+        ///     checked the update time of the linked object.
+        /// </summary>
+        public DateTime LocalCheckUpdateTime { get; private set; }
+
+        /// <summary>
+        ///     RemoteUpdateTime (4 bytes): This MUST be a FILETIME (Packet) that contains the time when the linked object was last
+        ///     updated.
+        /// </summary>
+        public DateTime RemoteUpdateTime { get; private set; }
         #endregion
     }
 }

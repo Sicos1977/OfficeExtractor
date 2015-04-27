@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using OfficeExtractor.Helpers;
 
 namespace OfficeExtractor.Ole
@@ -81,9 +82,9 @@ namespace OfficeExtractor.Ole
             LongFileName = Strings.Read1ByteLengthPrefixedString(binaryReader);
             FileName = Strings.Read1ByteLengthPrefixedString(binaryReader);
             Extension = Strings.Read1ByteLengthPrefixedString(binaryReader);
-            var fileCreationTime = binaryReader.ReadBytes(8);
+            var fileCreationTime = binaryReader.ReadBytes(8).Reverse().ToArray();
             FileCreationTime = DateTime.FromFileTime(BitConverter.ToInt64(fileCreationTime, 0));
-            var fileLastModifiedTime = binaryReader.ReadBytes(8);
+            var fileLastModifiedTime = binaryReader.ReadBytes(8).Reverse().ToArray();
             FileLastModifiedTime = DateTime.FromFileTime(BitConverter.ToInt64(fileLastModifiedTime, 0));
         }
         #endregion

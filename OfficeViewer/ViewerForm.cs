@@ -79,16 +79,33 @@ namespace OfficeViewer
                     if (tempFolder != null && Directory.Exists(tempFolder))
                         Directory.Delete(tempFolder, true);
 
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(GetInnerException(ex));
                 }
             }
         }
 
-        public string GetTemporaryFolder()
+        #region GetTemporaryFolder
+        private static string GetTemporaryFolder()
         {
             var tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(tempDirectory);
             return tempDirectory;
         }
+        #endregion
+
+        #region GetInnerException
+        /// <summary>
+        /// Get the complete inner exception tree
+        /// </summary>
+        /// <param name="e">The exception object</param>
+        /// <returns></returns>
+        private static string GetInnerException(Exception e)
+        {
+            var exception = e.Message + Environment.NewLine;
+            if (e.InnerException != null)
+                exception += GetInnerException(e.InnerException);
+            return exception;
+        }
+        #endregion
     }
 }

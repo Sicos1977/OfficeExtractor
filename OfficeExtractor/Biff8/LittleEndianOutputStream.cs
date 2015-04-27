@@ -5,7 +5,7 @@ using OfficeExtractor.Biff8.Interfaces;
 namespace OfficeExtractor.Biff8
 {
     /// <summary>
-    ///     Wraps an <see cref="T:System.IO.Stream" /> providing <see cref="ILittleEndianOutput" />
+    ///     Wraps an <see cref="Stream" /> providing <see cref="ILittleEndianOutput" />
     /// </summary>
     internal class LittleEndianOutputStream : ILittleEndianOutput, IDisposable
     {
