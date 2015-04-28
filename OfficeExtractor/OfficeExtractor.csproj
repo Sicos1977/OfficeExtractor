@@ -73,7 +73,7 @@
     <Compile Include="Ole\CompObjStream.cs" />
     <Compile Include="Ole\Enums.cs" />
     <Compile Include="Ole\MonikerStream.cs" />
-    <Compile Include="Ole\ObjInfo.cs" />
+    <Compile Include="Ole\ObjInfoStream.cs" />
     <Compile Include="Ole\Ole10Native.cs" />
     <Compile Include="Ole\OleStream.cs" />
     <Compile Include="Ole\Package.cs" />

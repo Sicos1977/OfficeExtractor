@@ -65,4 +65,22 @@
         // ReSharper restore InconsistentNaming
     }
     #endregion
+
+    #region Enum OleCF
+    /// <summary>
+    ///      An unsigned integer that specifies the format this OLE object uses to transmit data to 
+    ///     the host application
+    /// </summary>
+    internal enum OleCf
+    {
+        UnSpecified = 0x0000,
+        RichTextFormat = 0x0001,
+        TextFormat = 0x0002,
+        MetaOrEnhancedMetaFile = 0x0003,
+	    BitMap = 0x0004,
+	    DeviceIndependentBitmap = 0x0005,
+        HtmlFormat = 0x000A,
+	    UnicodeTextFormat = 0x0014
+    }
+    #endregion
 }
