@@ -78,7 +78,7 @@ namespace OfficeExtractor
                     ? Extraction.DefaultEmbeddedObjectName
                     : ole10.ItemName;
 
-            if (ole10.Format == OleObjectFormat.File)
+            if (ole10.Format == OleFormat.File)
                 return Extraction.IsCompoundFile(ole10.NativeData)
                     ? Extraction.SaveFromStorageNode(ole10.NativeData, outputFolder, ole10.ItemName)
                     : Extraction.SaveByteArrayToFile(ole10.NativeData, Path.Combine(outputFolder, outputFile));

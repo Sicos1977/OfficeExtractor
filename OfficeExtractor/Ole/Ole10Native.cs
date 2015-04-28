@@ -16,6 +16,11 @@ namespace OfficeExtractor.Ole
     {
         #region Properties
         /// <summary>
+        /// Returns the format for the data that is stored inside the Ole10Native stream.
+        /// </summary>
+        public OleFormat Format { get; private set; }
+
+        /// <summary>
         ///     This MUST be a LengthPrefixedUnicodeString which contain a registered clipboard format name
         /// </summary>
         public string StringFormatData { get; private set; }
@@ -42,7 +47,8 @@ namespace OfficeExtractor.Ole
         public string FilePath { get; private set; }
 
         /// <summary>
-        ///     The file data
+        ///     Returns the embedded file when <see cref="Format"/> is set to <see cref="OleFormat.File"/>, 
+        ///     otherwise this array will be empty
         /// </summary>
         public byte[] NativeData { get; private set; }
         #endregion

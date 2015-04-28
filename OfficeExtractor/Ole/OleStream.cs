@@ -22,7 +22,7 @@ namespace OfficeExtractor.Ole
         public uint Version { get; private set; }
 
         /// <summary>
-        ///     This MUST be set to <see cref="OleObjectFormat.Link" /> (0x00000001) or <see cref="OleObjectFormat.File" />
+        ///     This MUST be set to <see cref="OleFormat.Link" /> (0x00000001) or <see cref="OleFormat.File" />
         ///     (0x00000002).
         ///     Otherwise, the ObjectHeader structure is invalid
         /// </summary>
@@ -30,7 +30,7 @@ namespace OfficeExtractor.Ole
         ///     0x00000001 = The ObjectHeader structure MUST be followed by a LinkedObject structure.
         ///     0x00000002 = The ObjectHeader structure MUST be followed by an EmbeddedObject structure.
         /// </remarks>
-        public OleObjectFormat Format { get; private set; }
+        public OleFormat Format { get; private set; }
 
         /// <summary>
         ///     This field contains an implementation-specific hint supplied by the application or higher-level
@@ -38,7 +38,7 @@ namespace OfficeExtractor.Ole
         ///     this data structure
         /// </summary>
         /// <remarks>
-        ///     Only available when the <see cref="Format" /> is set to <see cref="OleObjectFormat.Link" />, otherwise <c>null</c>
+        ///     Only available when the <see cref="Format" /> is set to <see cref="OleFormat.Link" />, otherwise <c>null</c>
         /// </remarks>
         public UInt32 LinkUpdateOptions { get; private set; }
 
@@ -47,7 +47,7 @@ namespace OfficeExtractor.Ole
         ///     path to the linked object.
         /// </summary>
         /// <remarks>
-        ///     Only available when the <see cref="Format" /> is set to <see cref="OleObjectFormat.Link" />, otherwise <c>null</c>
+        ///     Only available when the <see cref="Format" /> is set to <see cref="OleFormat.Link" />, otherwise <c>null</c>
         /// </remarks>
         public MonikerStream RelativeSource { get; private set; }
 
@@ -56,7 +56,7 @@ namespace OfficeExtractor.Ole
         ///     to the linked object.
         /// </summary>
         /// <remarks>
-        ///     Only available when the <see cref="Format" /> is set to <see cref="OleObjectFormat.Link" />, otherwise <c>null</c>
+        ///     Only available when the <see cref="Format" /> is set to <see cref="OleFormat.Link" />, otherwise <c>null</c>
         /// </remarks>
         public MonikerStream AbsoluteSource { get; private set; }
 
@@ -64,7 +64,7 @@ namespace OfficeExtractor.Ole
         ///     This MUST be the CLSID (Packet) containing the object class GUID of the creating application.
         /// </summary>
         /// <remarks>
-        ///     Only available when the <see cref="Format" /> is set to <see cref="OleObjectFormat.Link" />, otherwise <c>null</c>
+        ///     Only available when the <see cref="Format" /> is set to <see cref="OleFormat.Link" />, otherwise <c>null</c>
         /// </remarks>
         public CLSID Clsid { get; private set; }
 
@@ -111,12 +111,12 @@ namespace OfficeExtractor.Ole
                 {
                     case 0x00000000:
                     case 0x00001000:
-                        Format = OleObjectFormat.File;
+                        Format = OleFormat.File;
                         break;
 
                     case 0x00000001:
                     case 0x00001001:
-                        Format = OleObjectFormat.Link;
+                        Format = OleFormat.Link;
                         break;
                 }
 
@@ -136,7 +136,7 @@ namespace OfficeExtractor.Ole
                 binaryReader.ReadBytes(reservedMonikerStreamSize);
 
                 // Note The fields that follow MUST NOT be present if the OLEStream structure is for an embedded object.
-                if (Format == OleObjectFormat.Link)
+                if (Format == OleFormat.Link)
                 {
                     // RelativeSourceMonikerStreamSize (4 bytes): This MUST be set to the size, in bytes, of the RelativeSourceMonikerStream field. 
                     // If this field has a value 0x00000000, the RelativeSourceMonikerStream field MUST NOT be present.

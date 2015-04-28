@@ -2,9 +2,10 @@
 {
     #region Enum OleObjectFormat
     /// <summary>
-    ///     Type OLE version 1.0 and 2.0 object type
+    ///     The format of the embedded object that is stored inside an OLE1 or 
+    ///     OLE native container
     /// </summary>
-    internal enum OleObjectFormat
+    internal enum OleFormat
     {
         /// <summary>
         ///     The format is NOT set
@@ -22,7 +23,7 @@
         File = 0x00000002,
 
         /// <summary>
-        ///     The embedded object is a presentation (e.g. a image)
+        ///     The embedded object is a presentation (e.g. an image)
         /// </summary>
         Presentation = 0x00000005
     }
