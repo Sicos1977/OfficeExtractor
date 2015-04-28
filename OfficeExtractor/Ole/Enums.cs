@@ -39,6 +39,7 @@
         /// </summary>
         /// <remarks>
         ///     The format is set into the <see crOle10.StringFormatData" /> field
+        /// 
         /// </remarks>
         Registered = 0x00000000,
 

@@ -98,18 +98,10 @@ namespace OfficeExtractor
         {
             // https://msdn.microsoft.com/en-us/library/ee157577(v=exchg.80).aspx
             if (stream == null) return null;
-
-            var bytes = stream.GetData();
-            using (var memoryStream = new MemoryStream(bytes))
-            using (var binaryReader = new BinaryReader(memoryStream))
-            {
-                var ad = new AttachDescStream(binaryReader);
-
-                if (!string.IsNullOrEmpty(ad.LongFileName)) return ad.LongFileName;
-                if (!string.IsNullOrEmpty(ad.DisplayName)) return ad.DisplayName;
-                if (!string.IsNullOrEmpty(ad.FileName)) return ad.FileName;
-            }
-
+            var ad = new AttachDescStream(stream);
+            if (!string.IsNullOrEmpty(ad.LongFileName)) return ad.LongFileName;
+            if (!string.IsNullOrEmpty(ad.DisplayName)) return ad.DisplayName;
+            if (!string.IsNullOrEmpty(ad.FileName)) return ad.FileName;
             return null;
         }
         #endregion

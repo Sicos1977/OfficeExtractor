@@ -8,6 +8,20 @@ namespace OfficeExtractor.Ole
     /// </summary>
     internal class MonikerStream
     {
+        #region Properties
+        /// <summary>
+        ///     This MUST be the packetized CLSID of an implementation-specific object capable of processing the
+        ///     data contained in the StreamData field.
+        /// </summary>
+        public CLSID Clsid { get; private set; }
+
+        /// <summary>
+        ///     This MUST be an array of bytes that specifies the reference to the linked object. The value of
+        ///     this array is interpreted in an implementation-specific manner.
+        /// </summary>
+        public byte[] StreamData { get; private set; }
+        #endregion
+
         #region Constructor
         /// <summary>
         ///     Creates this object and sets all its properties
@@ -31,20 +45,6 @@ namespace OfficeExtractor.Ole
         {
             return Encoding.UTF8.GetString(StreamData);
         }
-        #endregion
-
-        #region Properties
-        /// <summary>
-        ///     This MUST be the packetized CLSID of an implementation-specific object capable of processing the
-        ///     data contained in the StreamData field.
-        /// </summary>
-        public CLSID Clsid { get; private set; }
-
-        /// <summary>
-        ///     This MUST be an array of bytes that specifies the reference to the linked object. The value of
-        ///     this array is interpreted in an implementation-specific manner.
-        /// </summary>
-        public byte[] StreamData { get; private set; }
         #endregion
     }
 }

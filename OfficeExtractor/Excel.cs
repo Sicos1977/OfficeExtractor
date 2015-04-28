@@ -129,16 +129,16 @@ namespace OfficeExtractor
         /// Normally a Workbook stream only contains one WINDOW record but when it is embedded
         /// it will contain 2 or more records.
         /// </summary>
-        /// <param name="compoundFile"></param>
-        /// <exception cref="OEFileIsCorrupt">Raised when the <paramref name="compoundFile"/> does not have a Workbook stream</exception>
-        public static void SetWorkbookVisibility(CompoundFile compoundFile)
+        /// <param name="rootStorage">The <see cref="CFStorage">Root storage</see> of a <see cref="CompoundFile"/></param>
+        /// <exception cref="OEFileIsCorrupt">Raised when the <paramref name="rootStorage"/> does not have a Workbook stream</exception>
+        public static void SetWorkbookVisibility(CFStorage rootStorage)
         {
-            if (!compoundFile.RootStorage.ExistsStream("WorkBook"))
+            if (!rootStorage.ExistsStream("WorkBook"))
                 throw new OEFileIsCorrupt("Could not check workbook visibility because the WorkBook stream is not present");
 
             try
             {
-                var stream = compoundFile.RootStorage.GetStream("WorkBook") as CFStream;
+                var stream = rootStorage.GetStream("WorkBook") as CFStream;
                 if (stream == null) return;
 
                 var bytes = stream.GetData();

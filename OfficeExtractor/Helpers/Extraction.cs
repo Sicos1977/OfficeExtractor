@@ -171,9 +171,9 @@ namespace OfficeExtractor.Helpers
                 return SaveByteArrayToFile(package.GetData(), Path.Combine(outputFolder, fileName));
             }
 
-            if (storage.ExistsStream("\x01Ole10Native"))
+            if (storage.ExistsStream("\x0001Ole10Native"))
             {
-                var ole10Native = storage.GetStream("\x01Ole10Native");
+                var ole10Native = storage.GetStream("\x0001Ole10Native");
                 if (ole10Native.Size <= 0) return null;
                 using (var stream = new MemoryStream(ole10Native.GetData()))
                 {
@@ -193,6 +193,7 @@ namespace OfficeExtractor.Helpers
             {
                 // The embedded object is an Excel file   
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = "Embedded Excel document.xls";
+                Excel.SetWorkbookVisibility(storage);
                 return SaveStorageTreeToCompoundFile(storage, Path.Combine(outputFolder, fileName));
             }
             
@@ -220,9 +221,6 @@ namespace OfficeExtractor.Helpers
             using (var compoundFile = new CompoundFile())
             {
                 GetStorageChain(compoundFile.RootStorage, storage);
-                if(compoundFile.RootStorage.ExistsStream("WorkBook"))
-                    Excel.SetWorkbookVisibility(compoundFile);
-
                 compoundFile.Save(fileName);
             }
 
@@ -293,7 +291,7 @@ namespace OfficeExtractor.Helpers
                         using (var memoryStream = new MemoryStream(data))
                         using (var compoundFile = new CompoundFile(memoryStream))
                         {
-                            Excel.SetWorkbookVisibility(compoundFile);
+                            Excel.SetWorkbookVisibility(compoundFile.RootStorage);
                             compoundFile.Save(outputFile);
                         }
                         break;

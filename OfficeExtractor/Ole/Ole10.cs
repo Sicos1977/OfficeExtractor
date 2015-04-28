@@ -13,125 +13,6 @@ namespace OfficeExtractor.Ole
     /// </remarks>
     internal class Ole10
     {
-        #region ParseOle
-        /// <summary>
-        ///     Parses the stream and sets all the OLE properties
-        /// </summary>
-        /// <param name="binarayReader"></param>
-        private void ParseOle(BinaryReader binarayReader)
-        {
-            Version = binarayReader.ReadUInt32();
-
-            var format = binarayReader.ReadUInt32(); // FormatID
-            try
-            {
-                Format = (OleObjectFormat) format;
-            }
-            catch (Exception)
-            {
-                throw new OEFileIsCorrupt(
-                    "Invalid OLE version 1.0 format, expected 0x00000000, 0x00000002 or 0x00000005");
-            }
-
-            if (Format != OleObjectFormat.NotSet)
-                ClassName = Strings.Read4ByteLengthPrefixedString(binarayReader);
-
-            switch (Format)
-            {
-                case OleObjectFormat.Link:
-                    ParseObjectHeader(binarayReader);
-                    ParseLinkedObject(binarayReader);
-                    break;
-
-                case OleObjectFormat.File:
-                    ParseObjectHeader(binarayReader);
-                    ParseEmbeddedObject(binarayReader);
-                    break;
-
-                case OleObjectFormat.Presentation:
-                    switch (ClassName)
-                    {
-                        // MetaFilePresentationObject
-                        case "METAFILEPICT":
-                        case "BITMAP":
-                        case "DIB":
-                            ParseStandardPresentationObject(binarayReader);
-                            break;
-
-                        default:
-                            ParseGenericPresentationObject(binarayReader);
-                            break;
-                    }
-
-                    break;
-            }
-        }
-        #endregion
-
-        #region ParseStandardPresentationObject
-        /// <summary>
-        ///     Parses the standard presentation object when the <see cref="Format" /> is set to
-        ///     <see cref="OleObjectFormat.Presentation" /> and
-        ///     the <see cref="ClassName" /> is set to "METAFILEPICT", "BITMAP" or "DIB"
-        /// </summary>
-        /// <param name="binaryReader"></param>
-        private void ParseStandardPresentationObject(BinaryReader binaryReader)
-        {
-            Width = binaryReader.ReadUInt32();
-            Height = binaryReader.ReadUInt32();
-
-            switch (ClassName)
-            {
-                // MetaFilePresentationObject
-                case "METAFILEPICT":
-                {
-                    var size = binaryReader.ReadUInt32();
-
-                    // PresentationDataSize (4 bytes): This MUST be an unsigned long integer set to the sum of the size,
-                    // in bytes, of the PresentationData field and the number 8. If this field contains the value 8, 
-                    // the PresentationData field MUST NOT be present.
-                    if (size == 8)
-                        return;
-
-                    // Reserved1 (2 bytes): Reserved. This can be set to any arbitrary value and MUST be ignored on processing.
-                    binaryReader.ReadUInt16();
-                    // Reserved2 (2 bytes): Reserved. This can be set to any arbitrary value and MUST be ignored on processing.
-                    binaryReader.ReadUInt16();
-                    // Reserved3 (2 bytes): Reserved. This can be set to any arbitrary value and MUST be ignored on processing.
-                    binaryReader.ReadUInt16();
-                    // Reserved4 (2 bytes): Reserved. This can be set to any arbitrary value and MUST be ignored on processing.
-                    binaryReader.ReadUInt16();
-
-                    // This MUST be an array of bytes that contain a Windows metafile (as specified in [MS-WMF]).
-                    if (size - 8 > 0)
-                        PresentationData = binaryReader.ReadBytes((int) size - 8);
-
-                    break;
-                }
-
-                // BitmapPresentationObject
-                case "BITMAP":
-                case "DIB":
-                {
-                    var size = binaryReader.ReadUInt32();
-
-                    // PresentationDataSize (4 bytes): This MUST be an unsigned long integer set to the size, 
-                    // in bytes, of the Bitmap or DIB field. If this field has the value 0, the Bitmap or DIB field MUST 
-                    // NOT be present.
-                    if (size == 0)
-                        return;
-
-                    PresentationData = binaryReader.ReadBytes((int) size);
-                    break;
-                }
-
-                default:
-                    throw new OEFileTypeNotSupported(
-                        "Unexpected value found in classname field, expected METAFILEPICT, BITMAP or DIB");
-            }
-        }
-        #endregion
-
         #region Properties
         /// <summary>
         ///     OLEVersion (4 bytes): This can be set to any arbitrary value and MUST be ignored on processing
@@ -185,7 +66,7 @@ namespace OfficeExtractor.Ole
         ///     Only set when <see cref="Format" /> is set to <see cref="OleObjectFormat.Presentation" /> and the
         ///     <see cref="ClassName" /> does not contain "METAFILEPICT", "BITMAP" or "DIB"
         /// </remarks>
-        public string StringFormatData { get; private set; }
+        public string StringFormat { get; private set; }
 
         /// <summary>
         ///     Identifies the <see cref="NativeData" /> when this file is a Clipboard object
@@ -259,7 +140,7 @@ namespace OfficeExtractor.Ole
         /// </summary>
         /// <param name="inputStream">The OLE version 1.0 object as a stream</param>
         /// <exception cref="ArgumentNullException">Raised when <paramref name="inputStream" /> is <c>null</c></exception>
-        public ObjectV10(Stream inputStream)
+        public Ole10(Stream inputStream)
         {
             if (inputStream == null)
                 throw new ArgumentNullException("inputStream");
@@ -275,12 +156,131 @@ namespace OfficeExtractor.Ole
         /// </summary>
         /// <param name="reader">The OLE version 1.0 object as a stream</param>
         /// <exception cref="ArgumentNullException">Raised when <paramref name="reader" /> is <c>null</c></exception>
-        internal ObjectV10(BinaryReader reader)
+        internal Ole10(BinaryReader reader)
         {
             if (reader == null)
                 throw new ArgumentNullException("reader");
 
             ParseOle(reader);
+        }
+        #endregion
+
+        #region ParseOle
+        /// <summary>
+        ///     Parses the stream and sets all the OLE properties
+        /// </summary>
+        /// <param name="binarayReader"></param>
+        private void ParseOle(BinaryReader binarayReader)
+        {
+            Version = binarayReader.ReadUInt32();
+
+            var format = binarayReader.ReadUInt32(); // FormatID
+            try
+            {
+                Format = (OleObjectFormat)format;
+            }
+            catch (Exception)
+            {
+                throw new OEObjectTypeNotSupported(
+                    "Invalid OLE version 1.0 format, expected 0x00000000, 0x00000002 or 0x00000005");
+            }
+
+            if (Format != OleObjectFormat.NotSet)
+                ClassName = Strings.Read4ByteLengthPrefixedAnsiString(binarayReader);
+
+            switch (Format)
+            {
+                case OleObjectFormat.Link:
+                    ParseObjectHeader(binarayReader);
+                    ParseLinkedObject(binarayReader);
+                    break;
+
+                case OleObjectFormat.File:
+                    ParseObjectHeader(binarayReader);
+                    ParseEmbeddedObject(binarayReader);
+                    break;
+
+                case OleObjectFormat.Presentation:
+                    switch (ClassName)
+                    {
+                        // MetaFilePresentationObject
+                        case "METAFILEPICT":
+                        case "BITMAP":
+                        case "DIB":
+                            ParseStandardPresentationObject(binarayReader);
+                            break;
+
+                        default:
+                            ParseGenericPresentationObject(binarayReader);
+                            break;
+                    }
+
+                    break;
+            }
+        }
+        #endregion
+
+        #region ParseStandardPresentationObject
+        /// <summary>
+        ///     Parses the standard presentation object when the <see cref="Format" /> is set to
+        ///     <see cref="OleObjectFormat.Presentation" /> and
+        ///     the <see cref="ClassName" /> is set to "METAFILEPICT", "BITMAP" or "DIB"
+        /// </summary>
+        /// <param name="binaryReader"></param>
+        private void ParseStandardPresentationObject(BinaryReader binaryReader)
+        {
+            Width = binaryReader.ReadUInt32();
+            Height = binaryReader.ReadUInt32();
+
+            switch (ClassName)
+            {
+                // MetaFilePresentationObject
+                case "METAFILEPICT":
+                    {
+                        var size = binaryReader.ReadUInt32();
+
+                        // PresentationDataSize (4 bytes): This MUST be an unsigned long integer set to the sum of the size,
+                        // in bytes, of the PresentationData field and the number 8. If this field contains the value 8, 
+                        // the PresentationData field MUST NOT be present.
+                        if (size == 8)
+                            return;
+
+                        // Reserved1 (2 bytes): Reserved. This can be set to any arbitrary value and MUST be ignored on processing.
+                        binaryReader.ReadUInt16();
+                        // Reserved2 (2 bytes): Reserved. This can be set to any arbitrary value and MUST be ignored on processing.
+                        binaryReader.ReadUInt16();
+                        // Reserved3 (2 bytes): Reserved. This can be set to any arbitrary value and MUST be ignored on processing.
+                        binaryReader.ReadUInt16();
+                        // Reserved4 (2 bytes): Reserved. This can be set to any arbitrary value and MUST be ignored on processing.
+                        binaryReader.ReadUInt16();
+
+                        // This MUST be an array of bytes that contain a Windows metafile (as specified in [MS-WMF]).
+                        if (size - 8 > 0)
+                            PresentationData = binaryReader.ReadBytes((int)size - 8);
+
+                        break;
+                    }
+
+                // BitmapPresentationObject
+                case "BITMAP":
+                case "DIB":
+                    {
+                        var size = binaryReader.ReadUInt32();
+
+                        // PresentationDataSize (4 bytes): This MUST be an unsigned long integer set to the size, 
+                        // in bytes, of the Bitmap or DIB field. If this field has the value 0, the Bitmap or DIB field MUST 
+                        // NOT be present.
+                        if (size == 0)
+                            return;
+
+                        PresentationData = binaryReader.ReadBytes((int)size);
+                        break;
+                    }
+
+                default:
+                    throw new OEObjectTypeNotSupported(
+                        "Unsupported classname '" + ClassName + "' found, expected METAFILEPICT, BITMAP or DIB");
+            }
         }
         #endregion
 
@@ -303,7 +303,7 @@ namespace OfficeExtractor.Ole
                     // This MUST be set to the size, in bytes, of the StringFormatData field.
                     // ReSharper disable once UnusedVariable
                     var stringFormatDataSize = binaryReader.ReadUInt32();
-                    StringFormatData = Strings.Read4ByteLengthPrefixedString(binaryReader);
+                    StringFormat = Strings.Read4ByteLengthPrefixedAnsiString(binaryReader);
                     var size = binaryReader.ReadUInt32();
                     NativeData = binaryReader.ReadBytes((int) size);
                     break;
@@ -320,7 +320,7 @@ namespace OfficeExtractor.Ole
                 }
 
                 default:
-                    throw new OEFileTypeNotSupported(
+                    throw new OEObjectTypeNotSupported(
                         "A not supported clipboardformat has been found, only CF_BITMAP, CF_DIB, CF_ENHMETAFILE and CF+METAFILEPICT are supported");
             }
         }
@@ -334,8 +334,8 @@ namespace OfficeExtractor.Ole
         /// <param name="binaryReader"></param>
         private void ParseObjectHeader(BinaryReader binaryReader)
         {
-            TopicName = Strings.Read4ByteLengthPrefixedString(binaryReader);
-            ItemName = Strings.Read4ByteLengthPrefixedString(binaryReader);
+            TopicName = Strings.Read4ByteLengthPrefixedAnsiString(binaryReader);
+            ItemName = Strings.Read4ByteLengthPrefixedAnsiString(binaryReader);
         }
         #endregion
 
@@ -348,10 +348,10 @@ namespace OfficeExtractor.Ole
         /// <param name="binaryReader"></param>
         public void GetAndSetPresentationObject(BinaryReader binaryReader)
         {
-            var po = new ObjectV10(binaryReader);
+            var po = new Ole10(binaryReader);
             Width = po.Width;
             Height = po.Height;
-            StringFormatData = po.StringFormatData;
+            StringFormat = po.StringFormat;
             ClipboardFormat = po.ClipboardFormat;
             PresentationData = po.PresentationData;
         }
@@ -377,8 +377,8 @@ namespace OfficeExtractor.Ole
         /// <param name="binaryReader"></param>
         private void ParseLinkedObject(BinaryReader binaryReader)
         {
-            NetworkName = Strings.Read4ByteLengthPrefixedString(binaryReader);
-            TopicName = Strings.Read4ByteLengthPrefixedString(binaryReader);
+            NetworkName = Strings.Read4ByteLengthPrefixedAnsiString(binaryReader);
+            TopicName = Strings.Read4ByteLengthPrefixedAnsiString(binaryReader);
             // Reserved (4 bytes)
             binaryReader.ReadUInt32();
             LinkUpdateOptions = binaryReader.ReadUInt32();
