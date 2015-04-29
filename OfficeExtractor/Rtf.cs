@@ -45,6 +45,7 @@ namespace OfficeExtractor
 
                                     switch (className)
                                     {
+                                        case "MailMsgAtt":
                                         case "Outlook.FileAttach":
                                             result.Add(ExtractOutlookFileAttachObject(stream, outputFolder));
                                             break;
@@ -122,7 +123,7 @@ namespace OfficeExtractor
             using (var compoundFile = new CompoundFile(internalStream))
             {
                 string fileName = null;
-
+                File.WriteAllBytes("d:\\kees.txt", ole10.NativeData);
                 if (compoundFile.RootStorage.ExistsStream("AttachDesc"))
                 {
                     var attachDescStream = compoundFile.RootStorage.GetStream("AttachDesc") as CFStream;
