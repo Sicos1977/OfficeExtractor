@@ -3,6 +3,7 @@ using System.IO;
 using CompoundFileStorage;
 using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
+using OfficeExtractor.Ole;
 
 namespace OfficeExtractor
 {
@@ -39,8 +40,15 @@ namespace OfficeExtractor
                 {
                     var childStorage = child as CFStorage;
                     if (childStorage == null) continue;
+
+                    // Get the objInfo stream to check if this is a linked file... if so then ignore it
+                    var objInfo = childStorage.GetStream("\x0003ObjInfo");
+                    var objInfoStream = new ObjInfoStream(objInfo);
+                    if (objInfoStream.Link)
+                        continue;
+
                     var extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder);
-                    if (extractedFileName != null)
+                    if (!string.IsNullOrEmpty(extractedFileName))
                         result.Add(extractedFileName);
                 }
 

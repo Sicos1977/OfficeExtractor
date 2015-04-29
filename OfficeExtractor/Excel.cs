@@ -24,11 +24,10 @@ namespace OfficeExtractor
         /// </summary>
         /// <param name="inputFile">The binary Excel file</param>
         /// <param name="outputFolder">The output folder</param>
-        /// <param name="storageName">The complete or part of the name from the storage that needs to be saved</param>
         /// <returns></returns>
         /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile"/> is password protected</exception>
         /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
-        public static List<string> SaveToFolder(string inputFile, string outputFolder, string storageName)
+        public static List<string> SaveToFolder(string inputFile, string outputFolder)
         {
             using (var compoundFile = new CompoundFile(inputFile))
             {
@@ -49,7 +48,9 @@ namespace OfficeExtractor
                 {
                     var childStorage = child as CFStorage;
                     if (childStorage == null) continue;
-                    if (!childStorage.Name.StartsWith(storageName)) continue;
+
+                    // Linked files start with "LNK"
+                    if (!childStorage.Name.StartsWith("MBD")) continue;
 
                     var extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder);
                     if (extractedFileName != null)

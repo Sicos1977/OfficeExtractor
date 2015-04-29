@@ -73,7 +73,7 @@ namespace OfficeExtractor.Ole
         internal OleCf Cf { get; private set; }
         #endregion
 
-        #region Constructor 
+        #region Constructor
         /// <summary>
         ///     Creates this object and sets all its properties
         /// </summary>

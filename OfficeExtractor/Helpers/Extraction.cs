@@ -173,13 +173,10 @@ namespace OfficeExtractor.Helpers
 
             if (storage.ExistsStream("\x0001Ole10Native"))
             {
-                var ole10Native = storage.GetStream("\x0001Ole10Native");
-                if (ole10Native.Size <= 0) return null;
-                using (var stream = new MemoryStream(ole10Native.GetData()))
-                {
-                    var oleObjectV20 = new Ole10Native(storage);
-                    return SaveByteArrayToFile(oleObjectV20.NativeData, Path.Combine(outputFolder, oleObjectV20.FileName));
-                }
+                var ole10Native = new Ole10Native(storage);
+                return ole10Native.Format == OleFormat.File
+                    ? SaveByteArrayToFile(ole10Native.NativeData, Path.Combine(outputFolder, ole10Native.FileName))
+                    : null;
             }
 
             if (storage.ExistsStream("WordDocument"))

@@ -106,7 +106,7 @@ namespace OfficeExtractor
                 case ".XLT":
                 case ".XLW":
                     // Excel 97 - 2003
-                    return Excel.SaveToFolder(inputFile, outputFolder, "MBD");
+                    return Excel.SaveToFolder(inputFile, outputFolder);
 
                 case ".XLSB":
                 case ".XLSM":

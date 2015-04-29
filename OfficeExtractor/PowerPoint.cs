@@ -77,11 +77,17 @@ namespace OfficeExtractor
                                 var deflateStream = new DeflateStream(compressedMemoryStream, CompressionMode.Decompress, true);
                                 deflateStream.Read(decompressedBytes, 0, decompressedBytes.Length);
 
+                                string extractedFileName;
+
                                 // Check if the ole object is another compound storage node with a package stream
                                 if (Extraction.IsCompoundFile(decompressedBytes))
-                                    result.Add(Extraction.SaveFromStorageNode(decompressedBytes, outputFolder));
+                                    extractedFileName = Extraction.SaveFromStorageNode(decompressedBytes, outputFolder);
                                 else
-                                    Extraction.SaveByteArrayToFile(decompressedBytes, outputFolder + Extraction.DefaultEmbeddedObjectName);
+                                    extractedFileName = Extraction.SaveByteArrayToFile(decompressedBytes,
+                                        outputFolder + Extraction.DefaultEmbeddedObjectName);
+
+                                if (!string.IsNullOrEmpty(extractedFileName))
+                                    result.Add(extractedFileName);
                             }
                         }
                         else

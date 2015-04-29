@@ -10,22 +10,34 @@ namespace OfficeExtractor.Ole
     {
         #region Properties
         /// <summary>
-        ///     The name of the file
+        ///     This MUST be set to <see cref="OleFormat.Link" /> (0x00000001) or <see cref="OleFormat.File" />
+        ///     (0x00000002).
+        /// </summary>
+        public OleFormat Format { get; private set; }
+
+        /// <summary>
+        ///     When <see cref="Format"/> is set to <see cref="OleFormat.File"/> then this will contain the original
+        ///     name of the embedded file. When set to <see cref="OleFormat.Link"/> this wil contain the name of the
+        ///     linked file.
         /// </summary>
         public string FileName { get; private set; }
 
         /// <summary>
-        ///     The original location of the file (before it was embedded)
+        ///     When <see cref="Format"/> is set to <see cref="OleFormat.File"/> then this will contain the original
+        ///     location of the embedded file. When set to <see cref="OleFormat.Link"/> this wil contain the path to
+        ///     the linked file.
         /// </summary>
         public string FilePath { get; private set; }
 
         /// <summary>
-        ///     The original location of the file (before it was embedded)
+        ///     When <see cref="Format"/> is set to <see cref="OleFormat.File"/> then this will contain the temporary
+        ///     location that was used to embedded the file. When set to <see cref="OleFormat.Link"/> this wil contain 
+        ///     the path to the linked file (the same as <see cref="FilePath"/>).
         /// </summary>
         public string TemporaryPath { get; private set; }
         
         /// <summary>
-        /// The file data
+        ///     The file data
         /// </summary>
         public byte[] Data { get; private set; }
         #endregion
@@ -40,8 +52,8 @@ namespace OfficeExtractor.Ole
             using (var memoryStream = new MemoryStream(stream.GetData()))
             using (var binaryReader = new BinaryReader(memoryStream))
             {
-                // Skip the first byte
-                binaryReader.ReadByte();
+                // Skip the first 4 bytes, this contains the ole10Native data length size
+                binaryReader.ReadUInt32();
 
                 // Check signature
                 var signature = binaryReader.ReadUInt16();
@@ -51,33 +63,36 @@ namespace OfficeExtractor.Ole
                 if (binaryReader.PeekChar() == 00)
                     binaryReader.ReadByte();
 
-                // Check if we have a double signature. In this case the FileName and FilePath are
-                // also added at the end of the file in unicode format
-                var signatureUnicode = binaryReader.ReadUInt16();
-
-                FileName = Strings.ReadNullTerminatedAnsiString(binaryReader);
+                FileName = Path.GetFileName(Strings.ReadNullTerminatedAnsiString(binaryReader));
                 FilePath = Strings.ReadNullTerminatedAnsiString(binaryReader);
 
                 // Skip 2 unused bytes
                 binaryReader.ReadBytes(2);
 
-                var temp = binaryReader.ReadUInt16();
-                if (temp == 0x0003)
-                    TemporaryPath = Strings.Read4ByteLengthPrefixedAnsiString(binaryReader);
+                var format = binaryReader.ReadUInt16();
 
-                var dataSize = (int) binaryReader.ReadUInt32();
-
-                // And finaly we have come to the original file
-                Data = binaryReader.ReadBytes(dataSize);
-
-                // If a double signature was found then also read the unicode parts at the
-                // end of the file
-                if (signatureUnicode == 0x0002)
+                switch (format)
                 {
-                    FileName = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
-                    FilePath = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
-                    TemporaryPath = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
+                    case 0x00000001:
+                        Format = OleFormat.Link;
+                        break;
+
+                    case 0x00000003:
+                        Format = OleFormat.File;
+                        var dataSize = (int) binaryReader.ReadUInt32();
+                        Data = binaryReader.ReadBytes(dataSize);
+                        break;
+
+                    default:
+                        throw new OEObjectTypeNotSupported("Invalid signature found, expected 0x00000001 or 0x00000003");
                 }
+
+                TemporaryPath = Strings.Read4ByteLengthPrefixedAnsiString(binaryReader);
+
+                if (binaryReader.BaseStream.Position >= binaryReader.BaseStream.Length) return;
+                FileName = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
+                FilePath = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
+                TemporaryPath = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
             }
         }
         #endregion

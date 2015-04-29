@@ -38,10 +38,6 @@
         /// <summary>
         ///     The format is a registered clipboard format
         /// </summary>
-        /// <remarks>
-        ///     The format is set into the <see crOle10.StringFormatData" /> field
-        /// 
-        /// </remarks>
         Registered = 0x00000000,
 
         // ReSharper disable InconsistentNaming

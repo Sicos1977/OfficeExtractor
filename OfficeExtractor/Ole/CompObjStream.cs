@@ -26,9 +26,7 @@ namespace OfficeExtractor.Ole
 
         /// <summary>
         ///     AnsiClipboardFormat (variable): This MUST be a ClipboardFormatOrAnsiString structure that contains the
-        ///     Clipboard Format of the linked object or embedded object. If the MarkerOrLength field of the
-        ///     ClipboardFormatOrAnsiString structure contains a value other than 0x00000000, 0xffffffff, or 0xfffffffe,
-        ///     the value MUST NOT be greater than 0x00000190. Otherwise the CompObjStream structure is invalid
+        ///     Clipboard Format of the linked object or embedded object.
         /// </summary>
         public OleClipboardFormat ClipboardFormat { get; private set; }
         #endregion
