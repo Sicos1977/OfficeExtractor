@@ -87,9 +87,9 @@ namespace OfficeExtractor.Ole
                 LongFileName = Strings.Read1ByteLengthPrefixedAnsiString(binaryReader);
                 FileName = Strings.Read1ByteLengthPrefixedAnsiString(binaryReader);
                 Extension = Strings.Read1ByteLengthPrefixedAnsiString(binaryReader);
-                var fileCreationTime = binaryReader.ReadBytes(8).Reverse().ToArray();
+                var fileCreationTime = binaryReader.ReadBytes(8).ToArray();
                 FileCreationTime = DateTime.FromFileTime(BitConverter.ToInt64(fileCreationTime, 0));
-                var fileLastModifiedTime = binaryReader.ReadBytes(8).Reverse().ToArray();
+                var fileLastModifiedTime = binaryReader.ReadBytes(8).ToArray();
                 FileLastModifiedTime = DateTime.FromFileTime(BitConverter.ToInt64(fileLastModifiedTime, 0));
             }
         }
