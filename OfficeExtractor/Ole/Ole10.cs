@@ -147,8 +147,8 @@ namespace OfficeExtractor.Ole
 
             inputStream.Position = 0;
 
-            using (var reader = new BinaryReader(inputStream))
-                ParseOle(reader);
+            using (var binaryReader = new BinaryReader(inputStream))
+                ParseOle(binaryReader);
         }
 
         /// <summary>
@@ -169,12 +169,12 @@ namespace OfficeExtractor.Ole
         /// <summary>
         ///     Parses the stream and sets all the OLE properties
         /// </summary>
-        /// <param name="binarayReader"></param>
-        private void ParseOle(BinaryReader binarayReader)
+        /// <param name="binaryReader"></param>
+        private void ParseOle(BinaryReader binaryReader)
         {
-            Version = binarayReader.ReadUInt32();
+            Version = binaryReader.ReadUInt32();
 
-            var format = binarayReader.ReadUInt32(); // FormatID
+            var format = binaryReader.ReadUInt32(); // FormatID
             try
             {
                 Format = (OleFormat)format;
@@ -186,18 +186,18 @@ namespace OfficeExtractor.Ole
             }
 
             if (Format != OleFormat.NotSet)
-                ClassName = Strings.Read4ByteLengthPrefixedAnsiString(binarayReader);
+                ClassName = Strings.Read4ByteLengthPrefixedAnsiString(binaryReader);
 
             switch (Format)
             {
                 case OleFormat.Link:
-                    ParseObjectHeader(binarayReader);
-                    ParseLinkedObject(binarayReader);
+                    ParseObjectHeader(binaryReader);
+                    ParseLinkedObject(binaryReader);
                     break;
 
                 case OleFormat.File:
-                    ParseObjectHeader(binarayReader);
-                    ParseEmbeddedObject(binarayReader);
+                    ParseObjectHeader(binaryReader);
+                    ParseEmbeddedObject(binaryReader);
                     break;
 
                 case OleFormat.Presentation:
@@ -207,11 +207,11 @@ namespace OfficeExtractor.Ole
                         case "METAFILEPICT":
                         case "BITMAP":
                         case "DIB":
-                            ParseStandardPresentationObject(binarayReader);
+                            ParseStandardPresentationObject(binaryReader);
                             break;
 
                         default:
-                            ParseGenericPresentationObject(binarayReader);
+                            ParseGenericPresentationObject(binaryReader);
                             break;
                     }
 

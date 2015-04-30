@@ -1,6 +1,4 @@
 ﻿using System.IO;
-using CompoundFileStorage;
-using CompoundFileStorage.Interfaces;
 using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
 
@@ -46,15 +44,23 @@ namespace OfficeExtractor.Ole
         /// <summary>
         ///     Creates this object and sets all its properties
         /// </summary>
-        /// <param name="stream">The Compound File Storage CompObj <see cref="CFStream" /></param>
-        internal Package(ICFStream stream)
+        /// <param name="data">The Package object as an byte array</param>
+        internal Package(byte[] data)
         {
-            using (var memoryStream = new MemoryStream(stream.GetData()))
+            ParsePackage(data);
+        }
+        #endregion
+
+        #region ParsePackage
+        /// <summary>
+        ///     Parses the byte array and sets all the package properties
+        /// </summary>
+        /// <param name="data"></param>
+        private void ParsePackage(byte[] data)
+        {
+            using (var memoryStream = new MemoryStream(data))
             using (var binaryReader = new BinaryReader(memoryStream))
             {
-                // Skip the first 4 bytes, this contains the ole10Native data length size
-                binaryReader.ReadUInt32();
-
                 // Check signature
                 var signature = binaryReader.ReadUInt16();
                 if (signature != 0x0002)
@@ -69,7 +75,11 @@ namespace OfficeExtractor.Ole
                 // Skip 2 unused bytes
                 binaryReader.ReadBytes(2);
 
+                // Read format
                 var format = binaryReader.ReadUInt16();
+
+                // Read temporary path
+                TemporaryPath = Strings.Read4ByteLengthPrefixedAnsiString(binaryReader);
 
                 switch (format)
                 {
@@ -86,14 +96,12 @@ namespace OfficeExtractor.Ole
                     default:
                         throw new OEObjectTypeNotSupported("Invalid signature found, expected 0x00000001 or 0x00000003");
                 }
-
-                TemporaryPath = Strings.Read4ByteLengthPrefixedAnsiString(binaryReader);
-
+                
                 if (binaryReader.BaseStream.Position >= binaryReader.BaseStream.Length) return;
                 FileName = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
                 FilePath = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
                 TemporaryPath = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
-            }
+            }            
         }
         #endregion
     }

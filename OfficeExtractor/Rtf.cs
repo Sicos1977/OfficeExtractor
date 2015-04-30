@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using CompoundFileStorage;
+using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
 using OfficeExtractor.Ole;
 using Path = System.IO.Path;
@@ -45,9 +46,9 @@ namespace OfficeExtractor
 
                                     switch (className)
                                     {
-                                        case "MailMsgAtt":
                                         case "Outlook.FileAttach":
-                                            result.Add(ExtractOutlookFileAttachObject(stream, outputFolder));
+                                        case "MailMsgAtt":
+                                            result.Add(ExtractOutlookAttachmentObject(stream, outputFolder));
                                             break;
 
                                         default:
@@ -75,16 +76,29 @@ namespace OfficeExtractor
         internal static string ExtractOle10(Stream stream, string outputFolder)
         {
             var ole10 = new Ole10(stream);
-            var outputFile = string.IsNullOrWhiteSpace(ole10.ItemName)
-                    ? Extraction.DefaultEmbeddedObjectName
-                    : ole10.ItemName;
 
-            if (ole10.Format == OleFormat.File)
-                return Extraction.IsCompoundFile(ole10.NativeData)
-                    ? Extraction.SaveFromStorageNode(ole10.NativeData, outputFolder, ole10.ItemName)
-                    : Extraction.SaveByteArrayToFile(ole10.NativeData, Path.Combine(outputFolder, outputFile));
+            if (ole10.Format != OleFormat.File) return null;
+            
+            switch (ole10.ClassName)
+            {
+                case "Package":
+                    var package = new Package(ole10.NativeData);
+                    if (package.Format == OleFormat.Link) return null;
 
-            return null;
+                    var fileName = Path.GetFileName(package.FileName);
+                    if (string.IsNullOrWhiteSpace(fileName))
+                        fileName = Extraction.DefaultEmbeddedObjectName;
+
+                    fileName = Path.Combine(outputFolder, fileName);
+                    return Extraction.SaveByteArrayToFile(package.Data, fileName);
+
+                default:
+                    if (Extraction.IsCompoundFile(ole10.NativeData))
+                        return Extraction.SaveFromStorageNode(ole10.NativeData, outputFolder, ole10.ItemName);
+
+                    throw new OEObjectTypeNotSupported("Unsupported OleNative ClassName '" +
+                                                       ole10.ClassName + "' found");
+            }
         }
         #endregion
 
@@ -100,20 +114,26 @@ namespace OfficeExtractor
             // https://msdn.microsoft.com/en-us/library/ee157577(v=exchg.80).aspx
             if (stream == null) return null;
             var ad = new AttachDescStream(stream);
-            if (!string.IsNullOrEmpty(ad.LongFileName)) return ad.LongFileName;
-            if (!string.IsNullOrEmpty(ad.DisplayName)) return ad.DisplayName;
-            if (!string.IsNullOrEmpty(ad.FileName)) return ad.FileName;
+            
+            if (!string.IsNullOrWhiteSpace(ad.LongFileName)) 
+                return ad.LongFileName;
+            if (!string.IsNullOrWhiteSpace(ad.DisplayName))
+                return ad.DisplayName;
+
+            if (!string.IsNullOrWhiteSpace(ad.FileName))
+                return ad.FileName;
+
             return null;
         }
         #endregion
 
-        #region ExtractOutlookFileAttachObject
+        #region ExtractOutlookAttachmentObject
         /// <summary>
         /// Extracts a Outlook File Attachment object from the given <paramref name="stream"/>
         /// </summary>
         /// <param name="stream"></param>
         /// <param name="outputFolder">The output folder</param>
-        internal static string ExtractOutlookFileAttachObject(Stream stream, string outputFolder)
+        internal static string ExtractOutlookAttachmentObject(Stream stream, string outputFolder)
         {
             // Outlook attachments embedded in RTF are firstly embedded in an OLE v1.0 object
             var ole10 = new Ole10(stream);
@@ -123,7 +143,6 @@ namespace OfficeExtractor
             using (var compoundFile = new CompoundFile(internalStream))
             {
                 string fileName = null;
-                File.WriteAllBytes("d:\\kees.txt", ole10.NativeData);
                 if (compoundFile.RootStorage.ExistsStream("AttachDesc"))
                 {
                     var attachDescStream = compoundFile.RootStorage.GetStream("AttachDesc") as CFStream;
@@ -133,11 +152,25 @@ namespace OfficeExtractor
                 if (string.IsNullOrEmpty(fileName))
                     fileName = Extraction.DefaultEmbeddedObjectName;
 
-                if (!compoundFile.RootStorage.ExistsStream("AttachContents")) return null;
-                
+                fileName = FileManager.RemoveInvalidFileNameChars(fileName);
                 fileName = Path.Combine(outputFolder, fileName);
-                var data = compoundFile.RootStorage.GetStream("AttachContents").GetData();
-                return Extraction.SaveByteArrayToFile(data, fileName);
+                fileName = FileManager.FileExistsMakeNew(fileName);
+
+                if (compoundFile.RootStorage.ExistsStream("AttachContents"))
+                {
+                    var data = compoundFile.RootStorage.GetStream("AttachContents").GetData();
+                    return Extraction.SaveByteArrayToFile(data, fileName);
+                }
+
+                if (compoundFile.RootStorage.ExistsStorage("MAPIMessage"))
+                {
+
+                    fileName = Path.Combine(outputFolder, fileName);
+                    var storage = compoundFile.RootStorage.GetStorage("MAPIMessage") as CFStorage;
+                    return Extraction.SaveStorageTreeToCompoundFile(storage, fileName);
+                }
+
+                return null;
             }
         }
         #endregion

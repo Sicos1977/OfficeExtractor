@@ -75,7 +75,9 @@ namespace OfficeExtractor.Ole
             switch (compObjStream.AnsiUserType)
             {
                 case "OLE Package":
-                    var package = new Package(ole10Native);
+                    var ole10NativeSize = (int) ole10Native.Size - 4;
+                    var data = ole10Native.GetData(4, ref ole10NativeSize);
+                    var package = new Package(data);
                     Format = package.Format;
                     FileName = Path.GetFileName(package.FileName);
                     FilePath = package.FilePath;
