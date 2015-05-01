@@ -44,7 +44,10 @@ namespace OfficeExtractor
                     // Get the objInfo stream to check if this is a linked file... if so then ignore it
                     var objInfo = childStorage.GetStream("\x0003ObjInfo");
                     var objInfoStream = new ObjInfoStream(objInfo);
-                    if (objInfoStream.Link)
+
+                    // We don't want to export linked objects and objects that are not shown as an icon... 
+                    // because these objects are already visible on the Word document
+                    if (objInfoStream.Link || !objInfoStream.Icon)
                         continue;
 
                     var extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder);
