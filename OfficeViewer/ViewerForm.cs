@@ -71,6 +71,7 @@ namespace OfficeViewer
                     var files = extractor.SaveToFolder(openFileDialog1.FileName, tempFolder);
                     FilesListBox.Items.Clear();
 
+                    if (files == null) return;
                     foreach (var file in files)
                         FilesListBox.Items.Add(file);
                 }

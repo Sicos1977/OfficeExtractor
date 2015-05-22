@@ -224,19 +224,31 @@ namespace OfficeExtractor
 
                     return result;
                 }
-                catch (FileFormatException)
+                catch (FileFormatException fileFormatException)
                 {
-                    // When we receive this exception we can have 2 things:
-                    // - The file is corrupt
-                    // - The file is password protected, in this case the file is saved as a compound file
-                    //EncryptedPackage
-                    using (var compoundFile = new CompoundFile(inputFileMemoryStream))
+                    if (
+                        !fileFormatException.Message.Equals("File contains corrupted data.",
+                            StringComparison.InvariantCultureIgnoreCase))
+                        return null;
+
+                    try
                     {
-                        if (compoundFile.RootStorage.ExistsStream("EncryptedPackage"))
-                            throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
-                                                                "' is password protected");
+                        // When we receive this exception we can have 2 things:
+                        // - The file is corrupt
+                        // - The file is password protected, in this case the file is saved as a compound file
+                        //EncryptedPackage
+                        using (var compoundFile = new CompoundFile(inputFileMemoryStream))
+                        {
+                            if (compoundFile.RootStorage.ExistsStream("EncryptedPackage"))
+                                throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
+                                                                    "' is password protected");
+                        }
+
                     }
-                    
+                    catch (Exception)
+                    {
+                        return null;
+                    }
                 }
             }
 
