@@ -84,6 +84,10 @@ namespace OfficeExtractor.Ole
                     NativeData = package.Data;
                     break;
 
+                case "PBrush":
+                    // Ignore
+                    break;
+
                 default:
                     throw new OEObjectTypeNotSupported("Unsupported OleNative AnsiUserType '" +
                                                         compObjStream.AnsiUserType + "' found");
