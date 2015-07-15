@@ -85,6 +85,7 @@ namespace OfficeExtractor.Ole
                     break;
 
                 case "PBrush":
+                case "Pakket":
                     // Ignore
                     break;
 
