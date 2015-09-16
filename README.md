@@ -1,32 +1,21 @@
 OfficeExtractor
-===============
+=================
 
 Extracts embedded OLE objects from Word, Excel, PowerPoint and Open Office files without needing the original programs.
 
-- 2014-10-17
-  - Fixed issue with Excel files with password protected workbooks seen as password protected files 
+Installing via NuGet
+====================
 
-- 2014-06-11 Version 1.2
-  - Added support for Open Office files; .ODT, .ODS and .ODP
+The easiest way to install IFilterTextReader is via NuGet.
 
+In Visual Studio's Package Manager Console, simply enter the following command:
 
-- 2014-06-11 Version 1.1
-  - Moved all the CompoundFileStorage to another project and made it available through a nuget package
-
-- 2014-06-10 Version 1.0
-
-  - Extracts embedded files from binary office files (Office 97 - 2003)
-  - Extracts embedded files from Office Open XML files (Office 2007 - 2013)
-  - Automaticly sets hidden workbooks in Excel files visible
-  - Will detect if the files are password protected
-  - Unit tests for the most common used file types
-  - 100% native .NET code, no PINVOKE
-
+    Install-Package OfficeExtractor
 
 License
 =======
 
-Copyright 2014 Kees van Spelde.
+Copyright 2013-2015 Kees van Spelde.
 
 Licensed under the The Code Project Open License (CPOL) 1.02; you may not use this software except in compliance with the License. You may obtain a copy of the License at:
 
@@ -34,8 +23,12 @@ http://www.codeproject.com/info/cpol10.aspx
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
-
 Core Team
 =========
-
     Sicos1977 (Kees van Spelde)
+
+Support
+=======
+If you like my work then please consider a donation as a thank you.
+
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=NS92EXB2RDPYA" target="_blank"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" /></a>
