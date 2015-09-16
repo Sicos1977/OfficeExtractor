@@ -68,22 +68,34 @@ namespace OfficeExtractor
             var extension = Path.GetExtension(inputFile);
             extension = string.IsNullOrEmpty(extension) ? string.Empty : extension.ToUpperInvariant();
 
-            using (var fileStream = File.OpenRead(inputFile))
+            switch (extension)
             {
-                // Aan de eerste 128 bytes hebben we genoeg om de bestandstypes te herkennen
-                var header = new byte[2];
-                fileStream.Read(header, 0, 2);
+                case ".RTF":
+                case ".ODT":
+                case ".ODS":
+                case ".ODP":
+                    break;
 
-                // 50 4B = PK --> .doc = 4
-                if (header[0] == 0x50 && header[1] == 0x4B && extension.Length == 4)
-                {
-                    extension += "X";
-                }
-                // D0 CF = DI --> .docx = 5
-                else if (header[0] == 0xD0 && header[1] == 0xCF)
-                {
-                    extension = extension.Substring(0, 4);
-                }
+                default:
+
+                    using (var fileStream = File.OpenRead(inputFile))
+                    {
+                        // Aan de eerste 128 bytes hebben we genoeg om de bestandstypes te herkennen
+                        var header = new byte[2];
+                        fileStream.Read(header, 0, 2);
+
+                        // 50 4B = PK --> .doc = 4
+                        if (header[0] == 0x50 && header[1] == 0x4B && extension.Length == 4)
+                        {
+                            extension += "X";
+                        }
+                        // D0 CF = DI --> .docx = 5
+                        else if (header[0] == 0xD0 && header[1] == 0xCF)
+                        {
+                            extension = extension.Substring(0, 4);
+                        }
+                    }
+                    break;
             }
 
             return extension;
