@@ -72,7 +72,6 @@
             this.Controls.Add(this.FilesListBox);
             this.Controls.Add(this.SelectButton);
             this.Name = "ViewerForm";
-            this.Text = "Office Extractor test tool v1.0";
             this.Load += new System.EventHandler(this.ViewerForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

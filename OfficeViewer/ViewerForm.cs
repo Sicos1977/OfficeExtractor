@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Windows.Forms;
 
 /*
@@ -32,6 +33,10 @@ namespace OfficeViewer
 
         private void ViewerForm_Load(object sender, EventArgs e)
         {
+            // ReSharper disable LocalizableElement
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            Text = "Office Extractor test tool v" + version.Major + "." + version.Minor + "." + version.Build;
+            // ReSharper restore LocalizableElement
             Closed += ViewerForm_Closed;
         }
 
