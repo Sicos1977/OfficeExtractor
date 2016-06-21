@@ -6,7 +6,7 @@ Extracts embedded OLE objects from Word, Excel, PowerPoint and Open Office files
 Installing via NuGet
 ====================
 
-The easiest way to install IFilterTextReader is via NuGet.
+The easiest way to install OfficeExtractor is via NuGet.
 
 In Visual Studio's Package Manager Console, simply enter the following command:
 
