@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 
 /*
@@ -32,13 +33,14 @@ namespace OfficeExtractor.Helpers
         {
             var stringBuilder = new StringBuilder();
 
-            while (binaryReader.PeekChar() != -1)
+            while (binaryReader.BaseStream.Position != 
+                   binaryReader.BaseStream.Length)
             {
                 var b = binaryReader.ReadByte();
                 if (b == 0)
                     return stringBuilder.ToString();
 
-                stringBuilder.Append((char)b);
+                stringBuilder.Append(Convert.ToChar(b));
             }
 
             return stringBuilder.ToString();
