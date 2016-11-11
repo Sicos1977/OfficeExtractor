@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using CompoundFileStorage.Interfaces;
 using OfficeExtractor.Helpers;
+using OpenMcdf;
 
 /*
    Copyright 2013 - 2016 Kees van Spelde
@@ -90,7 +90,7 @@ namespace OfficeExtractor.Ole
         ///     Creates this object and sets all its properties
         /// </summary>
         /// <param name="stream">The Compound File Storage AttachDesc <see cref="CFStream" /></param>
-        internal AttachDescStream(ICFStream stream)
+        internal AttachDescStream(CFStream stream)
         {
             using (var memoryStream = new MemoryStream(stream.GetData()))
             using (var binaryReader = new BinaryReader(memoryStream))

@@ -1,8 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
-using CompoundFileStorage;
 using ICSharpCode.SharpZipLib.Zip;
 using OfficeExtractor.Ole;
+using OpenMcdf;
 
 /*
    Copyright 2013 - 2016 Kees van Spelde
@@ -116,7 +117,7 @@ namespace OfficeExtractor.Helpers
         /// <param name="bytes">The <see cref="CompoundFile"/> as a byte array</param>
         /// <param name="outputFolder">The outputFolder</param>
         /// <returns></returns>
-        /// <exception cref="OfficeExtractor.Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
+        /// <exception cref="Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
         internal static string SaveFromStorageNode(byte[] bytes, string outputFolder)
         {
             using (var memoryStream = new MemoryStream(bytes))
@@ -131,7 +132,7 @@ namespace OfficeExtractor.Helpers
         /// <param name="outputFolder">The outputFolder</param>
         /// <param name="fileName">The fileName to use, null when the fileName is unknown</param>
         /// <returns></returns>
-        /// <exception cref="OfficeExtractor.Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
+        /// <exception cref="Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
         internal static string SaveFromStorageNode(byte[] bytes, string outputFolder, string fileName)
         {
             using (var memoryStream = new MemoryStream(bytes))
@@ -145,7 +146,7 @@ namespace OfficeExtractor.Helpers
         /// <param name="storage">The <see cref="CFStorage"/> node</param>
         /// <param name="outputFolder">The outputFolder</param>
         /// <returns></returns>
-        /// <exception cref="OfficeExtractor.Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
+        /// <exception cref="Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
         internal static string SaveFromStorageNode(CFStorage storage, string outputFolder)
         {
             return SaveFromStorageNode(storage, outputFolder, null);
@@ -158,10 +159,10 @@ namespace OfficeExtractor.Helpers
         /// <param name="outputFolder">The outputFolder</param>
         /// <param name="fileName">The fileName to use, null when the fileName is unknown</param>
         /// <returns></returns>
-        /// <exception cref="OfficeExtractor.Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
+        /// <exception cref="Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
         public static string SaveFromStorageNode(CFStorage storage, string outputFolder, string fileName)
         {
-            if (storage.ExistsStream("CONTENTS"))
+            if (storage.TryGetStream("CONTENTS") != null)
             {
                 var contents = storage.GetStream("CONTENTS");
                 if (contents.Size <= 0) return null;
@@ -169,7 +170,7 @@ namespace OfficeExtractor.Helpers
                 return SaveByteArrayToFile(contents.GetData(), Path.Combine(outputFolder, fileName));
             }
             
-            if (storage.ExistsStream("Package"))
+            if (storage.TryGetStream("Package") != null)
             {
                 var package = storage.GetStream("Package");
                 if (package.Size <= 0) return null;
@@ -177,7 +178,7 @@ namespace OfficeExtractor.Helpers
                 return SaveByteArrayToFile(package.GetData(), Path.Combine(outputFolder, fileName));
             }
 
-            if (storage.ExistsStream("EmbeddedOdf"))
+            if (storage.TryGetStream("EmbeddedOdf") != null)
             {
                 // The embedded object is an Embedded ODF file
                 var package = storage.GetStream("EmbeddedOdf");
@@ -186,7 +187,7 @@ namespace OfficeExtractor.Helpers
                 return SaveByteArrayToFile(package.GetData(), Path.Combine(outputFolder, fileName));
             }
 
-            if (storage.ExistsStream("\x0001Ole10Native"))
+            if (storage.TryGetStream("\x0001Ole10Native") != null)
             {
                 var ole10Native = new Ole10Native(storage);
                 return ole10Native.Format == OleFormat.File
@@ -194,14 +195,14 @@ namespace OfficeExtractor.Helpers
                     : null;
             }
 
-            if (storage.ExistsStream("WordDocument"))
+            if (storage.TryGetStream("WordDocument") != null)
             {
                 // The embedded object is a Word file
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = "Embedded Word document.doc";
                 return SaveStorageTreeToCompoundFile(storage, Path.Combine(outputFolder, fileName));
             }
             
-            if (storage.ExistsStream("Workbook"))
+            if (storage.TryGetStream("Workbook") != null)
             {
                 // The embedded object is an Excel file   
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = "Embedded Excel document.xls";
@@ -209,7 +210,7 @@ namespace OfficeExtractor.Helpers
                 return SaveStorageTreeToCompoundFile(storage, Path.Combine(outputFolder, fileName));
             }
             
-            if (storage.ExistsStream("PowerPoint Document"))
+            if (storage.TryGetStream("PowerPoint Document") != null)
             {
                 // The embedded object is a PowerPoint file
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = "Embedded PowerPoint document.ppt";
@@ -246,22 +247,24 @@ namespace OfficeExtractor.Helpers
         /// <param name="storage"></param>
         private static void GetStorageChain(CFStorage rootStorage, CFStorage storage)
         {
-            foreach (var child in storage.Children)
+            Action<CFItem> entries = item =>
             {
-                if (child.IsStorage)
+                if (item.IsStorage)
                 {
-                    var newRootStorage = rootStorage.AddStorage(child.Name);
-                    GetStorageChain(newRootStorage, child as CFStorage);
+                    var newRootStorage = rootStorage.AddStorage(item.Name);
+                    GetStorageChain(newRootStorage, item as CFStorage);
                 }
-                else if (child.IsStream)
+                else if (item.IsStream)
                 {
-                    var childStream = child as CFStream;
-                    if (childStream == null) continue;
-                    var stream = rootStorage.AddStream(child.Name);
+                    var childStream = item as CFStream;
+                    if (childStream == null) return;
+                    var stream = rootStorage.AddStream(item.Name);
                     var bytes = childStream.GetData();
                     stream.SetData(bytes);
                 }
-            }
+            };
+
+            storage.VisitEntries(entries, false);
         }
         #endregion
 

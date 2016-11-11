@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using CompoundFileStorage;
 using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
+using OpenMcdf;
 
 /*
    Copyright 2013 - 2016 Kees van Spelde
@@ -46,9 +46,7 @@ namespace OfficeExtractor
                                                         "' is password protected");
 
                 var result = new List<string>();
-
-                if (!compoundFile.RootStorage.ExistsStream("PowerPoint Document")) return result;
-                var stream = compoundFile.RootStorage.GetStream("PowerPoint Document") as CFStream;
+                var stream = compoundFile.RootStorage.TryGetStream("PowerPoint Document");
                 if (stream == null) return result;
 
                 using (var memoryStream = new MemoryStream(stream.GetData()))
@@ -124,9 +122,8 @@ namespace OfficeExtractor
         /// <returns></returns>
         private static bool IsPasswordProtected(CompoundFile compoundFile)
         {
-            if (compoundFile.RootStorage.ExistsStream("EncryptedPackage")) return true;
-            if (!compoundFile.RootStorage.ExistsStream("Current User")) return false;
-            var stream = compoundFile.RootStorage.GetStream("Current User") as CFStream;
+            if (compoundFile.RootStorage.TryGetStream("EncryptedPackage") != null) return true;
+            var stream = compoundFile.RootStorage.TryGetStream("Current User");
             if (stream == null) return false;
 
             using (var memoryStream = new MemoryStream(stream.GetData()))

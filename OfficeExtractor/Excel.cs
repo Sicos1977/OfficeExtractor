@@ -2,12 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using CompoundFileStorage;
-using CompoundFileStorage.Exceptions;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
+using OpenMcdf;
 
 /*
    Copyright 2013 - 2016 Kees van Spelde
@@ -44,34 +43,24 @@ namespace OfficeExtractor
         /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
         public static List<string> SaveToFolder(string inputFile, string outputFolder)
         {
+            var fileName = Path.GetFileName(inputFile);
+
             using (var compoundFile = new CompoundFile(inputFile))
             {
-                try
-                {
-                    if (IsPasswordProtected(compoundFile))
-                        throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
-                                                            "' is password protected");
-                }
-                catch (CFCorruptedFileException)
-                {
-                    throw new OEFileIsCorrupt("The file '" + Path.GetFileName(inputFile) + "' is corrupt");
-                }
+                if (IsPasswordProtected(compoundFile, fileName))
+                    throw new OEFileIsPasswordProtected("The file '" + fileName + "' is password protected");
 
                 var result = new List<string>();
-
-                foreach (var child in compoundFile.RootStorage.Children)
+                Action<CFItem> entries = storage =>
                 {
-                    var childStorage = child as CFStorage;
-                    if (childStorage == null) continue;
-
-                    // Linked files start with "LNK"
-                    if (!childStorage.Name.StartsWith("MBD")) continue;
-
+                    var childStorage = storage as CFStorage;
+                    if (childStorage == null || !childStorage.Name.StartsWith("MBD")) return;
                     var extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder);
                     if (extractedFileName != null)
                         result.Add(extractedFileName);
-                }
+                };
 
+                compoundFile.RootStorage.VisitEntries(entries, false);
                 return result;
             }
         }
@@ -82,27 +71,21 @@ namespace OfficeExtractor
         /// Returns true when the Excel file is password protected
         /// </summary>
         /// <param name="compoundFile">The Excel file to check</param>
+        /// <param name="fileName"></param>
         /// <returns></returns>
         /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
-        public static bool IsPasswordProtected(CompoundFile compoundFile)
+        public static bool IsPasswordProtected(CompoundFile compoundFile, string fileName)
         {
             try
             {
-                if (compoundFile.RootStorage.ExistsStream("EncryptedPackage")) return true;
+                if (compoundFile.RootStorage.TryGetStream("EncryptedPackage") != null) return true;
 
-                var streamName = string.Empty;
+                var stream = compoundFile.RootStorage.TryGetStream("WorkBook");
+                if (stream == null)
+                    compoundFile.RootStorage.TryGetStream("Book");
 
-                if (compoundFile.RootStorage.ExistsStream("WorkBook"))
-                    streamName = "WorkBook";
-                else if (compoundFile.RootStorage.ExistsStream("Book"))
-                    streamName = "Book";
-
-                if (string.IsNullOrEmpty(streamName))
-                    throw new OEFileIsCorrupt("Could not find the WorkBook or Book stream in the file '" +
-                                              compoundFile.FileName + "'");
-
-                var stream = compoundFile.RootStorage.GetStream(streamName) as CFStream;
-                if (stream == null) return false;
+                if (stream == null)
+                    throw new OEFileIsCorrupt("Could not find the WorkBook or Book stream in the file '" + fileName + "'");
 
                 var bytes = stream.GetData();
                 using (var memoryStream = new MemoryStream(bytes))
@@ -113,8 +96,7 @@ namespace OfficeExtractor
 
                     // Something seems to be wrong, we would expect a BOF but for some reason it isn't so stop it
                     if (recordType != 0x809)
-                        throw new OEFileIsCorrupt("The file '" + Path.GetFileName(compoundFile.FileName) +
-                                                  "' is corrupt");
+                        throw new OEFileIsCorrupt("The file '" + fileName + "' is corrupt");
 
                     var recordLength = binaryReader.ReadUInt16();
                     binaryReader.BaseStream.Position += recordLength;
@@ -146,14 +128,12 @@ namespace OfficeExtractor
         /// <exception cref="OEFileIsCorrupt">Raised when the <paramref name="rootStorage"/> does not have a Workbook stream</exception>
         public static void SetWorkbookVisibility(CFStorage rootStorage)
         {
-            if (!rootStorage.ExistsStream("WorkBook"))
+            var stream = rootStorage.TryGetStream("WorkBook");
+            if (stream == null)
                 throw new OEFileIsCorrupt("Could not check workbook visibility because the WorkBook stream is not present");
 
             try
             {
-                var stream = rootStorage.GetStream("WorkBook") as CFStream;
-                if (stream == null) return;
-
                 var bytes = stream.GetData();
 
                 using (var memoryStream = new MemoryStream(bytes))

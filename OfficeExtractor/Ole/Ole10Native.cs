@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using CompoundFileStorage;
 using OfficeExtractor.Exceptions;
+using OpenMcdf;
 
 /*
    Copyright 2013 - 2016 Kees van Spelde
@@ -92,7 +92,8 @@ namespace OfficeExtractor.Ole
             {
                 case "OLE Package":
                     var ole10NativeSize = (int) ole10Native.Size - 4;
-                    var data = ole10Native.GetData(4, ref ole10NativeSize);
+                    var data = new byte[ole10NativeSize];
+                    ole10Native.Read(data , 4, ole10NativeSize);
                     var package = new Package(data);
                     Format = package.Format;
                     FileName = Path.GetFileName(package.FileName);

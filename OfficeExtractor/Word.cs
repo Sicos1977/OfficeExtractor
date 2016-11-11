@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using CompoundFileStorage;
 using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
 using OfficeExtractor.Ole;
+using OpenMcdf;
 
 /*
    Copyright 2013 - 2016 Kees van Spelde
@@ -39,37 +40,36 @@ namespace OfficeExtractor
         /// <exception cref="OEFileIsPasswordProtected">Raised when the <see cref="inputFile"/> is password protected</exception>
         public static List<string> SaveToFolder(string inputFile, string outputFolder)
         {
+            var fileName = Path.GetFileName(inputFile);
+
             using (var compoundFile = new CompoundFile(inputFile))
             {
-                if (IsPasswordProtected(compoundFile))
-                    throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
+                if (IsPasswordProtected(compoundFile, fileName))
+                    throw new OEFileIsPasswordProtected("The file '" + fileName +
                                                         "' is password protected");
 
                 var result = new List<string>();
 
-                if (!compoundFile.RootStorage.ExistsStorage("ObjectPool")) return result;
-                var objectPoolStorage = compoundFile.RootStorage.GetStorage("ObjectPool") as CFStorage;
+                var objectPoolStorage = compoundFile.RootStorage.TryGetStorage("ObjectPool");
                 if (objectPoolStorage == null) return result;
 
-                // Multiple objects are stored as children of the storage object
-                foreach (var child in objectPoolStorage.Children)
+                Action<CFItem> entries = item =>
                 {
-                    var childStorage = child as CFStorage;
-                    if (childStorage == null) continue;
-
+                    var childStorage = item as CFStorage;
+                    if (childStorage == null) return;
                     // Get the objInfo stream to check if this is a linked file... if so then ignore it
                     var objInfo = childStorage.GetStream("\x0003ObjInfo");
                     var objInfoStream = new ObjInfoStream(objInfo);
 
                     // We don't want to export linked objects and objects that are not shown as an icon... 
                     // because these objects are already visible on the Word document
-                    if (objInfoStream.Link || !objInfoStream.Icon)
-                        continue;
-
+                    if (objInfoStream.Link || !objInfoStream.Icon) return;
                     var extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder);
                     if (!string.IsNullOrEmpty(extractedFileName))
                         result.Add(extractedFileName);
-                }
+                };
+
+                objectPoolStorage.VisitEntries(entries, false);
 
                 return result;
             }
@@ -81,17 +81,18 @@ namespace OfficeExtractor
         /// Returns true when the Word file is password protected
         /// </summary>
         /// <param name="compoundFile"></param>
+        /// <param name="fileName"></param>
         /// <returns></returns>
         /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
-        public static bool IsPasswordProtected(CompoundFile compoundFile)
+        public static bool IsPasswordProtected(CompoundFile compoundFile, string fileName)
         {
-            if (compoundFile.RootStorage.ExistsStream("EncryptedPackage")) return true;
+            
+            if (compoundFile.RootStorage.TryGetStream("EncryptedPackage") != null) return true;
 
-            if (!compoundFile.RootStorage.ExistsStream("WordDocument")) 
-                throw new OEFileIsCorrupt("Could not find the WordDocument stream in the file '" + compoundFile.FileName + "'");
+            var stream = compoundFile.RootStorage.TryGetStream("WordDocument");
 
-            var stream = compoundFile.RootStorage.GetStream("WordDocument") as CFStream;
-            if (stream == null) return false;
+            if (stream == null)
+                throw new OEFileIsCorrupt("Could not find the WordDocument stream in the file '" + fileName + "'");
 
             var bytes = stream.GetData();
             using (var memoryStream = new MemoryStream(bytes))

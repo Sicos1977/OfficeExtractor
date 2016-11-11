@@ -4,8 +4,8 @@ using System.IO;
 using System.IO.Packaging;
 using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
-using CompoundFileStorage;
 using ICSharpCode.SharpZipLib.Zip;
+using OpenMcdf;
 
 /*
    Copyright 2013 - 2016 Kees van Spelde
@@ -123,60 +123,67 @@ namespace OfficeExtractor
 
             outputFolder = FileManager.CheckForBackSlash(outputFolder);
 
-            switch (extension)
+            try
             {
-                case ".ODT":
-                case ".ODS":
-                case ".ODP":
-                    return ExtractFromOpenDocumentFormat(inputFile, outputFolder);
+                switch (extension)
+                {
+                    case ".ODT":
+                    case ".ODS":
+                    case ".ODP":
+                        return ExtractFromOpenDocumentFormat(inputFile, outputFolder);
 
-                case ".DOC":
-                case ".DOT":
-                    // Word 97 - 2003
-                    return Word.SaveToFolder(inputFile, outputFolder);
+                    case ".DOC":
+                    case ".DOT":
+                        // Word 97 - 2003
+                        return Word.SaveToFolder(inputFile, outputFolder);
 
-                case ".DOCM":
-                case ".DOCX":
-                case ".DOTM":
-                    // Word 2007 - 2013
-                    return ExtractFromOfficeOpenXmlFormat(inputFile, "/word/embeddings/", outputFolder);
+                    case ".DOCM":
+                    case ".DOCX":
+                    case ".DOTM":
+                        // Word 2007 - 2013
+                        return ExtractFromOfficeOpenXmlFormat(inputFile, "/word/embeddings/", outputFolder);
 
-                case ".RTF":
-                    return Rtf.SaveToFolder(inputFile, outputFolder);
+                    case ".RTF":
+                        return Rtf.SaveToFolder(inputFile, outputFolder);
 
-                case ".XLS":
-                case ".XLT":
-                case ".XLW":
-                    // Excel 97 - 2003
-                    return Excel.SaveToFolder(inputFile, outputFolder);
+                    case ".XLS":
+                    case ".XLT":
+                    case ".XLW":
+                        // Excel 97 - 2003
+                        return Excel.SaveToFolder(inputFile, outputFolder);
 
-                case ".XLSB":
-                case ".XLSM":
-                case ".XLSX":
-                case ".XLTM":
-                case ".XLTX":
-                    // Excel 2007 - 2013
-                    return ExtractFromOfficeOpenXmlFormat(inputFile, "/xl/embeddings/", outputFolder);
+                    case ".XLSB":
+                    case ".XLSM":
+                    case ".XLSX":
+                    case ".XLTM":
+                    case ".XLTX":
+                        // Excel 2007 - 2013
+                        return ExtractFromOfficeOpenXmlFormat(inputFile, "/xl/embeddings/", outputFolder);
 
-                case ".POT":
-                case ".PPT":
-                case ".PPS":
-                    // PowerPoint 97 - 2003
-                    return PowerPoint.SaveToFolder(inputFile, outputFolder);
+                    case ".POT":
+                    case ".PPT":
+                    case ".PPS":
+                        // PowerPoint 97 - 2003
+                        return PowerPoint.SaveToFolder(inputFile, outputFolder);
 
-                case ".POTM":
-                case ".POTX":
-                case ".PPSM":
-                case ".PPSX":
-                case ".PPTM":
-                case ".PPTX":
-                    // PowerPoint 2007 - 2013
-                    return ExtractFromOfficeOpenXmlFormat(inputFile, "/ppt/embeddings/", outputFolder);
+                    case ".POTM":
+                    case ".POTX":
+                    case ".PPSM":
+                    case ".PPSX":
+                    case ".PPTM":
+                    case ".PPTX":
+                        // PowerPoint 2007 - 2013
+                        return ExtractFromOfficeOpenXmlFormat(inputFile, "/ppt/embeddings/", outputFolder);
 
-                default:
-                    throw new OEFileTypeNotSupported("The file '" + Path.GetFileName(inputFile) +
-                                                     "' is not supported, only .ODT, .DOC, .DOCM, .DOCX, .DOT, .DOTM, .RTF, .XLS, .XLSB, .XLSM, .XLSX, .XLT, " +
-                                                     ".XLTM, .XLTX, .XLW, .POT, .PPT, .POTM, .POTX, .PPS, .PPSM, .PPSX, .PPTM and .PPTX are supported");
+                    default:
+                        throw new OEFileTypeNotSupported("The file '" + Path.GetFileName(inputFile) +
+                                                         "' is not supported, only .ODT, .DOC, .DOCM, .DOCX, .DOT, .DOTM, .RTF, .XLS, .XLSB, .XLSM, .XLSX, .XLT, " +
+                                                         ".XLTM, .XLTX, .XLW, .POT, .PPT, .POTM, .POTX, .PPS, .PPSM, .PPSX, .PPTM and .PPTX are supported");
+                }
+            }
+            catch (CFCorruptedFileException)
+            {
+                throw new OEFileIsCorrupt("The file '" + Path.GetFileName(inputFile) + "' is corrupt");
             }
         }
         #endregion
@@ -250,7 +257,7 @@ namespace OfficeExtractor
                         //EncryptedPackage
                         using (var compoundFile = new CompoundFile(inputFileMemoryStream))
                         {
-                            if (compoundFile.RootStorage.ExistsStream("EncryptedPackage"))
+                            if (compoundFile.RootStorage.TryGetStream("EncryptedPackage") != null)
                                 throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
                                                                     "' is password protected");
                         }
@@ -279,7 +286,6 @@ namespace OfficeExtractor
         internal List<string> ExtractFromOpenDocumentFormat(string inputFile, string outputFolder)
         {
             var result = new List<string>();
-
             var zipFile = new ZipFile(inputFile);
   
             // Check if the file is password protected

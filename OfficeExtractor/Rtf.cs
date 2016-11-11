@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using CompoundFileStorage;
 using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
 using OfficeExtractor.Ole;
+using OpenMcdf;
 using Path = System.IO.Path;
 
 /*
@@ -48,33 +48,26 @@ namespace OfficeExtractor
                 var enumerator = rtfReader.Read().GetEnumerator();
                 while (enumerator.MoveNext())
                 {
-                    if (enumerator.Current.Text == "object")
+                    if (enumerator.Current.Text != "object") continue;
+                    if (!RtfParser.Reader.MoveToNextControlWord(enumerator, "objclass")) continue;
+                    var className = RtfParser.Reader.GetNextText(enumerator);
+
+                    if (!RtfParser.Reader.MoveToNextControlWord(enumerator, "objdata")) continue;
+                    var data = RtfParser.Reader.GetNextTextAsByteArray(enumerator);
+                    using (var stream = new MemoryStream(data))
                     {
-                        if (RtfParser.Reader.MoveToNextControlWord(enumerator, "objclass"))
+                        switch (className)
                         {
-                            var className = RtfParser.Reader.GetNextText(enumerator);
+                            case "Outlook.FileAttach":
+                            case "MailMsgAtt":
+                                result.Add(ExtractOutlookAttachmentObject(stream, outputFolder));
+                                break;
 
-                            if (RtfParser.Reader.MoveToNextControlWord(enumerator, "objdata"))
-                            {
-                                var data = RtfParser.Reader.GetNextTextAsByteArray(enumerator);
-                                using (var stream = new MemoryStream(data))
-                                {
-
-                                    switch (className)
-                                    {
-                                        case "Outlook.FileAttach":
-                                        case "MailMsgAtt":
-                                            result.Add(ExtractOutlookAttachmentObject(stream, outputFolder));
-                                            break;
-
-                                        default:
-                                            var fileName = ExtractOle10(stream, outputFolder);
-                                            if (!string.IsNullOrWhiteSpace(fileName))
-                                                result.Add(fileName);
-                                            break;
-                                    }
-                                }
-                            }
+                            default:
+                                var fileName = ExtractOle10(stream, outputFolder);
+                                if (!string.IsNullOrWhiteSpace(fileName))
+                                    result.Add(fileName);
+                                break;
                         }
                     }
                 }
@@ -159,11 +152,9 @@ namespace OfficeExtractor
             using (var compoundFile = new CompoundFile(internalStream))
             {
                 string fileName = null;
-                if (compoundFile.RootStorage.ExistsStream("AttachDesc"))
-                {
-                    var attachDescStream = compoundFile.RootStorage.GetStream("AttachDesc") as CFStream;
+                var attachDescStream = compoundFile.RootStorage.TryGetStream("AttachDesc");
+                if (attachDescStream != null)
                     fileName = GetFileNameFromAttachDescStream(attachDescStream);
-                }
 
                 if (string.IsNullOrEmpty(fileName))
                     fileName = Extraction.DefaultEmbeddedObjectName;
@@ -172,18 +163,15 @@ namespace OfficeExtractor
                 fileName = Path.Combine(outputFolder, fileName);
                 fileName = FileManager.FileExistsMakeNew(fileName);
 
-                if (compoundFile.RootStorage.ExistsStream("AttachContents"))
-                {
-                    var data = compoundFile.RootStorage.GetStream("AttachContents").GetData();
-                    return Extraction.SaveByteArrayToFile(data, fileName);
-                }
+                var attachContentsStream = compoundFile.RootStorage.TryGetStream("AttachContents");
+                if (attachContentsStream != null)
+                    return Extraction.SaveByteArrayToFile(attachContentsStream.GetData(), fileName);
 
-                if (compoundFile.RootStorage.ExistsStorage("MAPIMessage"))
+                var mapiMessageStorage = compoundFile.RootStorage.TryGetStorage("MAPIMessage");
+                if (mapiMessageStorage != null)
                 {
-
                     fileName = Path.Combine(outputFolder, fileName);
-                    var storage = compoundFile.RootStorage.GetStorage("MAPIMessage") as CFStorage;
-                    return Extraction.SaveStorageTreeToCompoundFile(storage, fileName);
+                    return Extraction.SaveStorageTreeToCompoundFile(mapiMessageStorage, fileName);
                 }
 
                 return null;

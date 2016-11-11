@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
-using CompoundFileStorage.Interfaces;
+using OpenMcdf;
 
 /*
    Copyright 2013 - 2016 Kees van Spelde
@@ -92,8 +92,8 @@ namespace OfficeExtractor.Ole
         /// <summary>
         ///     Creates this object and sets all its properties
         /// </summary>
-        /// <param name="stream">The Compound File Storage CompObj <see cref="CompoundFileStorage.CFStream" /></param>
-        internal ObjInfoStream(ICFStream stream)
+        /// <param name="stream">The Compound File Storage CompObj <see cref="CFStream" /></param>
+        internal ObjInfoStream(CFStream stream)
         {
             using (var memoryStream = new MemoryStream(stream.GetData()))
             using (var binaryReader = new BinaryReader(memoryStream))
