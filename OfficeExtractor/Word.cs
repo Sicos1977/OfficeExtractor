@@ -69,6 +69,8 @@ namespace OfficeExtractor
         /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
         public static bool IsPasswordProtected(CompoundFile compoundFile)
         {
+            if (compoundFile.RootStorage.ExistsStream("EncryptedPackage")) return true;
+
             if (!compoundFile.RootStorage.ExistsStream("WordDocument")) 
                 throw new OEFileIsCorrupt("Could not find the WordDocument stream in the file '" + compoundFile.FileName + "'");
 

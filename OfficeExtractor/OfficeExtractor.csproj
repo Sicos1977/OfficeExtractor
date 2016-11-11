@@ -47,16 +47,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Biff8\Arrays.cs" />
-    <Compile Include="Biff8\Biff8EncryptionKey.cs" />
-    <Compile Include="Biff8\Biff8RC4.cs" />
-    <Compile Include="Biff8\FIlePassRecord.cs" />
-    <Compile Include="Biff8\Interfaces\IBiffHeaderInput.cs" />
-    <Compile Include="Biff8\Interfaces\ILittleEndianInput.cs" />
-    <Compile Include="Biff8\Interfaces\ILittleEndianOutput.cs" />
-    <Compile Include="Biff8\LittleEndianInputStream.cs" />
-    <Compile Include="Biff8\LittleEndianOutputStream.cs" />
-    <Compile Include="Biff8\RC4.cs" />
     <Compile Include="Excel.cs" />
     <Compile Include="Exceptions\OEExcelConfiguration.cs" />
     <Compile Include="Exceptions\OEFileIsCorrupt.cs" />

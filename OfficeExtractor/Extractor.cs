@@ -80,7 +80,6 @@ namespace OfficeExtractor
 
                     using (var fileStream = File.OpenRead(inputFile))
                     {
-                        // Aan de eerste 128 bytes hebben we genoeg om de bestandstypes te herkennen
                         var header = new byte[2];
                         fileStream.Read(header, 0, 2);
 
@@ -190,7 +189,7 @@ namespace OfficeExtractor
         /// <param name="inputFile">The Office Open XML format file</param>
         /// <param name="embeddingPartString">The folder in the Office Open XML format (zip) file</param>
         /// <param name="outputFolder">The output folder</param>
-        /// <returns>List with files or en empty list when there are nog embedded files</returns>
+        /// <returns>List with files or an empty list when there are nog embedded files</returns>
         /// <exception cref="OEFileIsPasswordProtected">Raised when the Microsoft Office file is password protected</exception>
         internal List<string> ExtractFromOfficeOpenXmlFormat(string inputFile, string embeddingPartString, string outputFolder)
         {
@@ -241,7 +240,7 @@ namespace OfficeExtractor
                     if (
                         !fileFormatException.Message.Equals("File contains corrupted data.",
                             StringComparison.InvariantCultureIgnoreCase))
-                        return null;
+                        return result;
 
                     try
                     {
@@ -259,12 +258,12 @@ namespace OfficeExtractor
                     }
                     catch (Exception)
                     {
-                        return null;
+                        return result;
                     }
                 }
             }
 
-            return null;
+            return result;
         }
         #endregion
 

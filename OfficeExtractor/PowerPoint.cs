@@ -108,6 +108,7 @@ namespace OfficeExtractor
         /// <returns></returns>
         private static bool IsPasswordProtected(CompoundFile compoundFile)
         {
+            if (compoundFile.RootStorage.ExistsStream("EncryptedPackage")) return true;
             if (!compoundFile.RootStorage.ExistsStream("Current User")) return false;
             var stream = compoundFile.RootStorage.GetStream("Current User") as CFStream;
             if (stream == null) return false;

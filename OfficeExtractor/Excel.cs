@@ -6,7 +6,6 @@ using CompoundFileStorage;
 using CompoundFileStorage.Exceptions;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using OfficeExtractor.Biff8;
 using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
 
@@ -106,19 +105,8 @@ namespace OfficeExtractor
 
                     // Search after the BOF for the FilePass record, this starts with 2F hex
                     recordType = binaryReader.ReadUInt16();
-                    if (recordType != 0x2F) return false;
-                    binaryReader.ReadUInt16();
-                    var filePassRecord = new FilePassRecord(memoryStream);
-                    var key = Biff8EncryptionKey.Create(filePassRecord.DocId);
-                    return !key.Validate(filePassRecord.SaltData, filePassRecord.SaltHash);
+                    return recordType == 0x2F;
                 }
-            }
-            catch (OEExcelConfiguration)
-            {
-                // If we get an OCExcelConfiguration exception it means we have an unknown encryption
-                // type so we return a false so that Excel itself can figure out if the file is password
-                // protected
-                return false;
             }
             catch (CFFileFormatException)
             {
