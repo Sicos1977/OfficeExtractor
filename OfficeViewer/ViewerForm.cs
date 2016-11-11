@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Windows.Forms;
 
 /*
-   Copyright 2013-2015 Kees van Spelde
+   Copyright 2014-2016 Kees van Spelde
 
    Licensed under The Code Project Open License (CPOL) 1.02;
    you may not use this file except in compliance with the License.
@@ -32,6 +33,10 @@ namespace OfficeViewer
 
         private void ViewerForm_Load(object sender, EventArgs e)
         {
+            // ReSharper disable LocalizableElement
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            Text = "Office Extractor test tool v" + version.Major + "." + version.Minor + "." + version.Build;
+            // ReSharper restore LocalizableElement
             Closed += ViewerForm_Closed;
         }
 
