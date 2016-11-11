@@ -1,9 +1,24 @@
 ﻿using System.IO;
 using System.Text;
 using CompoundFileStorage;
-using OfficeExtractor.Exceptions;
 using ICSharpCode.SharpZipLib.Zip;
 using OfficeExtractor.Ole;
+
+/*
+   Copyright 2013 - 2016 Kees van Spelde
+
+   Licensed under The Code Project Open License (CPOL) 1.02;
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+     http://www.codeproject.com/info/cpol10.aspx
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 
 namespace OfficeExtractor.Helpers
 {
@@ -101,7 +116,7 @@ namespace OfficeExtractor.Helpers
         /// <param name="bytes">The <see cref="CompoundFile"/> as a byte array</param>
         /// <param name="outputFolder">The outputFolder</param>
         /// <returns></returns>
-        /// <exception cref="OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
+        /// <exception cref="OfficeExtractor.Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
         internal static string SaveFromStorageNode(byte[] bytes, string outputFolder)
         {
             using (var memoryStream = new MemoryStream(bytes))
@@ -116,7 +131,7 @@ namespace OfficeExtractor.Helpers
         /// <param name="outputFolder">The outputFolder</param>
         /// <param name="fileName">The fileName to use, null when the fileName is unknown</param>
         /// <returns></returns>
-        /// <exception cref="OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
+        /// <exception cref="OfficeExtractor.Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
         internal static string SaveFromStorageNode(byte[] bytes, string outputFolder, string fileName)
         {
             using (var memoryStream = new MemoryStream(bytes))
@@ -130,7 +145,7 @@ namespace OfficeExtractor.Helpers
         /// <param name="storage">The <see cref="CFStorage"/> node</param>
         /// <param name="outputFolder">The outputFolder</param>
         /// <returns></returns>
-        /// <exception cref="OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
+        /// <exception cref="OfficeExtractor.Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
         internal static string SaveFromStorageNode(CFStorage storage, string outputFolder)
         {
             return SaveFromStorageNode(storage, outputFolder, null);
@@ -143,7 +158,7 @@ namespace OfficeExtractor.Helpers
         /// <param name="outputFolder">The outputFolder</param>
         /// <param name="fileName">The fileName to use, null when the fileName is unknown</param>
         /// <returns></returns>
-        /// <exception cref="OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
+        /// <exception cref="OfficeExtractor.Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
         public static string SaveFromStorageNode(CFStorage storage, string outputFolder, string fileName)
         {
             if (storage.ExistsStream("CONTENTS"))
@@ -257,7 +272,7 @@ namespace OfficeExtractor.Helpers
         /// <param name="data">The stream as byte array</param>
         /// <param name="outputFile">The output filename with path</param>
         /// <returns></returns>
-        /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception> 
+        /// <exception cref="OfficeExtractor.Exceptions.OEFileIsCorrupt">Raised when the file is corrupt</exception> 
         internal static string SaveByteArrayToFile(byte[] data, string outputFile)
         {
             // Because the data is stored in a stream we have no name for it so we
