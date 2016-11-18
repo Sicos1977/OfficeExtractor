@@ -54,6 +54,15 @@ namespace OfficeExtractorTest
             var files = extractor.SaveToFolder("TestFiles\\A DOC word document without embedded files.doc", outputFolder);
             Assert.IsTrue(files.Count == 0);
         }
+        
+        [TestMethod]
+        public void DocWith2EmbeddedImages()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new OfficeExtractor.Extractor();
+            var files = extractor.SaveToFolder("TestFiles\\A DOC word document with embedded images.doc", outputFolder);
+            Assert.IsTrue(files.Count == 2);
+        }
 
         [TestMethod]
         public void DocWith7EmbeddedFiles()
