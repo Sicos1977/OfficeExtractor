@@ -114,8 +114,10 @@ namespace OfficeExtractor.Ole
                 }
                 
                 if (binaryReader.BaseStream.Position >= binaryReader.BaseStream.Length) return;
-                FileName = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
-                FilePath = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
+                var tempFileName = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
+                if (string.IsNullOrEmpty(FileName)) FileName = tempFileName;
+                var tempFilePath = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
+                if (string.IsNullOrEmpty(FilePath)) FilePath = tempFilePath;
                 TemporaryPath = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
             }            
         }

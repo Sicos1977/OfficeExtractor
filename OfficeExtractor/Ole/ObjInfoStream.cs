@@ -86,6 +86,24 @@ namespace OfficeExtractor.Ole
         /// An unsigned integer that specifies the format this OLE object uses to transmit data to the host application
         /// </summary>
         internal OleCf Cf { get; private set; }
+
+        /// <summary>
+        /// A bit that specifies that the presentation of this OLE object in the document is in the Enhanced Metafile format. 
+        /// This is different from fStoredAsEMF in the case of an object being represented as an icon. For icons, the icon can 
+        /// be an Enhanced Metafile even if the OLE object does not support the Enhanced Metafile format.
+        /// </summary>
+        internal bool Emf { get; private set; }
+
+        /// <summary>
+        /// A bit that specifies whether the application that saved this Word Binary file had queried this OLE object to determine 
+        /// whether it supported the Enhanced Metafile format.
+        /// </summary>
+        internal bool QueriedEmf { get; private set; }
+
+        /// <summary>
+        /// A bit that specifies that this OLE object supports the Enhanced Metafile format.
+        /// </summary>
+        internal bool StoredAsEmf { get; private set; }
         #endregion
 
         #region Constructor
@@ -152,6 +170,35 @@ namespace OfficeExtractor.Ole
                 catch (Exception)
                 {
                     Cf = OleCf.UnSpecified;
+                }
+
+                try
+                {
+                    bytes = binaryReader.ReadBytes(2);
+                    bitArray = new BitArray(bytes);
+
+                    // A - fEMF(1 bit): A bit that specifies that the presentation of this OLE object in the document is in the 
+                    //     Enhanced Metafile format. This is different from fStoredAsEMF in the case of an object being represented 
+                    //     as an icon.For icons, the icon can be an Enhanced Metafile even if the OLE object does not support the 
+                    //     Enhanced Metafile format.
+                    Emf =  bitArray.Get(1);
+
+                    // B - reserved1(1 bit): MUST be zero and MUST be ignored.
+
+                    // C - fQueriedEMF(1 bit): A bit that specifies whether the application that saved this Word Binary file had 
+                    //     queried this OLE object to determine whether it supported the Enhanced Metafile format.
+                    QueriedEmf = bitArray.Get(3);
+
+                    // D - fStoredAsEMF(1 bit): A bit that specifies that this OLE object supports the Enhanced Metafile format.
+                    StoredAsEmf = bitArray.Get(4);
+
+                    // E - reserved2(1 bit): Undefined and MUST be ignored.
+                    // F - reserved3(1 bit): Undefined and MUST be ignored.
+                    // reserved4(10 bits): Undefined and MUST be ignored.
+                }
+                catch (Exception)
+                {
+                    // Ignore
                 }
             }
         }

@@ -81,7 +81,7 @@ namespace OfficeExtractor.Ole
 
     #region Enum OleCF
     /// <summary>
-    ///      An unsigned integer that specifies the format this OLE object uses to transmit data to 
+    ///     An unsigned integer that specifies the format this OLE object uses to transmit data to 
     ///     the host application
     /// </summary>
     internal enum OleCf

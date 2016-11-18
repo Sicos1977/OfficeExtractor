@@ -57,14 +57,25 @@ namespace OfficeExtractor
                 {
                     var childStorage = item as CFStorage;
                     if (childStorage == null) return;
-                    // Get the objInfo stream to check if this is a linked file... if so then ignore it
-                    var objInfo = childStorage.GetStream("\x0003ObjInfo");
-                    var objInfoStream = new ObjInfoStream(objInfo);
 
-                    // We don't want to export linked objects and objects that are not shown as an icon... 
-                    // because these objects are already visible on the Word document
-                    if (objInfoStream.Link || !objInfoStream.Icon) return;
-                    var extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder);
+                    string extractedFileName;
+
+                    if (childStorage.TryGetStream("\x0001Ole10Native") != null)
+                    {
+                        extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder, null);
+                    }
+                    else
+                    {
+                        // Get the objInfo stream to check if this is a linked file... if so then ignore it
+                        var objInfo = childStorage.GetStream("\x0003ObjInfo");
+                        var objInfoStream = new ObjInfoStream(objInfo);
+                        
+                        // We don't want to export linked objects and objects that are not shown as an icon... 
+                        // because these objects are already visible on the Word document
+                        if (objInfoStream.Link || !objInfoStream.Icon) return;
+                        extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder);
+                    }
+
                     if (!string.IsNullOrEmpty(extractedFileName))
                         result.Add(extractedFileName);
                 };
