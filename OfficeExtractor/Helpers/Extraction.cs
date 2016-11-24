@@ -162,29 +162,29 @@ namespace OfficeExtractor.Helpers
         /// <exception cref="Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
         public static string SaveFromStorageNode(CFStorage storage, string outputFolder, string fileName)
         {
-            if (storage.TryGetStream("CONTENTS") != null)
+            var contents = storage.TryGetStream("CONTENTS");
+            if (contents != null)
             {
-                var contents = storage.GetStream("CONTENTS");
                 if (contents.Size <= 0) return null;
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = DefaultEmbeddedObjectName;
                 return SaveByteArrayToFile(contents.GetData(), Path.Combine(outputFolder, fileName));
             }
-            
-            if (storage.TryGetStream("Package") != null)
+
+            var package = storage.TryGetStream("Package");
+            if (package != null)
             {
-                var package = storage.GetStream("Package");
                 if (package.Size <= 0) return null;
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = DefaultEmbeddedObjectName;
                 return SaveByteArrayToFile(package.GetData(), Path.Combine(outputFolder, fileName));
             }
 
-            if (storage.TryGetStream("EmbeddedOdf") != null)
+            var embeddedOdf = storage.TryGetStream("EmbeddedOdf");
+            if (embeddedOdf != null)
             {
                 // The embedded object is an Embedded ODF file
-                var package = storage.GetStream("EmbeddedOdf");
-                if (package.Size <= 0) return null;
+                if (embeddedOdf.Size <= 0) return null;
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = DefaultEmbeddedObjectName;
-                return SaveByteArrayToFile(package.GetData(), Path.Combine(outputFolder, fileName));
+                return SaveByteArrayToFile(embeddedOdf.GetData(), Path.Combine(outputFolder, fileName));
             }
 
             if (storage.TryGetStream("\x0001Ole10Native") != null)

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using OfficeExtractor.Exceptions;
 using OpenMcdf;
+using System.Text;
 
 /*
    Copyright 2013 - 2016 Kees van Spelde
@@ -83,7 +84,7 @@ namespace OfficeExtractor.Ole
             var ole10Native = storage.GetStream("\x0001Ole10Native");
             var compObj = storage.GetStream("\x0001CompObj");
             var compObjStream = new CompObjStream(compObj);
-
+            
             AnsiUserType = compObjStream.AnsiUserType;
             StringFormat = compObjStream.StringFormat;
             ClipboardFormat = compObjStream.ClipboardFormat;
@@ -91,10 +92,10 @@ namespace OfficeExtractor.Ole
             switch (compObjStream.AnsiUserType)
             {
                 case "OLE Package":
-                    var ole10NativeSize = (int) ole10Native.Size - 4;
-                    var data = new byte[ole10NativeSize];
-                    ole10Native.Read(data , 4, ole10NativeSize);
-                    var package = new Package(data);
+                    var olePackageSize = (int) ole10Native.Size - 4;
+                    var olePackageData = new byte[olePackageSize];
+                    ole10Native.Read(olePackageData, 4, olePackageSize);
+                    var package = new Package(olePackageData);
                     Format = package.Format;
                     FileName = Path.GetFileName(package.FileName);
                     FilePath = package.FilePath;
@@ -102,6 +103,15 @@ namespace OfficeExtractor.Ole
                     break;
 
                 case "PBrush":
+                    // TODO: Detect in Word if image is visible.
+                    var pbBrushSize = (int)ole10Native.Size - 4;
+                    var pbBrushData = new byte[pbBrushSize];
+                    ole10Native.Read(pbBrushData, 4, pbBrushSize);
+                    FileName = Guid.NewGuid() + ".bmp";
+                    Format = OleFormat.File;
+                    NativeData = pbBrushData;
+                    break;
+
                 case "Pakket":
                     // Ignore
                     break;
