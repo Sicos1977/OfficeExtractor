@@ -102,11 +102,10 @@ namespace OfficeExtractor.Ole
                     break;
 
                 case "PBrush":
-                    // TODO: Detect in Word if image is visible.
                     var pbBrushSize = (int)ole10Native.Size - 4;
                     var pbBrushData = new byte[pbBrushSize];
                     ole10Native.Read(pbBrushData, 4, pbBrushSize);
-                    FileName = Guid.NewGuid() + ".bmp";
+                    FileName = "Embedded PBrush image.bmp";
                     Format = OleFormat.File;
                     NativeData = pbBrushData;
                     break;
