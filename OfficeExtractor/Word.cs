@@ -62,6 +62,19 @@ namespace OfficeExtractor
 
                     if (childStorage.TryGetStream("\x0001Ole10Native") != null)
                     {
+                        var compObj = childStorage.TryGetStream("\x0001CompObj");
+                        if (compObj != null)
+                        {
+                            var compObjStream = new CompObjStream(compObj);
+                            if (compObjStream.AnsiUserType == "OLE Package")
+                            {
+                                extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder, null);
+                                if (!string.IsNullOrEmpty(extractedFileName))
+                                    result.Add(extractedFileName);
+                                return;
+                            }
+                        }
+                        
                         var objInfo = childStorage.TryGetStream("\x0003ObjInfo");
                         if (objInfo != null)
                         {
