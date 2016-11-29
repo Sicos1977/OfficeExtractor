@@ -62,6 +62,28 @@ namespace OfficeExtractor
 
                     if (childStorage.TryGetStream("\x0001Ole10Native") != null)
                     {
+                        var compObj = childStorage.TryGetStream("\x0001CompObj");
+                        if (compObj != null)
+                        {
+                            var compObjStream = new CompObjStream(compObj);
+                            if (compObjStream.AnsiUserType == "OLE Package")
+                            {
+                                extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder, null);
+                                if (!string.IsNullOrEmpty(extractedFileName))
+                                    result.Add(extractedFileName);
+                                return;
+                            }
+                        }
+                        
+                        var objInfo = childStorage.TryGetStream("\x0003ObjInfo");
+                        if (objInfo != null)
+                        {
+                            var objInfoStream = new ObjInfoStream(objInfo);
+                            // We don't want to export linked objects and objects that are not shown as an icon... 
+                            // because these objects are already visible on the Word document
+                            if (objInfoStream.Link || !objInfoStream.Icon) return;
+                        }
+
                         extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder, null);
                     }
                     else

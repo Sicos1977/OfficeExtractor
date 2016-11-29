@@ -167,7 +167,7 @@ namespace OfficeExtractor.Helpers
             {
                 if (contents.Size <= 0) return null;
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = DefaultEmbeddedObjectName;
-                return SaveByteArrayToFile(contents.GetData(), Path.Combine(outputFolder, fileName));
+                return SaveByteArrayToFile(contents.GetData(), FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
             }
 
             var package = storage.TryGetStream("Package");
@@ -175,7 +175,7 @@ namespace OfficeExtractor.Helpers
             {
                 if (package.Size <= 0) return null;
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = DefaultEmbeddedObjectName;
-                return SaveByteArrayToFile(package.GetData(), Path.Combine(outputFolder, fileName));
+                return SaveByteArrayToFile(package.GetData(), FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
             }
 
             var embeddedOdf = storage.TryGetStream("EmbeddedOdf");
@@ -184,14 +184,14 @@ namespace OfficeExtractor.Helpers
                 // The embedded object is an Embedded ODF file
                 if (embeddedOdf.Size <= 0) return null;
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = DefaultEmbeddedObjectName;
-                return SaveByteArrayToFile(embeddedOdf.GetData(), Path.Combine(outputFolder, fileName));
+                return SaveByteArrayToFile(embeddedOdf.GetData(), FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
             }
 
             if (storage.TryGetStream("\x0001Ole10Native") != null)
             {
                 var ole10Native = new Ole10Native(storage);
                 return ole10Native.Format == OleFormat.File
-                    ? SaveByteArrayToFile(ole10Native.NativeData, Path.Combine(outputFolder, ole10Native.FileName))
+                    ? SaveByteArrayToFile(ole10Native.NativeData, FileManager.FileExistsMakeNew(Path.Combine(outputFolder, ole10Native.FileName)))
                     : null;
             }
 
@@ -199,7 +199,7 @@ namespace OfficeExtractor.Helpers
             {
                 // The embedded object is a Word file
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = "Embedded Word document.doc";
-                return SaveStorageTreeToCompoundFile(storage, Path.Combine(outputFolder, fileName));
+                return SaveStorageTreeToCompoundFile(storage, FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
             }
             
             if (storage.TryGetStream("Workbook") != null)
@@ -207,14 +207,14 @@ namespace OfficeExtractor.Helpers
                 // The embedded object is an Excel file   
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = "Embedded Excel document.xls";
                 Excel.SetWorkbookVisibility(storage);
-                return SaveStorageTreeToCompoundFile(storage, Path.Combine(outputFolder, fileName));
+                return SaveStorageTreeToCompoundFile(storage, FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
             }
             
             if (storage.TryGetStream("PowerPoint Document") != null)
             {
                 // The embedded object is a PowerPoint file
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = "Embedded PowerPoint document.ppt";
-                return SaveStorageTreeToCompoundFile(storage, Path.Combine(outputFolder, fileName));
+                return SaveStorageTreeToCompoundFile(storage, FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
             }
             
             return null;
