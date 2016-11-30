@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using ICSharpCode.SharpZipLib.Zip;
 using OfficeExtractor.Ole;
 using OpenMcdf;
 
@@ -52,15 +51,13 @@ namespace OfficeExtractor.Helpers
         /// <summary>
         /// Tries to extracts the original filename for the OLE object out of the ObjectReplacement file
         /// </summary>
-        /// <param name="zipFile"></param>
-        /// <param name="index"></param>
+        /// <param name="zipEntry"></param>
         /// <returns></returns>
-        internal static string GetFileNameFromObjectReplacementFile(ZipFile zipFile, int index)
+        internal static string GetFileNameFromObjectReplacementFile(SharpCompress.Archives.IArchiveEntry zipEntry)
         {
             try
             {
-                var zipEntry = zipFile[index];
-                using (var zipEntryStream = zipFile.GetInputStream(zipEntry))
+                using (var zipEntryStream = zipEntry.OpenEntryStream())
                 using (var zipEntryMemoryStream = new MemoryStream())
                 {
                     zipEntryStream.CopyTo(zipEntryMemoryStream);
