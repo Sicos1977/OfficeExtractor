@@ -28,6 +28,7 @@ namespace OfficeExtractor.RtfParser
     internal class Reader
     {
         #region RtfParseState
+
         private enum RtfParseState
         {
             /// <summary>
@@ -50,16 +51,20 @@ namespace OfficeExtractor.RtfParser
             /// </summary>
             Group
         }
+
         #endregion
 
         #region Fields
+
         /// <summary>
         /// Used to read the RTF file
         /// </summary>
         public TextReader TextReader { get; private set; }
+
         #endregion
 
         #region Constructor
+
         /// <summary>
         /// Class used to read RTF files
         /// </summary>
@@ -71,9 +76,11 @@ namespace OfficeExtractor.RtfParser
 
             TextReader = reader;
         }
+
         #endregion
 
         #region Read
+
         /// <summary>
         /// Reads all the tokens from the RTF file and returns it as a IEnumerable list of objects
         /// </summary>
@@ -117,7 +124,7 @@ namespace OfficeExtractor.RtfParser
                         if (c == '\\')
                             state = RtfParseState.ControlWord;
 
-                            break;
+                        break;
 
                     case RtfParseState.ControlWord:
                         if (c == '\\')
@@ -216,7 +223,15 @@ namespace OfficeExtractor.RtfParser
                         // Ansi character escape
                         if (c == '\'')
                         {
-                            text.Append(FromHexa((char)TextReader.Read(), (char)TextReader.Read()));
+                            try
+                            {
+                                text.Append(FromHexa((char)TextReader.Read(), (char)TextReader.Read()));
+                            }
+                            catch (Exception)
+                            {
+                                text.Append(" ");
+                            }
+
                             break;
                         }
 

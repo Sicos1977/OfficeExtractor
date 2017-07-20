@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Packaging;
+using System.Linq;
 using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
-using ICSharpCode.SharpZipLib.Zip;
 using OpenMcdf;
 
 /*
@@ -276,6 +276,27 @@ namespace OfficeExtractor
 
         #region ExtractFromOpenDocumentFormat
         /// <summary>
+        /// Searches for the first archive entry with the given name in the given archive.
+        /// </summary>
+        /// <param name="archive">The archive where the entry should be searched.</param>
+        /// <param name="entryName">The name of the entry, which is the file or directory name.
+        /// The search is done case insensitive.</param>
+        /// <returns>Returns the reference of the entry if found and null if the entry doesn't exists in the archive.</returns>
+        internal SharpCompress.Archives.IArchiveEntry FindEntryByName(SharpCompress.Archives.IArchive archive, string entryName)
+        {
+            try
+            {
+                return
+                    archive.Entries.First(
+                        archiveEntry => archiveEntry.Key.Equals(entryName, StringComparison.OrdinalIgnoreCase));
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Extracts all the embedded object from the OpenDocument <paramref name="inputFile"/> to the 
         /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
         /// </summary>
@@ -286,13 +307,14 @@ namespace OfficeExtractor
         internal List<string> ExtractFromOpenDocumentFormat(string inputFile, string outputFolder)
         {
             var result = new List<string>();
-            var zipFile = new ZipFile(inputFile);
-  
+
+            var zipFile = SharpCompress.Archives.Zip.ZipArchive.Open(inputFile);
+
             // Check if the file is password protected
-            var manifestEntry = zipFile.FindEntry("META-INF/manifest.xml", true);
-            if (manifestEntry != -1)
+            var manifestEntry = FindEntryByName(zipFile, "META-INF/manifest.xml");
+            if (manifestEntry != null)
             {
-                using (var manifestEntryStream = zipFile.GetInputStream(manifestEntry))
+                using (var manifestEntryStream = manifestEntry.OpenEntryStream())
                 using (var manifestEntryMemoryStream = new MemoryStream())
                 {
                     manifestEntryStream.CopyTo(manifestEntryMemoryStream);
@@ -307,24 +329,24 @@ namespace OfficeExtractor
                 }
             }
 
-            foreach (ZipEntry zipEntry in zipFile)
+            foreach (var zipEntry in zipFile.Entries)
             {
-                if (!zipEntry.IsFile) continue;
-                if (zipEntry.IsCrypted)
+                if (zipEntry.IsDirectory) continue;
+                if (zipEntry.IsEncrypted)
                     throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
                                                                 "' is password protected");
 
-                var name = zipEntry.Name.ToUpperInvariant();
+                var name = zipEntry.Key.ToUpperInvariant();
                 if (!name.StartsWith("OBJECT") || name.Contains("/"))
                     continue;
 
                 string fileName = null;
 
-                var objectReplacementFileIndex = zipFile.FindEntry("ObjectReplacements/" + name, true);
-                if (objectReplacementFileIndex != -1)
-                    fileName = Extraction.GetFileNameFromObjectReplacementFile(zipFile, objectReplacementFileIndex);
-                
-                using (var zipEntryStream = zipFile.GetInputStream(zipEntry))
+                var objectReplacementFile = FindEntryByName(zipFile, "ObjectReplacements/" + name);
+                if (objectReplacementFile != null)
+                    fileName = Extraction.GetFileNameFromObjectReplacementFile(objectReplacementFile);
+
+                using (var zipEntryStream = zipEntry.OpenEntryStream())
                 using (var zipEntryMemoryStream = new MemoryStream())
                 {
                     zipEntryStream.CopyTo(zipEntryMemoryStream);
