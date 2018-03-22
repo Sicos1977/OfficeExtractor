@@ -309,6 +309,26 @@ namespace OfficeExtractorTest
         }
         #endregion
 
+        #region RTF tests
+        [TestMethod]
+        public void RtfWitht11EmbeddedFiles()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new OfficeExtractor.Extractor();
+            var files = extractor.SaveToFolder("TestFiles\\A RTF document with 11 embedded files.rtf", outputFolder);
+            Assert.IsTrue(files.Count == 11);
+        }
+
+        [TestMethod]
+        public void RtfWitht3EmbeddedFilesAndNoSpaceDelimiters()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new OfficeExtractor.Extractor();
+            var files = extractor.SaveToFolder("TestFiles\\A RTF document with 3 embedded files and no space delimiters.rtf", outputFolder);
+            Assert.IsTrue(files.Count == 3);
+        }
+        #endregion
+
         #region Helper methods
         /// <summary>
         /// Creates a new temporary folder and returns the path to it

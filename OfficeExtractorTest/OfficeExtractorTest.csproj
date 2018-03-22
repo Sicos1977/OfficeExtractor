@@ -105,7 +105,12 @@
     <None Include="TestFiles\A PPTX PowerPoint document without embedded files.pptx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="TestFiles\A RTF document with 7 embedded files.rtf" />
+    <None Include="TestFiles\A RTF document with 11 embedded files.rtf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\A RTF document with 3 embedded files and no space delimiters.rtf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="TestFiles\A XLS excel document with 2 embedded files.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
