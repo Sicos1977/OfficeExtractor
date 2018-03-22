@@ -108,8 +108,7 @@ namespace OfficeExtractor.RtfParser
 
                 var c = (char) i;
 
-                if ((c == '\r') ||
-                    (c == '\n'))
+                if ((c == '\r' || c == '\n') && state != RtfParseState.ControlWord) 
                     continue;
 
                 switch (state)
