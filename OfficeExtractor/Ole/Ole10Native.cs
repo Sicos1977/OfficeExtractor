@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using OfficeExtractor.Exceptions;
 using OpenMcdf;
+using System.Text;
 
 /*
    Copyright 2013 - 2016 Kees van Spelde
@@ -83,7 +84,7 @@ namespace OfficeExtractor.Ole
             var ole10Native = storage.GetStream("\x0001Ole10Native");
             var compObj = storage.GetStream("\x0001CompObj");
             var compObjStream = new CompObjStream(compObj);
-
+            
             AnsiUserType = compObjStream.AnsiUserType;
             StringFormat = compObjStream.StringFormat;
             ClipboardFormat = compObjStream.ClipboardFormat;
