@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using OfficeExtractor.Ole;
@@ -344,21 +345,21 @@ namespace OfficeExtractor.Helpers
         #endregion
 
         #region Storage Node Content Parsing
-        private static string GetDelimitedStringFromData(string delimiter, byte[] data)
+        private static string GetDelimitedStringFromData(string delimiter, ICollection<byte> data)
         {
             string delimitedString = null;
-            if (!string.IsNullOrWhiteSpace(delimiter) && data != null && data.Length > 0)
+            if (!string.IsNullOrWhiteSpace(delimiter) && data != null && data.Count > 0)
             {
-                // check if data has at least the length of opening plus closing delimiter
-                if (data.Length >= delimiter.Length * 2)
+                // Check if data has at least the length of opening plus closing delimiter
+                if (data.Count >= delimiter.Length * 2)
                 {
-                    // check if data contains the delimiter
+                    // Check if data contains the delimiter
                     if (delimiter.Equals(Encoding.ASCII.GetString(data.Take(delimiter.Length).ToArray())))
                     {
-                        // read the data after opening delimiter until first sign of the closing delimiter
+                        // Read the data after opening delimiter until first sign of the closing delimiter
                         delimitedString = Encoding.ASCII.GetString(data
                             .Skip(delimiter.Length)
-                            .TakeWhile(b => { return Convert.ToChar(b) != delimiter.First(); })
+                            .TakeWhile(b => Convert.ToChar(b) != delimiter.First())
                             .ToArray());
                     }
                 }
