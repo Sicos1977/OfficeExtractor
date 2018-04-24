@@ -264,7 +264,7 @@ namespace OfficeExtractor.RtfParser
 
             while (enumerator.MoveNext())
             {
-                if (enumerator.Current.Text == word)
+                if (enumerator.Current != null && enumerator.Current.Text == word)
                     return true;
             }
             return false;
