@@ -120,7 +120,7 @@ namespace OfficeExtractor
         /// is set to hidden. Don't know why Microsoft does this but they do. To solve this
         /// problem we seek the WINDOW1 record in the BOF record of the stream. In there a
         /// gbit structure is located. The first bit in this structure controls the visibility
-        /// of the workbook, so we check if this bit is set to 1 (hidden) en is so set it to 0.
+        /// of the workbook, so we check if this bit is set to 1 (hidden) and if so set it to 0.
         /// Normally a Workbook stream only contains one WINDOW record but when it is embedded
         /// it will contain 2 or more records.
         /// </summary>
