@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using OfficeExtractor.Ole;
 using OpenMcdf;
+using System.Linq;
 
 /*
    Copyright 2013 - 2016 Kees van Spelde
@@ -164,6 +165,16 @@ namespace OfficeExtractor.Helpers
             {
                 if (contents.Size <= 0) return null;
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = DefaultEmbeddedObjectName;
+
+                var delimiter = "%DocumentOle:";
+                var documentOleFileName = GetDelimitedStringFromData(delimiter, contents.GetData());
+                if (documentOleFileName != null)
+                {
+                    if (!documentOleFileName.Equals(string.Empty))
+                        fileName = Path.GetFileName(documentOleFileName);
+                    contents.SetData(contents.GetData().Skip(delimiter.Length * 2 + documentOleFileName.Length).ToArray());
+                }
+
                 return SaveByteArrayToFile(contents.GetData(), FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
             }
 
@@ -329,6 +340,30 @@ namespace OfficeExtractor.Helpers
                 File.WriteAllBytes(outputFile, data);
 
             return outputFile;
+        }
+        #endregion
+
+        #region Storage Node Content Parsing
+        private static string GetDelimitedStringFromData(string delimiter, byte[] data)
+        {
+            string delimitedString = null;
+            if (!string.IsNullOrWhiteSpace(delimiter) && data != null && data.Length > 0)
+            {
+                // check if data has at least the length of opening plus closing delimiter
+                if (data.Length >= delimiter.Length * 2)
+                {
+                    // check if data contains the delimiter
+                    if (delimiter.Equals(Encoding.ASCII.GetString(data.Take(delimiter.Length).ToArray())))
+                    {
+                        // read the data after opening delimiter until first sign of the closing delimiter
+                        delimitedString = Encoding.ASCII.GetString(data
+                            .Skip(delimiter.Length)
+                            .TakeWhile(b => { return Convert.ToChar(b) != delimiter.First(); })
+                            .ToArray());
+                    }
+                }
+            }
+            return delimitedString;
         }
         #endregion
     }
