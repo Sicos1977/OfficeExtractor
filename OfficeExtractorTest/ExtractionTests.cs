@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using OfficeExtractor.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Linq;
 
 /*
    Copyright 2013 - 2016 Kees van Spelde
