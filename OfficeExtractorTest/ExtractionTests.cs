@@ -130,12 +130,12 @@ namespace OfficeExtractorTest
         }
 
         [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void DocWithDocumentOleObjectAttachedPathBroken()
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new OfficeExtractor.Extractor();
-            var files = extractor.SaveToFolder("TestFiles\\A DOC word document with document ole object attached path broken.doc", outputFolder);
+            extractor.SaveToFolder("TestFiles\\A DOC word document with document ole object attached path broken.doc", outputFolder);
         }
         #endregion
 
