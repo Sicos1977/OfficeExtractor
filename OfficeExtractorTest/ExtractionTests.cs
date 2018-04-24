@@ -108,6 +108,35 @@ namespace OfficeExtractorTest
             var extractor = new OfficeExtractor.Extractor();
             extractor.SaveToFolder("TestFiles\\A DOCX word document with password.docx", outputFolder);
         }
+
+        [TestMethod]
+        public void DocWithDocumentOleObjectAttached()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new OfficeExtractor.Extractor();
+            var files = extractor.SaveToFolder("TestFiles\\A DOC word document with document ole object attached.doc", outputFolder);
+            Assert.IsTrue(files.Count == 1);
+            Assert.AreEqual(Path.GetFileName(files[0]), "attachment.pdf");
+        }
+
+        [TestMethod]
+        public void DocWithDocumentOleObjectAttachedPathRemoved()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new OfficeExtractor.Extractor();
+            var files = extractor.SaveToFolder("TestFiles\\A DOC word document with document ole object attached path removed.doc", outputFolder);
+            Assert.IsTrue(files.Count == 1);
+            Assert.AreEqual(Path.GetFileName(files[0]), "Embedded object.pdf");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(System.ArgumentException))]
+        public void DocWithDocumentOleObjectAttachedPathBroken()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new OfficeExtractor.Extractor();
+            var files = extractor.SaveToFolder("TestFiles\\A DOC word document with document ole object attached path broken.doc", outputFolder);
+        }
         #endregion
 
         #region Microsoft Office Excel tests

@@ -69,6 +69,15 @@
     <None Include="TestFiles\A DOC word document with 7 embedded files.doc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="TestFiles\A DOC word document with document ole object attached path broken.doc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\A DOC word document with document ole object attached path removed.doc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\A DOC word document with document ole object attached.doc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="TestFiles\A DOC word document with embedded images.doc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
