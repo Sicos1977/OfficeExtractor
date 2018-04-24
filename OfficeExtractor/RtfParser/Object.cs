@@ -25,7 +25,7 @@ namespace OfficeExtractor.RtfParser
         public Object(string text)
         {
             if (text == null)
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
 
             Text = text.Trim();
         }

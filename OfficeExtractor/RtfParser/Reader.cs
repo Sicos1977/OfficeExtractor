@@ -72,7 +72,7 @@ namespace OfficeExtractor.RtfParser
         public Reader(TextReader reader)
         {
             if (reader == null)
-                throw new ArgumentNullException("reader");
+                throw new ArgumentNullException(nameof(reader));
 
             TextReader = reader;
         }
@@ -260,7 +260,7 @@ namespace OfficeExtractor.RtfParser
         public static bool MoveToNextControlWord(IEnumerator<Object> enumerator, string word)
         {
             if (enumerator == null)
-                throw new ArgumentNullException("enumerator");
+                throw new ArgumentNullException(nameof(enumerator));
 
             while (enumerator.MoveNext())
             {
@@ -280,7 +280,7 @@ namespace OfficeExtractor.RtfParser
         public static string GetNextText(IEnumerator<Object> enumerator)
         {
             if (enumerator == null)
-                throw new ArgumentNullException("enumerator");
+                throw new ArgumentNullException(nameof(enumerator));
 
             while (enumerator.MoveNext())
             {
@@ -302,7 +302,7 @@ namespace OfficeExtractor.RtfParser
         public static byte[] GetNextTextAsByteArray(IEnumerator<Object> enumerator)
         {
             if (enumerator == null)
-                throw new ArgumentNullException("enumerator");
+                throw new ArgumentNullException(nameof(enumerator));
 
             while (enumerator.MoveNext())
             {

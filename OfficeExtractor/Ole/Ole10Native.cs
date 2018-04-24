@@ -78,7 +78,7 @@ namespace OfficeExtractor.Ole
         internal Ole10Native(CFStorage storage)
         {
             if (storage == null)
-                throw new ArgumentNullException("storage");
+                throw new ArgumentNullException(nameof(storage));
 
             var ole10Native = storage.GetStream("\x0001Ole10Native");
             var compObj = storage.GetStream("\x0001CompObj");

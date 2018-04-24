@@ -159,7 +159,7 @@ namespace OfficeExtractor.Ole
         public Ole10(Stream inputStream)
         {
             if (inputStream == null)
-                throw new ArgumentNullException("inputStream");
+                throw new ArgumentNullException(nameof(inputStream));
 
             inputStream.Position = 0;
 
@@ -175,7 +175,7 @@ namespace OfficeExtractor.Ole
         internal Ole10(BinaryReader reader)
         {
             if (reader == null)
-                throw new ArgumentNullException("reader");
+                throw new ArgumentNullException(nameof(reader));
 
             ParseOle(reader);
         }
