@@ -354,10 +354,10 @@ namespace OfficeExtractor.Helpers
                 if (data.Count >= delimiter.Length * 2)
                 {
                     // Check if data contains the delimiter
-                    if (delimiter.Equals(Encoding.ASCII.GetString(data.Take(delimiter.Length).ToArray())))
+                    if (delimiter.Equals(Encoding.UTF8.GetString(data.Take(delimiter.Length).ToArray())))
                     {
                         // Read the data after opening delimiter until first sign of the closing delimiter
-                        delimitedString = Encoding.ASCII.GetString(data
+                        delimitedString = Encoding.UTF8.GetString(data
                             .Skip(delimiter.Length)
                             .TakeWhile(b => Convert.ToChar(b) != delimiter.First())
                             .ToArray());
