@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 
 /*
-   Copyright 2013 - 2016 Kees van Spelde
+   Copyright 2013 - 2018 Kees van Spelde
 
    Licensed under The Code Project Open License (CPOL) 1.02;
    you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ namespace OfficeExtractor.RtfParser
         public Reader(TextReader reader)
         {
             if (reader == null)
-                throw new ArgumentNullException("reader");
+                throw new ArgumentNullException(nameof(reader));
 
             TextReader = reader;
         }
@@ -260,11 +260,11 @@ namespace OfficeExtractor.RtfParser
         public static bool MoveToNextControlWord(IEnumerator<Object> enumerator, string word)
         {
             if (enumerator == null)
-                throw new ArgumentNullException("enumerator");
+                throw new ArgumentNullException(nameof(enumerator));
 
             while (enumerator.MoveNext())
             {
-                if (enumerator.Current.Text == word)
+                if (enumerator.Current != null && enumerator.Current.Text == word)
                     return true;
             }
             return false;
@@ -280,7 +280,7 @@ namespace OfficeExtractor.RtfParser
         public static string GetNextText(IEnumerator<Object> enumerator)
         {
             if (enumerator == null)
-                throw new ArgumentNullException("enumerator");
+                throw new ArgumentNullException(nameof(enumerator));
 
             while (enumerator.MoveNext())
             {
@@ -302,7 +302,7 @@ namespace OfficeExtractor.RtfParser
         public static byte[] GetNextTextAsByteArray(IEnumerator<Object> enumerator)
         {
             if (enumerator == null)
-                throw new ArgumentNullException("enumerator");
+                throw new ArgumentNullException(nameof(enumerator));
 
             while (enumerator.MoveNext())
             {

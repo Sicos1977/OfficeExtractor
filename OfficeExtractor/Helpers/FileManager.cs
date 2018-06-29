@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 
 /*
-   Copyright 2013 - 2016 Kees van Spelde
+   Copyright 2013 - 2018 Kees van Spelde
 
    Licensed under The Code Project Open License (CPOL) 1.02;
    you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ namespace OfficeExtractor.Helpers
             var fileNameWithoutExtension = GetFileNameWithoutExtension(fileName);
 
             if (string.IsNullOrWhiteSpace(fileNameWithoutExtension))
-                throw new ArgumentException(@"No file name is given, e.g. c:\temp\temp.txt", "fileName");
+                throw new ArgumentException(@"No file name is given, e.g. c:\temp\temp.txt", nameof(fileName));
 
             var extension = GetExtension(fileName);
 
@@ -72,7 +72,7 @@ namespace OfficeExtractor.Helpers
             var path = GetDirectoryName(fileName);
 
             if (string.IsNullOrWhiteSpace(path))
-                throw new ArgumentException(@"No path is given, e.g. c:\temp\temp.txt", "fileName");
+                throw new ArgumentException(@"No path is given, e.g. c:\temp\temp.txt", nameof(fileName));
 
             path = CheckForBackSlash(path);
 
@@ -124,7 +124,7 @@ namespace OfficeExtractor.Helpers
         public static string GetFileNameWithoutExtension(string path)
         {
             if (string.IsNullOrWhiteSpace(path))
-                throw new ArgumentException(@"No path given", "path");
+                throw new ArgumentException(@"No path given", nameof(path));
 
             var splittedPath = path.Split(Path.DirectorySeparatorChar);
             var fileName = splittedPath[splittedPath.Length - 1];

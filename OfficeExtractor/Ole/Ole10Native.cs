@@ -4,7 +4,7 @@ using OfficeExtractor.Exceptions;
 using OpenMcdf;
 
 /*
-   Copyright 2013 - 2016 Kees van Spelde
+   Copyright 2013 - 2018 Kees van Spelde
 
    Licensed under The Code Project Open License (CPOL) 1.02;
    you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ namespace OfficeExtractor.Ole
         internal Ole10Native(CFStorage storage)
         {
             if (storage == null)
-                throw new ArgumentNullException("storage");
+                throw new ArgumentNullException(nameof(storage));
 
             var ole10Native = storage.GetStream("\x0001Ole10Native");
             var compObj = storage.GetStream("\x0001CompObj");
@@ -112,6 +112,16 @@ namespace OfficeExtractor.Ole
 
                 case "Pakket":
                     // Ignore
+                    break;
+
+                // MathType (http://docs.wiris.com/en/mathtype/start) is a equations editor
+                // The data is stored in the MTEF format within image file formats (PICT, WMF, EPS, GIF) or Office documents
+                // as kind of pickaback data. (http://docs.wiris.com/en/mathtype/mathtype_desktop/mathtype-sdk/mtefstorage).
+                // Within Office, a placeholder image shows the created equation.
+                // Because MathType does not support storing equations in a separate MTEF file, a export of the data is not
+                // directly possible and would require a conversion into the mentioned file formats.
+                // Due that facts, it make no sense try to export the data.
+                case "MathType 5.0 Equation":
                     break;
 
                 default:

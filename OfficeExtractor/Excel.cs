@@ -9,7 +9,7 @@ using OfficeExtractor.Helpers;
 using OpenMcdf;
 
 /*
-   Copyright 2013 - 2016 Kees van Spelde
+   Copyright 2013 - 2018 Kees van Spelde
 
    Licensed under The Code Project Open License (CPOL) 1.02;
    you may not use this file except in compliance with the License.
@@ -119,8 +119,8 @@ namespace OfficeExtractor
         /// When a Excel document is embedded in for example a Word document the Workbook
         /// is set to hidden. Don't know why Microsoft does this but they do. To solve this
         /// problem we seek the WINDOW1 record in the BOF record of the stream. In there a
-        /// gbit structure is located. The first bit in this structure controls the visibility
-        /// of the workbook, so we check if this bit is set to 1 (hidden) en is so set it to 0.
+        /// grbit structure is located. The first bit in this structure controls the visibility
+        /// of the workbook, so we check if this bit is set to 1 (hidden) and if so set it to 0.
         /// Normally a Workbook stream only contains one WINDOW record but when it is embedded
         /// it will contain 2 or more records.
         /// </summary>

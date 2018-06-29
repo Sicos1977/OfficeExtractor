@@ -4,7 +4,7 @@ using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
 
 /*
-   Copyright 2013 - 2016 Kees van Spelde
+   Copyright 2013 - 2018 Kees van Spelde
 
    Licensed under The Code Project Open License (CPOL) 1.02;
    you may not use this file except in compliance with the License.
@@ -159,7 +159,7 @@ namespace OfficeExtractor.Ole
         public Ole10(Stream inputStream)
         {
             if (inputStream == null)
-                throw new ArgumentNullException("inputStream");
+                throw new ArgumentNullException(nameof(inputStream));
 
             inputStream.Position = 0;
 
@@ -175,7 +175,7 @@ namespace OfficeExtractor.Ole
         internal Ole10(BinaryReader reader)
         {
             if (reader == null)
-                throw new ArgumentNullException("reader");
+                throw new ArgumentNullException(nameof(reader));
 
             ParseOle(reader);
         }

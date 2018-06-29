@@ -8,7 +8,7 @@ using OfficeExtractor.Helpers;
 using OpenMcdf;
 
 /*
-   Copyright 2013 - 2016 Kees van Spelde
+   Copyright 2013 - 2018 Kees van Spelde
 
    Licensed under The Code Project Open License (CPOL) 1.02;
    you may not use this file except in compliance with the License.
@@ -225,7 +225,9 @@ namespace OfficeExtractor
                                 {
                                     using (var compoundFile = new CompoundFile(packagePartStream))
                                     {
-                                        result.Add(Extraction.SaveFromStorageNode(compoundFile.RootStorage, outputFolder));
+                                        var resultFileName = Extraction.SaveFromStorageNode(compoundFile.RootStorage, outputFolder);
+                                        if ( resultFileName != null )
+                                            result.Add(resultFileName);
                                         //result.Add(ExtractFileFromOle10Native(packagePartMemoryStream.ToArray(), outputFolder));
                                     }
                                 }

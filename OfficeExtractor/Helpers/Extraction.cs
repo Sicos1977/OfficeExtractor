@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using OfficeExtractor.Ole;
 using OpenMcdf;
+using System.Linq;
 
 /*
-   Copyright 2013 - 2016 Kees van Spelde
+   Copyright 2013 - 2018 Kees van Spelde
 
    Licensed under The Code Project Open License (CPOL) 1.02;
    you may not use this file except in compliance with the License.
@@ -155,7 +157,7 @@ namespace OfficeExtractor.Helpers
         /// <param name="storage">The <see cref="CFStorage"/> node</param>
         /// <param name="outputFolder">The outputFolder</param>
         /// <param name="fileName">The fileName to use, null when the fileName is unknown</param>
-        /// <returns></returns>
+        /// <returns>Returns the name of the created file that or null if there was nothing to export within the given <see cref="storage"/> node.</returns>
         /// <exception cref="Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
         public static string SaveFromStorageNode(CFStorage storage, string outputFolder, string fileName)
         {
@@ -164,6 +166,16 @@ namespace OfficeExtractor.Helpers
             {
                 if (contents.Size <= 0) return null;
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = DefaultEmbeddedObjectName;
+
+                var delimiter = "%DocumentOle:";
+                var documentOleFileName = GetDelimitedStringFromData(delimiter, contents.GetData());
+                if (documentOleFileName != null)
+                {
+                    if (!documentOleFileName.Equals(string.Empty))
+                        fileName = Path.GetFileName(documentOleFileName);
+                    contents.SetData(contents.GetData().Skip(delimiter.Length * 2 + documentOleFileName.Length).ToArray());
+                }
+
                 return SaveByteArrayToFile(contents.GetData(), FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
             }
 
@@ -329,6 +341,30 @@ namespace OfficeExtractor.Helpers
                 File.WriteAllBytes(outputFile, data);
 
             return outputFile;
+        }
+        #endregion
+
+        #region Storage Node Content Parsing
+        private static string GetDelimitedStringFromData(string delimiter, ICollection<byte> data)
+        {
+            string delimitedString = null;
+            if (!string.IsNullOrWhiteSpace(delimiter) && data != null && data.Count > 0)
+            {
+                // Check if data has at least the length of opening plus closing delimiter
+                if (data.Count >= delimiter.Length * 2)
+                {
+                    // Check if data contains the delimiter
+                    if (delimiter.Equals(Encoding.UTF8.GetString(data.Take(delimiter.Length).ToArray())))
+                    {
+                        // Read the data after opening delimiter until first sign of the closing delimiter
+                        delimitedString = Encoding.UTF8.GetString(data
+                            .Skip(delimiter.Length)
+                            .TakeWhile(b => Convert.ToChar(b) != delimiter.First())
+                            .ToArray());
+                    }
+                }
+            }
+            return delimitedString;
         }
         #endregion
     }
