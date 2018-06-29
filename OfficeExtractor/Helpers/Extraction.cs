@@ -157,7 +157,7 @@ namespace OfficeExtractor.Helpers
         /// <param name="storage">The <see cref="CFStorage"/> node</param>
         /// <param name="outputFolder">The outputFolder</param>
         /// <param name="fileName">The fileName to use, null when the fileName is unknown</param>
-        /// <returns></returns>
+        /// <returns>Returns the name of the created file that or null if there was nothing to export within the given <see cref="storage"/> node.</returns>
         /// <exception cref="Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
         public static string SaveFromStorageNode(CFStorage storage, string outputFolder, string fileName)
         {
