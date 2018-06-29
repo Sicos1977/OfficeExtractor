@@ -167,7 +167,7 @@ namespace OfficeExtractor.Helpers
                 if (contents.Size <= 0) return null;
                 if (string.IsNullOrWhiteSpace(fileName)) fileName = DefaultEmbeddedObjectName;
 
-                var delimiter = "%DocumentOle:";
+                const string delimiter = "%DocumentOle:";
                 var documentOleFileName = GetDelimitedStringFromData(delimiter, contents.GetData());
                 if (documentOleFileName != null)
                 {
