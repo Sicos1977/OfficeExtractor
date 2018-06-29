@@ -137,6 +137,15 @@ namespace OfficeExtractorTest
             var extractor = new OfficeExtractor.Extractor();
             extractor.SaveToFolder("TestFiles\\A DOC word document with document ole object attached path broken.doc", outputFolder);
         }
+
+        [TestMethod]
+        public void DocxWithEmbeddedMathTypeObjectSuccessfulExtractsNothing()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new OfficeExtractor.Extractor();
+            var files = extractor.SaveToFolder("TestFiles\\MathType 5 Object.docx", outputFolder);
+            Assert.AreEqual(0, files.Count);
+        }
         #endregion
 
         #region Microsoft Office Excel tests

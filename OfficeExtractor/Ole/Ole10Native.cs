@@ -114,6 +114,16 @@ namespace OfficeExtractor.Ole
                     // Ignore
                     break;
 
+                // MathType (http://docs.wiris.com/en/mathtype/start) is a equations editor
+                // The data is stored in the MTEF format within image file formats (PICT, WMF, EPS, GIF) or Office documents
+                // as kind of pickaback data. (http://docs.wiris.com/en/mathtype/mathtype_desktop/mathtype-sdk/mtefstorage).
+                // Within Office, a placeholder image shows the created equation.
+                // Because MathType does not support storing equations in a separate MTEF file, a export of the data is not
+                // directly possible and would require a conversion into the mentioned file formats.
+                // Due that facts, it make no sense try to export the data.
+                case "MathType 5.0 Equation":
+                    break;
+
                 default:
                     throw new OEObjectTypeNotSupported("Unsupported OleNative AnsiUserType '" +
                                                         compObjStream.AnsiUserType + "' found");

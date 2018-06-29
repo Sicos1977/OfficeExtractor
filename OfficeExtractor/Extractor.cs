@@ -225,7 +225,9 @@ namespace OfficeExtractor
                                 {
                                     using (var compoundFile = new CompoundFile(packagePartStream))
                                     {
-                                        result.Add(Extraction.SaveFromStorageNode(compoundFile.RootStorage, outputFolder));
+                                        var resultFileName = Extraction.SaveFromStorageNode(compoundFile.RootStorage, outputFolder);
+                                        if ( resultFileName != null )
+                                            result.Add(resultFileName);
                                         //result.Add(ExtractFileFromOle10Native(packagePartMemoryStream.ToArray(), outputFolder));
                                     }
                                 }
