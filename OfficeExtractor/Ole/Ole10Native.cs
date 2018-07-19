@@ -124,6 +124,12 @@ namespace OfficeExtractor.Ole
                 case "MathType 5.0 Equation":
                     break;
 
+                // used by the depreciated Microsoft Office ClipArt Gallery
+                // supposedly to store some metadata
+                case "MS_ClipArt_Gallery": 
+                case "Microsoft ClipArt Gallery":
+                    break;
+
                 default:
                     throw new OEObjectTypeNotSupported("Unsupported OleNative AnsiUserType '" +
                                                         compObjStream.AnsiUserType + "' found");
