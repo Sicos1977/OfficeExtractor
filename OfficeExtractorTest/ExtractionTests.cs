@@ -258,6 +258,24 @@ namespace OfficeExtractorTest
             var extractor = new OfficeExtractor.Extractor();
             extractor.SaveToFolder("TestFiles\\A PPTX PowerPoint document with password.pptx", outputFolder);
         }
+
+        [TestMethod]
+        public void PptWithEmbeddedMicrosoftClipArtGalleryObject()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new OfficeExtractor.Extractor();
+            var files = extractor.SaveToFolder("TestFiles\\A PPT PowerPoint document containing a Microsoft ClipArt Gallery object.ppt", outputFolder);
+            Assert.IsTrue(files.Count == 0);
+        }
+
+        [TestMethod]
+        public void PptWithEmbeddedMSClipArtGalleryObject()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new OfficeExtractor.Extractor();
+            var files = extractor.SaveToFolder("TestFiles\\A PPT PowerPoint document containing a MS ClipArt Gallery object.ppt", outputFolder);
+            Assert.IsTrue(files.Count == 0);
+        }
         #endregion
 
         #region Open Office Writer tests
