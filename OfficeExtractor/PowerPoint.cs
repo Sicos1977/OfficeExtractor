@@ -51,13 +51,11 @@ namespace OfficeExtractor
         {
             using (var compoundFile = new CompoundFile(inputFile))
             {
-                if (IsPasswordProtected(compoundFile))
-                    throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
-                                                        "' is password protected");
-
                 var result = new List<string>();
                 var stream = compoundFile.RootStorage.TryGetStream("PowerPoint Document");
                 if (stream == null) return result;
+
+                Logger.WriteToLog("PowerPoint Document stream found");
 
                 using (var memoryStream = new MemoryStream(stream.GetData()))
                 using (var binaryReader = new BinaryReader(memoryStream))
@@ -120,49 +118,6 @@ namespace OfficeExtractor
                 }
 
                 return result;
-            }
-        }
-        #endregion
-
-        #region IsPasswordProtected
-        /// <summary>
-        /// Returns true when the binary PowerPoint file is password protected
-        /// </summary>
-        /// <param name="compoundFile"></param>
-        /// <returns></returns>
-        private static bool IsPasswordProtected(CompoundFile compoundFile)
-        {
-            if (compoundFile.RootStorage.TryGetStream("EncryptedPackage") != null) return true;
-            var stream = compoundFile.RootStorage.TryGetStream("Current User");
-            if (stream == null) return false;
-
-            using (var memoryStream = new MemoryStream(stream.GetData()))
-            using (var binaryReader = new BinaryReader(memoryStream))
-            {
-                var verAndInstance = binaryReader.ReadUInt16();
-                // ReSharper disable UnusedVariable
-                // We need to read these fields to get to the correct location in the Current User stream
-                var version = verAndInstance & 0x000FU;         // first 4 bit of field verAndInstance
-                var instance = (verAndInstance & 0xFFF0U) >> 4; // last 12 bit of field verAndInstance
-                var typeCode = binaryReader.ReadUInt16();
-                var size = binaryReader.ReadUInt32();
-                var size1 = binaryReader.ReadUInt32();
-                // ReSharper restore UnusedVariable
-                var headerToken = binaryReader.ReadUInt32();
-
-                switch (headerToken)
-                {
-                    // Not encrypted
-                    case 0xE391C05F:
-                        return false;
-
-                    // Encrypted
-                    case 0xF3D1C4DF:
-                        return true;
-
-                    default:
-                        return false;
-                }
             }
         }
         #endregion

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using OfficeExtractor.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PasswordProtectedChecker.Exceptions;
 
 //
 // ExtractionTest.cs
@@ -37,17 +38,17 @@ namespace OfficeExtractorTest
     {
         private readonly List<string> _tempFolders = new List<string>();
 
-        [TestMethod]
-        [ExpectedException(typeof(OEFileTypeNotSupported))]
-        public void FileTypeNotSupported()
-        {
-            var outputFolder = CreateTemporaryFolder();
-            var extractor = new OfficeExtractor.Extractor();
-            extractor.SaveToFolder("TestFiles\\filetypenotsupported.txt", outputFolder);
-        }
+        //[TestMethod]
+        //[ExpectedException(typeof(FileTypeNotSupported))]
+        //public void FileTypeNotSupported()
+        //{
+        //    var outputFolder = CreateTemporaryFolder();
+        //    var extractor = new OfficeExtractor.Extractor();
+        //    extractor.SaveToFolder("TestFiles\\filetypenotsupported.txt", outputFolder);
+        //}
 
         [TestMethod]
-        [ExpectedException(typeof(OEFileIsCorrupt))]
+        [ExpectedException(typeof(PPCFileIsCorrupt))]
         public void FileIsCorrupt()
         {
             var outputFolder = CreateTemporaryFolder();

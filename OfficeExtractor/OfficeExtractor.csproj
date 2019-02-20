@@ -45,17 +45,29 @@
     <Reference Include="DocumentFormat.OpenXml, Version=2.9.0.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
       <HintPath>..\packages\DocumentFormat.OpenXml.2.9.0\lib\net40\DocumentFormat.OpenXml.dll</HintPath>
     </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=1.0.0.999, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpZipLib.1.0.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="iTextSharp, Version=4.1.6.0, Culture=neutral, PublicKeyToken=8354ae6d2174ddca">
+      <HintPath>..\packages\iTextSharp-LGPL.4.1.6\lib\iTextSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="MsgReader, Version=3.6.1.0, Culture=neutral, PublicKeyToken=3ba01cf3434959fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\MsgReader.3.6.1\lib\net45\MsgReader.dll</HintPath>
+    </Reference>
     <Reference Include="OpenMcdf, Version=2.2.1.2, Culture=neutral, PublicKeyToken=fdbb1629d7c00800, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenMcdf.2.2.1.3\lib\net40\OpenMcdf.dll</HintPath>
+    </Reference>
+    <Reference Include="PasswordProtectedChecker, Version=1.3.0.0, Culture=neutral, PublicKeyToken=61be40572173cc31, processorArchitecture=MSIL">
+      <HintPath>..\packages\PasswordProtectedChecker.1.3.0\lib\PasswordProtectedChecker.dll</HintPath>
+    </Reference>
+    <Reference Include="RtfPipe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=317a45ec926873fc, processorArchitecture=MSIL">
+      <HintPath>..\packages\MsgReader.3.6.1\lib\net45\RtfPipe.dll</HintPath>
     </Reference>
     <Reference Include="SharpCompress, Version=0.22.0.0, Culture=neutral, PublicKeyToken=afb0a02973931d96, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpCompress.0.22.0\lib\net35\SharpCompress.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -69,6 +81,7 @@
     <Compile Include="Helpers\Extraction.cs" />
     <Compile Include="Helpers\FileManager.cs" />
     <Compile Include="Helpers\FileTypeSelector.cs" />
+    <Compile Include="Helpers\Logger.cs" />
     <Compile Include="Helpers\Strings.cs" />
     <Compile Include="Ole\AttachDescStream.cs" />
     <Compile Include="Ole\CLSID.cs" />
@@ -90,6 +103,7 @@
     <Compile Include="Word.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="OfficeExtractor.snk" />
     <None Include="packages.config" />
   </ItemGroup>

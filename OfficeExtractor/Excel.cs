@@ -53,76 +53,23 @@ namespace OfficeExtractor
         /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
         public static List<string> SaveToFolder(string inputFile, string outputFolder)
         {
-            var fileName = Path.GetFileName(inputFile);
-
             using (var compoundFile = new CompoundFile(inputFile))
             {
-                if (IsPasswordProtected(compoundFile, fileName))
-                    throw new OEFileIsPasswordProtected("The file '" + fileName + "' is password protected");
-
                 var result = new List<string>();
-                Action<CFItem> entries = storage =>
+
+                void Entries(CFItem storage)
                 {
                     var childStorage = storage as CFStorage;
                     if (childStorage == null || !childStorage.Name.StartsWith("MBD")) return;
                     var extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder);
-                    if (extractedFileName != null)
-                        result.Add(extractedFileName);
-                };
+                    if (extractedFileName != null) result.Add(extractedFileName);
+                }
 
-                compoundFile.RootStorage.VisitEntries(entries, false);
+                compoundFile.RootStorage.VisitEntries(Entries, false);
                 return result;
             }
         }
         #endregion   
-
-        #region IsPasswordProtected
-        /// <summary>
-        /// Returns true when the Excel file is password protected
-        /// </summary>
-        /// <param name="compoundFile">The Excel file to check</param>
-        /// <param name="fileName"></param>
-        /// <returns></returns>
-        /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
-        public static bool IsPasswordProtected(CompoundFile compoundFile, string fileName)
-        {
-            try
-            {
-                if (compoundFile.RootStorage.TryGetStream("EncryptedPackage") != null) return true;
-
-                var stream = compoundFile.RootStorage.TryGetStream("WorkBook");
-                if (stream == null)
-                    compoundFile.RootStorage.TryGetStream("Book");
-
-                if (stream == null)
-                    throw new OEFileIsCorrupt("Could not find the WorkBook or Book stream in the file '" + fileName + "'");
-
-                var bytes = stream.GetData();
-                using (var memoryStream = new MemoryStream(bytes))
-                using (var binaryReader = new BinaryReader(memoryStream))
-                {
-                    // Get the record type, at the beginning of the stream this should always be the BOF
-                    var recordType = binaryReader.ReadUInt16();
-
-                    // Something seems to be wrong, we would expect a BOF but for some reason it isn't so stop it
-                    if (recordType != 0x809)
-                        throw new OEFileIsCorrupt("The file '" + fileName + "' is corrupt");
-
-                    var recordLength = binaryReader.ReadUInt16();
-                    binaryReader.BaseStream.Position += recordLength;
-
-                    // Search after the BOF for the FilePass record, this starts with 2F hex
-                    recordType = binaryReader.ReadUInt16();
-                    return recordType == 0x2F;
-                }
-            }
-            catch (CFFileFormatException)
-            {
-                // It seems the file is just a normal Microsoft Office 2007 and up Open XML file
-                return false;
-            }
-        }
-        #endregion
 
         #region SetWorkbookVisibility
         /// <summary>
@@ -141,6 +88,8 @@ namespace OfficeExtractor
             var stream = rootStorage.TryGetStream("WorkBook");
             if (stream == null)
                 throw new OEFileIsCorrupt("Could not check workbook visibility because the WorkBook stream is not present");
+
+            Logger.WriteToLog("Setting hidden Excel workbook to visible");
 
             try
             {
