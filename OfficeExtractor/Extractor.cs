@@ -386,56 +386,57 @@ namespace OfficeExtractor
             Logger.WriteToLog("The file is of type 'Open document format'");
 
             var result = new List<string>();
-            var zipFile = SharpCompress.Archives.Zip.ZipArchive.Open(inputFile);
-
-            // Check if the file is password protected
-            var manifestEntry = FindEntryByName(zipFile, "META-INF/manifest.xml");
-            if (manifestEntry != null)
+            using(var zipFile = SharpCompress.Archives.Zip.ZipArchive.Open(inputFile))
             {
-                using (var manifestEntryStream = manifestEntry.OpenEntryStream())
-                using (var manifestEntryMemoryStream = new MemoryStream())
+                // Check if the file is password protected
+                var manifestEntry = FindEntryByName(zipFile, "META-INF/manifest.xml");
+                if (manifestEntry != null)
                 {
-                    manifestEntryStream.CopyTo(manifestEntryMemoryStream);
-                    manifestEntryMemoryStream.Position = 0;
-                    using (var streamReader = new StreamReader(manifestEntryMemoryStream))
+                    using (var manifestEntryStream = manifestEntry.OpenEntryStream())
+                    using (var manifestEntryMemoryStream = new MemoryStream())
                     {
-                        var manifest = streamReader.ReadToEnd();
-                        if (manifest.ToUpperInvariant().Contains("ENCRYPTION-DATA"))
-                            throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
-                                                                "' is password protected");
+                        manifestEntryStream.CopyTo(manifestEntryMemoryStream);
+                        manifestEntryMemoryStream.Position = 0;
+                        using (var streamReader = new StreamReader(manifestEntryMemoryStream))
+                        {
+                            var manifest = streamReader.ReadToEnd();
+                            if (manifest.ToUpperInvariant().Contains("ENCRYPTION-DATA"))
+                                throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
+                                                                    "' is password protected");
+                        }
+                    }
+                }
+
+                foreach (var zipEntry in zipFile.Entries)
+                {
+                    if (zipEntry.IsDirectory) continue;
+                    if (zipEntry.IsEncrypted)
+                        throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
+                                                            "' is password protected");
+
+                    var name = zipEntry.Key.ToUpperInvariant();
+                    if (!name.StartsWith("OBJECT") || name.Contains("/"))
+                        continue;
+
+                    string fileName = null;
+
+                    var objectReplacementFile = FindEntryByName(zipFile, "ObjectReplacements/" + name);
+                    if (objectReplacementFile != null)
+                        fileName = Extraction.GetFileNameFromObjectReplacementFile(objectReplacementFile);
+
+                    Logger.WriteToLog($"Extracting embedded object '{fileName}'");
+
+                    using (var zipEntryStream = zipEntry.OpenEntryStream())
+                    using (var zipEntryMemoryStream = new MemoryStream())
+                    {
+                        zipEntryStream.CopyTo(zipEntryMemoryStream);
+
+                        using (var compoundFile = new CompoundFile(zipEntryMemoryStream))
+                            result.Add(Extraction.SaveFromStorageNode(compoundFile.RootStorage, outputFolder,
+                                fileName));
                     }
                 }
             }
-
-            foreach (var zipEntry in zipFile.Entries)
-            {
-                if (zipEntry.IsDirectory) continue;
-                if (zipEntry.IsEncrypted)
-                    throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
-                                                                "' is password protected");
-
-                var name = zipEntry.Key.ToUpperInvariant();
-                if (!name.StartsWith("OBJECT") || name.Contains("/"))
-                    continue;
-
-                string fileName = null;
-
-                var objectReplacementFile = FindEntryByName(zipFile, "ObjectReplacements/" + name);
-                if (objectReplacementFile != null)
-                    fileName = Extraction.GetFileNameFromObjectReplacementFile(objectReplacementFile);
-
-                Logger.WriteToLog($"Extracting embedded object '{fileName}'");
-
-                using (var zipEntryStream = zipEntry.OpenEntryStream())
-                using (var zipEntryMemoryStream = new MemoryStream())
-                {
-                    zipEntryStream.CopyTo(zipEntryMemoryStream);
-
-                    using (var compoundFile = new CompoundFile(zipEntryMemoryStream))
-                        result.Add(Extraction.SaveFromStorageNode(compoundFile.RootStorage, outputFolder, fileName));
-                }
-            }
-
             return result;
         }
         #endregion
