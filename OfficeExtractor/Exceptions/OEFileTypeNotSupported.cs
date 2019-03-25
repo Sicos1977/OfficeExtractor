@@ -33,15 +33,15 @@ namespace OfficeExtractor.Exceptions
     /// </summary>
     public class OEFileTypeNotSupported : Exception
     {
-        public OEFileTypeNotSupported()
+        internal OEFileTypeNotSupported()
         {
         }
 
-        public OEFileTypeNotSupported(string message) : base(message)
+        internal OEFileTypeNotSupported(string message) : base(message)
         {
         }
 
-        public OEFileTypeNotSupported(string message, Exception inner) : base(message, inner)
+        internal OEFileTypeNotSupported(string message, Exception inner) : base(message, inner)
         {
         }
     }

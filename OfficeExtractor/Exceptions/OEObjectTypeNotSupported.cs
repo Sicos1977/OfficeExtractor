@@ -33,15 +33,15 @@ namespace OfficeExtractor.Exceptions
     /// </summary>
     public class OEObjectTypeNotSupported : Exception
     {
-        public OEObjectTypeNotSupported()
+        internal OEObjectTypeNotSupported()
         {
         }
 
-        public OEObjectTypeNotSupported(string message) : base(message)
+        internal OEObjectTypeNotSupported(string message) : base(message)
         {
         }
 
-        public OEObjectTypeNotSupported(string message, Exception inner) : base(message, inner)
+        internal OEObjectTypeNotSupported(string message, Exception inner) : base(message, inner)
         {
         }
     }

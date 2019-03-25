@@ -37,12 +37,37 @@ namespace OfficeExtractor.Helpers
     /// <summary>
     /// This class contain helpers method for extraction
     /// </summary>
-    internal static class Extraction
+    internal class Extraction
     {
         /// <summary>
         /// Default name for embedded object without a name
         /// </summary>
         public const string DefaultEmbeddedObjectName = "Embedded object";
+
+        #region Fields
+        /// <summary>
+        ///     <see cref="Excel"/>
+        /// </summary>
+        private Excel _excel;
+        #endregion
+
+        #region Properties
+        /// <summary>
+        /// Returns a reference to the Excel class when it already exists or creates a new one
+        /// when it doesn't
+        /// </summary>
+        private Excel Excel
+        {
+            get
+            {
+                if (_excel != null)
+                    return _excel;
+
+                _excel = new Excel();
+                return _excel;
+            }
+        }
+        #endregion
 
         #region IsCompoundFile
         /// <summary>
@@ -50,7 +75,7 @@ namespace OfficeExtractor.Helpers
         /// </summary>
         /// <param name="bytes"></param>
         /// <returns></returns>
-        public static bool IsCompoundFile(byte[] bytes)
+        public bool IsCompoundFile(byte[] bytes)
         {
             if (bytes == null || bytes.Length < 2)
                 return false;
@@ -65,7 +90,7 @@ namespace OfficeExtractor.Helpers
         /// </summary>
         /// <param name="zipEntry"></param>
         /// <returns></returns>
-        internal static string GetFileNameFromObjectReplacementFile(SharpCompress.Archives.IArchiveEntry zipEntry)
+        internal string GetFileNameFromObjectReplacementFile(SharpCompress.Archives.IArchiveEntry zipEntry)
         {
             Logger.WriteToLog("Trying to get original filename from ObjectReplacement file");
 
@@ -124,13 +149,13 @@ namespace OfficeExtractor.Helpers
 
         #region SaveFromStorageNode
         /// <summary>
-        /// This method will extract and save the data from the given <see cref="CompoundFile"/> node to the <see cref="outputFolder"/>
+        /// This method will extract and save the data from the given <see cref="CompoundFile"/> node to the <paramref name="outputFolder"/>
         /// </summary>
         /// <param name="bytes">The <see cref="CompoundFile"/> as a byte array</param>
         /// <param name="outputFolder">The outputFolder</param>
         /// <returns></returns>
         /// <exception cref="Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
-        internal static string SaveFromStorageNode(byte[] bytes, string outputFolder)
+        internal string SaveFromStorageNode(byte[] bytes, string outputFolder)
         {
             using (var memoryStream = new MemoryStream(bytes))
             using (var compoundFile = new CompoundFile(memoryStream))
@@ -138,14 +163,14 @@ namespace OfficeExtractor.Helpers
         }
 
         /// <summary>
-        /// This method will extract and save the data from the given <see cref="CompoundFile"/> node to the <see cref="outputFolder"/>
+        /// This method will extract and save the data from the given <see cref="CompoundFile"/> node to the <paramref name="outputFolder"/>
         /// </summary>
         /// <param name="bytes">The <see cref="CompoundFile"/> as a byte array</param>
         /// <param name="outputFolder">The outputFolder</param>
         /// <param name="fileName">The fileName to use, null when the fileName is unknown</param>
         /// <returns></returns>
         /// <exception cref="Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
-        internal static string SaveFromStorageNode(byte[] bytes, string outputFolder, string fileName)
+        internal string SaveFromStorageNode(byte[] bytes, string outputFolder, string fileName)
         {
             using (var memoryStream = new MemoryStream(bytes))
             using (var compoundFile = new CompoundFile(memoryStream))
@@ -153,26 +178,26 @@ namespace OfficeExtractor.Helpers
         }
 
         /// <summary>
-        /// This method will extract and save the data from the given <see cref="storage"/> node to the <see cref="outputFolder"/>
+        /// This method will extract and save the data from the given <paramref name="storage"/> node to the <paramref name="outputFolder"/>
         /// </summary>
         /// <param name="storage">The <see cref="CFStorage"/> node</param>
         /// <param name="outputFolder">The outputFolder</param>
         /// <returns></returns>
         /// <exception cref="Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
-        internal static string SaveFromStorageNode(CFStorage storage, string outputFolder)
+        internal string SaveFromStorageNode(CFStorage storage, string outputFolder)
         {
             return SaveFromStorageNode(storage, outputFolder, null);
         }
 
         /// <summary>
-        /// This method will extract and save the data from the given <see cref="storage"/> node to the <see cref="outputFolder"/>
+        /// This method will extract and save the data from the given <paramref name="storage"/> node to the <paramref name="outputFolder"/>
         /// </summary>
         /// <param name="storage">The <see cref="CFStorage"/> node</param>
         /// <param name="outputFolder">The outputFolder</param>
         /// <param name="fileName">The fileName to use, null when the fileName is unknown</param>
-        /// <returns>Returns the name of the created file that or null if there was nothing to export within the given <see cref="storage"/> node.</returns>
+        /// <returns>Returns the name of the created file that or null if there was nothing to export within the given <paramref name="storage"/> node.</returns>
         /// <exception cref="Exceptions.OEFileIsPasswordProtected">Raised when a WordDocument, WorkBook or PowerPoint Document stream is password protected</exception>
-        public static string SaveFromStorageNode(CFStorage storage, string outputFolder, string fileName)
+        public string SaveFromStorageNode(CFStorage storage, string outputFolder, string fileName)
         {
             Logger.WriteToLog($"Saving CFStorage to output folder '{outputFolder}' with file name {fileName}");
 
@@ -286,7 +311,7 @@ namespace OfficeExtractor.Helpers
         /// </summary>
         /// <param name="storage"></param>
         /// <param name="fileName">The filename with path for the new compound file</param>
-        internal static string SaveStorageTreeToCompoundFile(CFStorage storage, string fileName)
+        internal string SaveStorageTreeToCompoundFile(CFStorage storage, string fileName)
         {
             Logger.WriteToLog($"Saving storage tree to compound file '{fileName}'");
 
@@ -339,7 +364,7 @@ namespace OfficeExtractor.Helpers
         /// <param name="outputFile">The output filename with path</param>
         /// <returns></returns>
         /// <exception cref="OfficeExtractor.Exceptions.OEFileIsCorrupt">Raised when the file is corrupt</exception> 
-        internal static string SaveByteArrayToFile(byte[] data, string outputFile)
+        internal string SaveByteArrayToFile(byte[] data, string outputFile)
         {
             // Because the data is stored in a stream we have no name for it so we
             // have to check the magic bytes to see with what kind of file we are dealing
@@ -400,7 +425,7 @@ namespace OfficeExtractor.Helpers
         #endregion
 
         #region Storage Node Content Parsing
-        private static string GetDelimitedStringFromData(string delimiter, ICollection<byte> data)
+        private string GetDelimitedStringFromData(string delimiter, ICollection<byte> data)
         {
             string delimitedString = null;
             if (!string.IsNullOrWhiteSpace(delimiter) && data != null && data.Count > 0)

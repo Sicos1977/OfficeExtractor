@@ -33,15 +33,15 @@ namespace OfficeExtractor.Exceptions
     /// </summary>
     public class OEFileIsCorrupt : Exception
     {
-        public OEFileIsCorrupt()
+        internal OEFileIsCorrupt()
         {
         }
 
-        public OEFileIsCorrupt(string message) : base(message)
+        internal OEFileIsCorrupt(string message) : base(message)
         {
         }
 
-        public OEFileIsCorrupt(string message, Exception inner) : base(message, inner)
+        internal OEFileIsCorrupt(string message, Exception inner) : base(message, inner)
         {
         }
     }

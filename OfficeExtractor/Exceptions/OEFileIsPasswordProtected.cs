@@ -33,15 +33,15 @@ namespace OfficeExtractor.Exceptions
     /// </summary>
     public class OEFileIsPasswordProtected : Exception
     {
-        public OEFileIsPasswordProtected()
+        internal OEFileIsPasswordProtected()
         {
         }
 
-        public OEFileIsPasswordProtected(string message) : base(message)
+        internal OEFileIsPasswordProtected(string message) : base(message)
         {
         }
 
-        public OEFileIsPasswordProtected(string message, Exception inner) : base(message, inner)
+        internal OEFileIsPasswordProtected(string message, Exception inner) : base(message, inner)
         {
         }
     }

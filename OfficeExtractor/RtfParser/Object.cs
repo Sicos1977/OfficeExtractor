@@ -28,11 +28,11 @@ using System;
 
 namespace OfficeExtractor.RtfParser
 {
-    public class Object
+    internal class Object
     {
-        public string Text { get; private set; }
+        internal string Text { get; }
 
-        public Object(string text)
+        internal Object(string text)
         {
             if (text == null)
                 throw new ArgumentNullException(nameof(text));

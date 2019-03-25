@@ -68,9 +68,25 @@ namespace OfficeExtractor
         ///     <see cref="Rtf"/>
         /// </summary>
         private Rtf _rtf;
+
+        /// <summary>
+        ///     <see cref="Extraction"/>
+        /// </summary>
+        private Extraction _extraction;
         #endregion
 
         #region Properties
+        /// <summary>
+        ///     An unique id that can be used to identify the logging of the converter when
+        ///     calling the code from multiple threads and writing all the logging to the same file
+        /// </summary>
+        // ReSharper disable once UnusedMember.Global
+        public string InstanceId
+        {
+            get => Logger.InstanceId;
+            set => Logger.InstanceId = value;
+        }
+
         /// <summary>
         /// Returns a reference to the Word class when it already exists or creates a new one
         /// when it doesn't
@@ -128,10 +144,26 @@ namespace OfficeExtractor
             get
             {
                 if (_rtf != null)
-                    return Rtf;
+                    return _rtf;
 
                 _rtf = new Rtf();
                 return _rtf;
+            }
+        }
+
+        /// <summary>
+        /// Returns a reference to the Extraction class when it already exists or creates a new one
+        /// when it doesn't
+        /// </summary>
+        private Extraction Extraction
+        {
+            get
+            {
+                if (_extraction != null)
+                    return _extraction;
+
+                _extraction = new Extraction();
+                return _extraction;
             }
         }
         #endregion
@@ -150,7 +182,7 @@ namespace OfficeExtractor
 
         #region CheckFileNameAndOutputFolder
         /// <summary>
-        /// Checks if the <see cref="inputFile"/> and <see cref="outputFolder"/> is valid
+        /// Checks if the <paramref name="inputFile"/> and <paramref name="outputFolder"/> is valid
         /// </summary>
         /// <param name="inputFile"></param>
         /// <param name="outputFolder"></param>
@@ -230,7 +262,7 @@ namespace OfficeExtractor
         #region Extract
         /// <summary>
         /// Extracts all the embedded object from the Microsoft Office <paramref name="inputFile"/> to the 
-        /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
+        /// <paramref name="outputFolder"/> and returns the files with full path as a list of strings
         /// </summary>
         /// <param name="inputFile">The Microsoft Office file</param>
         /// <param name="outputFolder">The output folder</param>
@@ -368,7 +400,7 @@ namespace OfficeExtractor
         #region ExtractFromOfficeOpenXmlFormat
         /// <summary>
         /// Extracts all the embedded object from the Office Open XML <paramref name="inputFile"/> to the 
-        /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
+        /// <paramref name="outputFolder"/> and returns the files with full path as a list of strings
         /// </summary>
         /// <param name="inputFile">The Office Open XML format file</param>
         /// <param name="embeddingPartString">The folder in the Office Open XML format (zip) file</param>
@@ -461,7 +493,7 @@ namespace OfficeExtractor
 
         /// <summary>
         /// Extracts all the embedded object from the OpenDocument <paramref name="inputFile"/> to the 
-        /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
+        /// <paramref name="outputFolder"/> and returns the files with full path as a list of strings
         /// </summary>
         /// <param name="inputFile">The OpenDocument format file</param>
         /// <param name="outputFolder">The output folder</param>

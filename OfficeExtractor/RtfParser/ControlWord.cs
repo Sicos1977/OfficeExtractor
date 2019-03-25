@@ -27,8 +27,8 @@
 
 namespace OfficeExtractor.RtfParser
 {
-    public class ControlWord : Object
+    internal class ControlWord : Object
     {
-        public ControlWord(string name) : base(name) { }
+        internal ControlWord(string name) : base(name) { }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
 using OfficeExtractor.Ole;
@@ -39,15 +37,40 @@ namespace OfficeExtractor
     /// </summary>
     internal class Word
     {
+        #region Fields
+        /// <summary>
+        ///     <see cref="Extraction"/>
+        /// </summary>
+        private Extraction _extraction;
+        #endregion
+
+        #region Properties
+        /// <summary>
+        /// Returns a reference to the Extraction class when it already exists or creates a new one
+        /// when it doesn't
+        /// </summary>
+        private Extraction Extraction
+        {
+            get
+            {
+                if (_extraction != null)
+                    return _extraction;
+
+                _extraction = new Extraction();
+                return _extraction;
+            }
+        }
+        #endregion
+
         #region Extract
         /// <summary>
         /// This method saves all the Word embedded binary objects from the <paramref name="inputFile"/> to the
-        /// <see cref="outputFolder"/>
+        /// <paramref name="outputFolder"/>
         /// </summary>
         /// <param name="inputFile">The binary Word file</param>
         /// <param name="outputFolder">The output folder</param>
         /// <returns></returns>
-        /// <exception cref="OEFileIsPasswordProtected">Raised when the <see cref="inputFile"/> is password protected</exception>
+        /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile"/> is password protected</exception>
         internal List<string> Extract(string inputFile, string outputFolder)
         {
             using (var compoundFile = new CompoundFile(inputFile))

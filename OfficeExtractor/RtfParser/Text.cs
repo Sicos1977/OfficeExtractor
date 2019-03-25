@@ -27,8 +27,8 @@
 
 namespace OfficeExtractor.RtfParser
 {
-    public class Text : Object 
+    internal class Text : Object 
     { 
-        public Text(string text) : base(text) { }
+        internal Text(string text) : base(text) { }
     }
 }

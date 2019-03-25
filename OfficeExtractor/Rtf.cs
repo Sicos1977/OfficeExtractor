@@ -39,10 +39,35 @@ namespace OfficeExtractor
     /// </summary>
     internal class Rtf
     {
+        #region Fields
+        /// <summary>
+        ///     <see cref="Extraction"/>
+        /// </summary>
+        private Extraction _extraction;
+        #endregion
+
+        #region Properties
+        /// <summary>
+        /// Returns a reference to the Extraction class when it already exists or creates a new one
+        /// when it doesn't
+        /// </summary>
+        private Extraction Extraction
+        {
+            get
+            {
+                if (_extraction != null)
+                    return _extraction;
+
+                _extraction = new Extraction();
+                return _extraction;
+            }
+        }
+        #endregion
+
         #region Extract
         /// <summary>
         /// Saves all the embedded object from the RTF <paramref name="inputFile"/> to the 
-        /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
+        /// <paramref name="outputFolder"/> and returns the files with full path as a list of strings
         /// </summary>
         /// <param name="inputFile">The RTF file</param>
         /// <param name="outputFolder">The output folder</param>
