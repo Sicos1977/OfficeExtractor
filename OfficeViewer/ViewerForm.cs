@@ -73,7 +73,7 @@ namespace OfficeViewer
                     _tempFolders.Add(tempFolder);
 
                     var extractor = new OfficeExtractor.Extractor();
-                    var files = extractor.SaveToFolder(openFileDialog1.FileName, tempFolder);
+                    var files = extractor.Extract(openFileDialog1.FileName, tempFolder);
                     FilesListBox.Items.Clear();
 
                     if (files == null) return;

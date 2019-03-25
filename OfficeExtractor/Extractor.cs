@@ -55,7 +55,7 @@ namespace OfficeExtractor
         ///     Creates this object and sets it's needed properties
         /// </summary>
         /// <param name="logStream">When set then logging is written to this stream for all extractions. If
-        /// you want a separate log for each conversion then set the logstream on the <see cref="SaveToFolder"/> method</param>
+        /// you want a separate log for each conversion then set the logstream on the <see cref="Extract"/> method</param>
         public Extractor(Stream logStream = null)
         {
             Logger.LogStream = logStream;
@@ -141,7 +141,7 @@ namespace OfficeExtractor
         }
         #endregion
 
-        #region SaveToFolder
+        #region Extract
         /// <summary>
         /// Extracts all the embedded object from the Microsoft Office <paramref name="inputFile"/> to the 
         /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
@@ -156,7 +156,7 @@ namespace OfficeExtractor
         /// <exception cref="OEFileIsCorrupt">Raised when the <paramref name="inputFile" /> is corrupt</exception>
         /// <exception cref="OEFileTypeNotSupported">Raised when the <paramref name="inputFile"/> is not supported</exception>
         /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile"/> is password protected</exception>
-        public List<string> SaveToFolder(string inputFile, string outputFolder, Stream logStream = null)
+        public List<string> Extract(string inputFile, string outputFolder, Stream logStream = null)
         {
             if (logStream != null)
                 Logger.LogStream = logStream;
@@ -192,7 +192,7 @@ namespace OfficeExtractor
                             ThrowPasswordProtected(inputFile);
 
                         // Word 97 - 2003
-                        return Word.SaveToFolder(inputFile, outputFolder);
+                        return Word.Extract(inputFile, outputFolder);
                     }
 
                     case ".DOCM":
@@ -208,7 +208,7 @@ namespace OfficeExtractor
                     }
 
                     case ".RTF":
-                        return Rtf.SaveToFolder(inputFile, outputFolder);
+                        return Rtf.Extract(inputFile, outputFolder);
 
                     case ".XLS":
                     case ".XLT":
@@ -219,7 +219,7 @@ namespace OfficeExtractor
                             ThrowPasswordProtected(inputFile);
 
                         // Excel 97 - 2003
-                        return Excel.SaveToFolder(inputFile, outputFolder);
+                        return Excel.Extract(inputFile, outputFolder);
                     }
 
                     case ".XLSB":
@@ -245,7 +245,7 @@ namespace OfficeExtractor
                             ThrowPasswordProtected(inputFile);
 
                         // PowerPoint 97 - 2003
-                        return PowerPoint.SaveToFolder(inputFile, outputFolder);
+                        return PowerPoint.Extract(inputFile, outputFolder);
                     }
 
                     case ".POTM":

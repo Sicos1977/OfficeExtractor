@@ -39,9 +39,9 @@ namespace OfficeExtractor
     /// <summary>
     /// This class is used as a placeholder for all Excel related methods
     /// </summary>
-    internal static class Excel
+    internal class Excel
     {
-        #region SaveToFolder
+        #region Extract
         /// <summary>
         /// This method saves all the Excel embedded binary objects from the <paramref name="inputFile"/> to the
         /// <see cref="outputFolder"/>
@@ -51,7 +51,7 @@ namespace OfficeExtractor
         /// <returns></returns>
         /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile"/> is password protected</exception>
         /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
-        public static List<string> SaveToFolder(string inputFile, string outputFolder)
+        internal List<string> Extract(string inputFile, string outputFolder)
         {
             using (var compoundFile = new CompoundFile(inputFile))
             {
@@ -83,7 +83,7 @@ namespace OfficeExtractor
         /// </summary>
         /// <param name="rootStorage">The <see cref="CFStorage">Root storage</see> of a <see cref="CompoundFile"/></param>
         /// <exception cref="OEFileIsCorrupt">Raised when the <paramref name="rootStorage"/> does not have a Workbook stream</exception>
-        public static void SetWorkbookVisibility(CFStorage rootStorage)
+        internal void SetWorkbookVisibility(CFStorage rootStorage)
         {
             var stream = rootStorage.TryGetStream("WorkBook");
             if (stream == null)

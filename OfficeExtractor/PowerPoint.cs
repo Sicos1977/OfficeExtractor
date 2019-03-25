@@ -36,9 +36,9 @@ namespace OfficeExtractor
     /// <summary>
     /// This class is used as a placeholder for all PowerPoint related methods
     /// </summary>
-    internal static class PowerPoint
+    internal class PowerPoint
     {
-        #region SaveToFolder
+        #region Extract
         /// <summary>
         /// This method saves all the PowerPoint embedded binary objects from the <paramref name="inputFile"/> to the
         /// <paramref name="outputFolder"/>
@@ -47,7 +47,7 @@ namespace OfficeExtractor
         /// <param name="outputFolder">The output folder</param>
         /// <returns></returns>
         /// <exception cref="OEFileIsPasswordProtected">Raised when the <see cref="inputFile"/> is password protected</exception>
-        public static List<string> SaveToFolder(string inputFile, string outputFolder)
+        internal List<string> Extract(string inputFile, string outputFolder)
         {
             using (var compoundFile = new CompoundFile(inputFile))
             {

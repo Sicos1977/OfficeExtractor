@@ -38,9 +38,9 @@ namespace OfficeExtractor
     /// <summary>
     /// This class is used as a placeholder for all RTF related methods
     /// </summary>
-    internal static class Rtf
+    internal class Rtf
     {
-        #region ExtractFromRtf
+        #region Extract
         /// <summary>
         /// Saves all the embedded object from the RTF <paramref name="inputFile"/> to the 
         /// <see cref="outputFolder"/> and returns the files with full path as a list of strings
@@ -48,7 +48,7 @@ namespace OfficeExtractor
         /// <param name="inputFile">The RTF file</param>
         /// <param name="outputFolder">The output folder</param>
         /// <returns>List with files or en empty list when there are nog embedded files</returns>
-        internal static List<string> SaveToFolder(string inputFile, string outputFolder)
+        internal List<string> Extract(string inputFile, string outputFolder)
         {
             var result = new List<string>();
 
@@ -92,7 +92,7 @@ namespace OfficeExtractor
         /// </summary>
         /// <param name="stream"></param>
         /// <param name="outputFolder">The output folder</param>
-        internal static string ExtractOle10(Stream stream, string outputFolder)
+        internal string ExtractOle10(Stream stream, string outputFolder)
         {
             var ole10 = new Ole10(stream);
 
@@ -127,8 +127,7 @@ namespace OfficeExtractor
         /// </summary>
         /// <param name="stream">The AttachDesc stream</param>
         /// <returns></returns>
-        [SuppressMessage("ReSharper", "UnusedVariable")]
-        private static string GetFileNameFromAttachDescStream(CFStream stream)
+        private string GetFileNameFromAttachDescStream(CFStream stream)
         {
             // https://msdn.microsoft.com/en-us/library/ee157577(v=exchg.80).aspx
             if (stream == null) return null;
@@ -152,7 +151,7 @@ namespace OfficeExtractor
         /// </summary>
         /// <param name="stream"></param>
         /// <param name="outputFolder">The output folder</param>
-        internal static string ExtractOutlookAttachmentObject(Stream stream, string outputFolder)
+        internal string ExtractOutlookAttachmentObject(Stream stream, string outputFolder)
         {
             // Outlook attachments embedded in RTF are firstly embedded in an OLE v1.0 object
             var ole10 = new Ole10(stream);
