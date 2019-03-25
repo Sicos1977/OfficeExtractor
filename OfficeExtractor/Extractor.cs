@@ -48,6 +48,92 @@ namespace OfficeExtractor
         ///     <see cref="Checker"/>
         /// </summary>
         private readonly Checker _passwordProtectedChecker = new Checker();
+
+        /// <summary>
+        ///     <see cref="Word"/>
+        /// </summary>
+        private Word _word;
+
+        /// <summary>
+        ///     <see cref="Excel"/>
+        /// </summary>
+        private Excel _excel;
+
+        /// <summary>
+        ///     <see cref="PowerPoint"/>
+        /// </summary>
+        private PowerPoint _powerPoint;
+
+        /// <summary>
+        ///     <see cref="Rtf"/>
+        /// </summary>
+        private Rtf _rtf;
+        #endregion
+
+        #region Properties
+        /// <summary>
+        /// Returns a reference to the Word class when it already exists or creates a new one
+        /// when it doesn't
+        /// </summary>
+        private Word Word
+        {
+            get
+            {
+                if (_word != null)
+                    return _word;
+
+                _word = new Word();
+                return _word;
+            }
+        }
+
+        /// <summary>
+        /// Returns a reference to the Excel class when it already exists or creates a new one
+        /// when it doesn't
+        /// </summary>
+        private Excel Excel
+        {
+            get
+            {
+                if (_excel != null)
+                    return _excel;
+
+                _excel = new Excel();
+                return _excel;
+            }
+        }
+
+        /// <summary>
+        /// Returns a reference to the PowerPoint class when it already exists or creates a new one
+        /// when it doesn't
+        /// </summary>
+        private PowerPoint PowerPoint
+        {
+            get
+            {
+                if (_powerPoint != null)
+                    return _powerPoint;
+
+                _powerPoint = new PowerPoint();
+                return _powerPoint;
+            }
+        }
+
+        /// <summary>
+        /// Returns a reference to the RTF class when it already exists or creates a new one
+        /// when it doesn't
+        /// </summary>
+        private Rtf Rtf
+        {
+            get
+            {
+                if (_rtf != null)
+                    return Rtf;
+
+                _rtf = new Rtf();
+                return _rtf;
+            }
+        }
         #endregion
 
         #region Constructor
