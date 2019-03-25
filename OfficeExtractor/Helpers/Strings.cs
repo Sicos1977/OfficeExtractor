@@ -40,18 +40,21 @@ namespace OfficeExtractor.Helpers
         /// <returns></returns>
         internal static string ReadNullTerminatedAnsiString(BinaryReader binaryReader)
         {
-            var stringBuilder = new StringBuilder();
+            var bytes = new byte[1024];
+            var index = 0;
 
-            while (binaryReader.PeekChar() != -1)
+            do
             {
                 var b = binaryReader.ReadByte();
+                bytes[index++] = b;
                 if (b == 0)
-                    return stringBuilder.ToString();
+                    break;
 
-                stringBuilder.Append((char)b);
-            }
+            } while (true);
 
-            return stringBuilder.ToString();
+            var bytesUnicode = Encoding.Convert(Encoding.Default, Encoding.Unicode, bytes);
+            var str = Encoding.Unicode.GetString(bytesUnicode);
+            return str.TrimEnd('\0');
         }
         #endregion
 
