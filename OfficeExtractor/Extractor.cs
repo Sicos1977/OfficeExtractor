@@ -316,6 +316,7 @@ namespace OfficeExtractor
                     case ".DOCM":
                     case ".DOCX":
                     case ".DOTM":
+                    case ".DOTX":
                     {
                         var result = _passwordProtectedChecker.IsFileProtected(inputFile);
                         if (result.Protected)
@@ -383,7 +384,7 @@ namespace OfficeExtractor
 
                     default:
                         var message = "The file '" + Path.GetFileName(inputFile) +
-                                      "' is not supported, only .ODT, .DOC, .DOCM, .DOCX, .DOT, .DOTM, .RTF, .XLS, .XLSB, .XLSM, .XLSX, .XLT, " +
+                                      "' is not supported, only .ODT, .DOC, .DOCM, .DOCX, .DOT, .DOTM, .DOTX, .RTF, .XLS, .XLSB, .XLSM, .XLSX, .XLT, " +
                                       ".XLTM, .XLTX, .XLW, .POT, .PPT, .POTM, .POTX, .PPS, .PPSM, .PPSX, .PPTM and .PPTX are supported";
 
                         Logger.WriteToLog(message);
