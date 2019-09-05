@@ -135,6 +135,10 @@ namespace OfficeExtractor
                     fileName = Path.Combine(outputFolder, fileName);
                     return Extraction.SaveByteArrayToFile(package.Data, fileName);
 
+                case "PBrush":
+                    // Ignore
+                    return null;
+
                 default:
                     if (Extraction.IsCompoundFile(ole10.NativeData))
                         return Extraction.SaveFromStorageNode(ole10.NativeData, outputFolder, ole10.ItemName);
