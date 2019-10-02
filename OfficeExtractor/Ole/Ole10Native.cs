@@ -112,6 +112,7 @@ namespace OfficeExtractor.Ole
                     break;
 
                 case "PBrush":
+                case "Paintbrush-afbeelding":
                     var pbBrushSize = (int)ole10Native.Size - 4;
                     var pbBrushData = new byte[pbBrushSize];
                     ole10Native.Read(pbBrushData, 4, pbBrushSize);
