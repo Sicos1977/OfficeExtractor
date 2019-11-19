@@ -102,6 +102,8 @@ namespace OfficeExtractor.Ole
             {
                 case "OLE Package":
                     var olePackageSize = (int) ole10Native.Size - 4;
+                    if (olePackageSize <= 0)
+                        break;
                     var olePackageData = new byte[olePackageSize];
                     ole10Native.Read(olePackageData, 4, olePackageSize);
                     var package = new Package(olePackageData);
@@ -114,6 +116,8 @@ namespace OfficeExtractor.Ole
                 case "PBrush":
                 case "Paintbrush-afbeelding":
                     var pbBrushSize = (int)ole10Native.Size - 4;
+                    if (pbBrushSize <= 0)
+                        break;
                     var pbBrushData = new byte[pbBrushSize];
                     ole10Native.Read(pbBrushData, 4, pbBrushSize);
                     FileName = "Embedded PBrush image.bmp";
