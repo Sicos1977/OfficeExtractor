@@ -5,7 +5,7 @@ Extracts embedded OLE objects from Word, Excel, PowerPoint and Open Office files
 
 ## License Information
 
-OfficeExtractor is Copyright (C)2013-2019 Kees van Spelde and is licensed under the MIT license:
+OfficeExtractor is Copyright (C)2013-2020 Kees van Spelde and is licensed under the MIT license:
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
