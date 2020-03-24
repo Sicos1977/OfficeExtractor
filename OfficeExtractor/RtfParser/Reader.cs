@@ -9,7 +9,7 @@ using System.Text;
 //
 // Author: Kees van Spelde <sicos2002@hotmail.com>
 //
-// Copyright (c) 2013-2019 Magic-Sessions. (www.magic-sessions.com)
+// Copyright (c) 2013-2020 Magic-Sessions. (www.magic-sessions.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
