@@ -395,6 +395,12 @@ namespace OfficeExtractor
             {
                 throw new OEFileIsCorrupt("The file '" + Path.GetFileName(inputFile) + "' is corrupt");
             }
+            catch (Exception exception)
+            {
+                Logger.WriteToLog($"Cant check for embedded object because an error occured, error: {exception.Message}");
+            }
+
+            return new List<string>();
         }
         #endregion
 
