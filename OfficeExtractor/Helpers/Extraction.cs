@@ -201,8 +201,7 @@ namespace OfficeExtractor.Helpers
         {
             Logger.WriteToLog($"Saving CFStorage to output folder '{outputFolder}' with file name {fileName}");
 
-            var contents = storage.TryGetStream("CONTENTS");
-            if (contents != null)
+            if (storage.TryGetStream("CONTENTS", out var contents))
             {
                 Logger.WriteToLog("CONTENTS stream found");
 
@@ -226,8 +225,7 @@ namespace OfficeExtractor.Helpers
                 return SaveByteArrayToFile(contents.GetData(), FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
             }
 
-            var package = storage.TryGetStream("Package");
-            if (package != null)
+            if(storage.TryGetStream("Package", out var package))
             {
                 Logger.WriteToLog("Package stream found");
 
@@ -241,8 +239,7 @@ namespace OfficeExtractor.Helpers
                 return SaveByteArrayToFile(package.GetData(), FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
             }
 
-            var embeddedOdf = storage.TryGetStream("EmbeddedOdf");
-            if (embeddedOdf != null)
+            if (storage.TryGetStream("EmbeddedOdf", out var embeddedOdf))
             {
                 Logger.WriteToLog("EmbeddedOdf stream found");
 
@@ -257,7 +254,7 @@ namespace OfficeExtractor.Helpers
                 return SaveByteArrayToFile(embeddedOdf.GetData(), FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
             }
 
-            if (storage.TryGetStream("\x0001Ole10Native") != null)
+            if (storage.TryGetStream("\x0001Ole10Native", out _))
             {
                 Logger.WriteToLog("Ole10Native stream found");
 
@@ -273,7 +270,7 @@ namespace OfficeExtractor.Helpers
 
             }
 
-            if (storage.TryGetStream("WordDocument") != null)
+            if (storage.TryGetStream("WordDocument", out _))
             {
                 Logger.WriteToLog("WordDocument stream found");
 
@@ -282,7 +279,7 @@ namespace OfficeExtractor.Helpers
                 return SaveStorageTreeToCompoundFile(storage, FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
             }
             
-            if (storage.TryGetStream("Workbook") != null)
+            if (storage.TryGetStream("Workbook", out _))
             {
                 Logger.WriteToLog("Workbook stream found");
 
@@ -292,7 +289,7 @@ namespace OfficeExtractor.Helpers
                 return SaveStorageTreeToCompoundFile(storage, FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
             }
             
-            if (storage.TryGetStream("PowerPoint Document") != null)
+            if (storage.TryGetStream("PowerPoint Document", out _))
             {
                 Logger.WriteToLog("PowerPoint Document stream found");
 

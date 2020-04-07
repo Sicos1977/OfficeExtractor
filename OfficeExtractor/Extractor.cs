@@ -285,7 +285,7 @@ namespace OfficeExtractor
 
             Logger.WriteToLog($"Checking if file '{inputFile}' contains any embeded objects");
             
-            outputFolder = FileManager.CheckForBackSlash(outputFolder);
+            outputFolder = FileManager.CheckForDirectorySeparator(outputFolder);
 
             try
             {
