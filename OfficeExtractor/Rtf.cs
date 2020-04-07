@@ -189,8 +189,7 @@ namespace OfficeExtractor
             using (var compoundFile = new CompoundFile(internalStream))
             {
                 string fileName = null;
-                var attachDescStream = compoundFile.RootStorage.TryGetStream("AttachDesc");
-                if (attachDescStream != null)
+                if(compoundFile.RootStorage.TryGetStream("AttachDesc", out var attachDescStream))
                     fileName = GetFileNameFromAttachDescStream(attachDescStream);
 
                 if (string.IsNullOrEmpty(fileName))
@@ -200,11 +199,10 @@ namespace OfficeExtractor
                 fileName = Path.Combine(outputFolder, fileName);
                 fileName = FileManager.FileExistsMakeNew(fileName);
 
-                var attachContentsStream = compoundFile.RootStorage.TryGetStream("AttachContents");
-                if (attachContentsStream != null)
+                if (compoundFile.RootStorage.TryGetStream("AttachContents", out var attachContentsStream))
                     return Extraction.SaveByteArrayToFile(attachContentsStream.GetData(), fileName);
 
-                var mapiMessageStorage = compoundFile.RootStorage.TryGetStorage("MAPIMessage");
+                if(compoundFile.RootStorage.TryGetStorage("MAPIMessage", out var mapiMessageStorage))
                 if (mapiMessageStorage != null)
                 {
                     fileName = Path.Combine(outputFolder, fileName);
