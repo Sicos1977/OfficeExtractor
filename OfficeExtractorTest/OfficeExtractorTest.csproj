@@ -42,8 +42,8 @@
       <HintPath>..\packages\SharpZipLib.1.2.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="MsgReader, Version=3.7.17.0, Culture=neutral, PublicKeyToken=3ba01cf3434959fa, processorArchitecture=MSIL">
-      <HintPath>..\packages\MsgReader.3.7.17\lib\net45\MsgReader.dll</HintPath>
+    <Reference Include="MsgReader, Version=3.7.20.0, Culture=neutral, PublicKeyToken=3ba01cf3434959fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\MsgReader.3.7.20\lib\net45\MsgReader.dll</HintPath>
     </Reference>
     <Reference Include="OpenMcdf, Version=2.2.1.4, Culture=neutral, PublicKeyToken=fdbb1629d7c00800, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenMcdf.2.2.1.4\lib\net40\OpenMcdf.dll</HintPath>
@@ -51,8 +51,8 @@
     <Reference Include="PasswordProtectedChecker, Version=1.3.4.0, Culture=neutral, PublicKeyToken=61be40572173cc31, processorArchitecture=MSIL">
       <HintPath>..\packages\PasswordProtectedChecker.1.3.5\lib\PasswordProtectedChecker.dll</HintPath>
     </Reference>
-    <Reference Include="RtfPipe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d92851e9c6029ce4, processorArchitecture=MSIL">
-      <HintPath>..\packages\MsgReader.3.7.17\lib\net45\RtfPipe.dll</HintPath>
+    <Reference Include="RtfPipe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1b83b274d7d862f, processorArchitecture=MSIL">
+      <HintPath>..\packages\MsgReader.3.7.20\lib\net45\RtfPipe.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -84,14 +84,14 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OfficeExtractor\OfficeExtractor.csproj">
-      <Project>{38d2f0bc-c44c-4146-8c31-9f8162782541}</Project>
-      <Name>OfficeExtractor</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OfficeExtractor\OfficeExtractor.csproj">
+      <Project>{266834f8-c325-4df8-83e9-7875445544c5}</Project>
+      <Name>OfficeExtractor</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
