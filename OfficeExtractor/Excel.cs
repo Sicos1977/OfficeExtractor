@@ -110,8 +110,7 @@ namespace OfficeExtractor
         /// <exception cref="OEFileIsCorrupt">Raised when the <paramref name="rootStorage"/> does not have a Workbook stream</exception>
         internal void SetWorkbookVisibility(CFStorage rootStorage)
         {
-            var stream = rootStorage.TryGetStream("WorkBook");
-            if (stream == null)
+            if (!rootStorage.TryGetStream("WorkBook", out var stream))
                 throw new OEFileIsCorrupt("Could not check workbook visibility because the WorkBook stream is not present");
 
             Logger.WriteToLog("Setting hidden Excel workbook to visible");

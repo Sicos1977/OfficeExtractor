@@ -77,8 +77,8 @@ namespace OfficeExtractor
             {
                 var result = new List<string>();
 
-                var objectPoolStorage = compoundFile.RootStorage.TryGetStorage("ObjectPool");
-                if (objectPoolStorage == null) return result;
+                if(!compoundFile.RootStorage.TryGetStorage("ObjectPool", out var objectPoolStorage))
+                    return result;
 
                 Logger.WriteToLog("Object Pool stream found (Word)");
                 
@@ -89,10 +89,9 @@ namespace OfficeExtractor
 
                     string extractedFileName;
 
-                    if (childStorage.TryGetStream("\x0001Ole10Native") != null)
+                    if (!childStorage.TryGetStream("\x0001Ole10Native", out _))
                     {
-                        var compObj = childStorage.TryGetStream("\x0001CompObj");
-                        if (compObj != null)
+                        if(childStorage.TryGetStream("\x0001CompObj", out var compObj))
                         {
                             var compObjStream = new CompObjStream(compObj);
                             if (compObjStream.AnsiUserType == "OLE Package")
@@ -103,8 +102,7 @@ namespace OfficeExtractor
                             }
                         }
 
-                        var objInfo = childStorage.TryGetStream("\x0003ObjInfo");
-                        if (objInfo != null)
+                        if(childStorage.TryGetStream("\x0003ObjInfo", out var objInfo))
                         {
                             var objInfoStream = new ObjInfoStream(objInfo);
                             // We don't want to export linked objects and objects that are not shown as an icon... 
