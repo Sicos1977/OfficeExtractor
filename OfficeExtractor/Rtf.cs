@@ -203,7 +203,6 @@ namespace OfficeExtractor
                     return Extraction.SaveByteArrayToFile(attachContentsStream.GetData(), fileName);
 
                 if(compoundFile.RootStorage.TryGetStorage("MAPIMessage", out var mapiMessageStorage))
-                if (mapiMessageStorage != null)
                 {
                     fileName = Path.Combine(outputFolder, fileName);
                     return Extraction.SaveStorageTreeToCompoundFile(mapiMessageStorage, fileName);
