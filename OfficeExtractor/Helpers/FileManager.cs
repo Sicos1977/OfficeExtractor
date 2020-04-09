@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 //
@@ -43,7 +42,7 @@ namespace OfficeExtractor.Helpers
         /// De maximale pad lengte in Windows
         /// </summary>
         private const int MaxPath = 248;
-        
+
         /// <summary>
         /// De maximale lengte voor een bestandsnaam
         /// </summary>
@@ -77,7 +76,8 @@ namespace OfficeExtractor.Helpers
         /// <returns></returns>
         /// <exception cref="ArgumentException">Raised when no path or file name is given in the <paramref name="fileName"/></exception>
         /// <exception cref="PathTooLongException">Raised when it is not possible to truncate the <paramref name="fileName"/></exception>
-        public static string FileExistsMakeNew(string fileName, bool validateLongFileName = true, int extraTruncateSize = -1)
+        public static string FileExistsMakeNew(string fileName, bool validateLongFileName = true,
+            int extraTruncateSize = -1)
         {
             var tempFileName = fileName;
             var fileNameWithoutExtension = GetFileNameWithoutExtension(fileName);
@@ -96,7 +96,9 @@ namespace OfficeExtractor.Helpers
             while (File.Exists(tempFileName))
             {
                 tempFileName = path + fileNameWithoutExtension + "_" + i + extension;
-                tempFileName = validateLongFileName ? ValidateLongFileName(tempFileName, extraTruncateSize) : tempFileName;
+                tempFileName = validateLongFileName
+                    ? ValidateLongFileName(tempFileName, extraTruncateSize)
+                    : tempFileName;
                 i += 1;
             }
 
@@ -139,8 +141,8 @@ namespace OfficeExtractor.Helpers
         {
             var fileNameWithoutExtension = GetFileNameWithoutExtension(fileName);
 
-            if (string.IsNullOrWhiteSpace(fileNameWithoutExtension))
-                throw new ArgumentException(@"No file name is given, e.g. c:\temp\temp.txt", nameof(fileName));
+            //if (string.IsNullOrWhiteSpace(fileNameWithoutExtension))
+            //    throw new ArgumentException(@"No file name is given, e.g. c:\temp\temp.txt", nameof(fileName));
 
             var extension = GetExtension(fileName);
 
@@ -235,6 +237,35 @@ namespace OfficeExtractor.Helpers
 
             for (var i = 1; i < splittedPath.Length - 1; i++)
                 result += Path.DirectorySeparatorChar + splittedPath[i];
+
+            return result;
+        }
+        #endregion
+
+        #region IsValidPath
+        /// <summary>
+        /// Controleert of het opgegeven pad valide is. Er wordt niet gecontroleerd of het pad ook
+        /// echt bestaat
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static bool IsValidPath(string path)
+        {
+            var regex = new Regex(@"^(([a-zA-Z]\:)|(\\))(\\{1}|((\\{1})[^\\]([^/:*?<>""|]*))+)$");
+            var result = regex.IsMatch(path);
+
+            if (result)
+            {
+                try
+                {
+                    // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
+                    Path.GetFullPath(path);
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
 
             return result;
         }

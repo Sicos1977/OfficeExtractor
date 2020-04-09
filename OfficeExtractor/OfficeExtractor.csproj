@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.13.0</Version>
+    <Version>1.14.0</Version>
     <Copyright>(c)2013-2020 Kees van Spelde</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>office ole word excel powerpoint rtf</PackageTags>
@@ -14,6 +14,8 @@
     <PackageProjectUrl>https://github.com/Sicos1977/OfficeExtractor</PackageProjectUrl>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>OfficeExtractor.snk</AssemblyOriginatorKeyFile>
+    <AssemblyVersion>1.14.0.0</AssemblyVersion>
+    <FileVersion>1.14.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
