@@ -398,9 +398,8 @@ namespace OfficeExtractor
             catch (Exception exception)
             {
                 Logger.WriteToLog($"Cant check for embedded object because an error occured, error: {exception.Message}");
+                throw;
             }
-
-            return new List<string>();
         }
         #endregion
 

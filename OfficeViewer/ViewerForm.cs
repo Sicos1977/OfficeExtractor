@@ -51,6 +51,10 @@ namespace OfficeViewer
 
         private void SelectButton_Click(object sender, EventArgs e)
         {
+            var text = System.IO.File.ReadAllText("d:\\Test_with_2 _Excel_Objects.vsd");
+            if (text.IndexOf("Excel") > 0)
+                MessageBox.Show("Excel found");
+            
             // Create an instance of the opeKn file dialog box.
             var openFileDialog1 = new OpenFileDialog
             {
