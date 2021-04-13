@@ -252,8 +252,7 @@ namespace OfficeExtractor
         #region ThrowPasswordProtected
         private void ThrowPasswordProtected(string inputFile)
         {
-            var message = "The file '" + Path.GetFileName(inputFile) +
-                          "' is password protected";
+            var message = $"The file '{Path.GetFileName(inputFile)}' is password protected";
             Logger.WriteToLog(message);
             throw new OEFileIsPasswordProtected(message);
         }
@@ -287,6 +286,8 @@ namespace OfficeExtractor
             
             outputFolder = FileManager.CheckForDirectorySeparator(outputFolder);
 
+            List<string> result;
+
             try
             {
                 switch (extension)
@@ -294,78 +295,67 @@ namespace OfficeExtractor
                     case ".ODT":
                     case ".ODS":
                     case ".ODP":
-                    {
-                        var result = _passwordProtectedChecker.IsFileProtected(inputFile);
-                        if (result.Protected)
+                        if(_passwordProtectedChecker.IsFileProtected(inputFile).Protected)
                             ThrowPasswordProtected(inputFile);
 
-                        return ExtractFromOpenDocumentFormat(inputFile, outputFolder);
-                    }
+                        result = ExtractFromOpenDocumentFormat(inputFile, outputFolder, "OpenOffice");
+                        break;
 
                     case ".DOC":
                     case ".DOT":
-                    {
-                        var result = _passwordProtectedChecker.IsFileProtected(inputFile);
-                        if (result.Protected)
+                        if(_passwordProtectedChecker.IsFileProtected(inputFile).Protected)
                             ThrowPasswordProtected(inputFile);
 
                         // Word 97 - 2003
-                        return Word.Extract(inputFile, outputFolder);
-                    }
+                        result = Word.Extract(inputFile, outputFolder);
+                        break;
 
                     case ".DOCM":
                     case ".DOCX":
                     case ".DOTM":
                     case ".DOTX":
-                    {
-                        var result = _passwordProtectedChecker.IsFileProtected(inputFile);
-                        if (result.Protected)
+                        if(_passwordProtectedChecker.IsFileProtected(inputFile).Protected)
                             ThrowPasswordProtected(inputFile);
 
                         // Word 2007 - 2013
-                        return ExtractFromOfficeOpenXmlFormat(inputFile, "/word/embeddings/", outputFolder);
-                    }
+                        result = ExtractFromOfficeOpenXmlFormat(inputFile, "/word/embeddings/", outputFolder, "Word");
+                        break;
 
                     case ".RTF":
-                        return Rtf.Extract(inputFile, outputFolder);
+                        result = Rtf.Extract(inputFile, outputFolder);
+                        break;
 
                     case ".XLS":
                     case ".XLT":
                     case ".XLW":
-                    {
-                        var result = _passwordProtectedChecker.IsFileProtected(inputFile);
-                        if (result.Protected)
+                        if(_passwordProtectedChecker.IsFileProtected(inputFile).Protected)
                             ThrowPasswordProtected(inputFile);
 
                         // Excel 97 - 2003
-                        return Excel.Extract(inputFile, outputFolder);
-                    }
+                        result = Excel.Extract(inputFile, outputFolder);
+                        break;
 
                     case ".XLSB":
                     case ".XLSM":
                     case ".XLSX":
                     case ".XLTM":
                     case ".XLTX":
-                    {
-                        var result = _passwordProtectedChecker.IsFileProtected(inputFile);
-                        if (result.Protected)
+                        if(_passwordProtectedChecker.IsFileProtected(inputFile).Protected)
                             ThrowPasswordProtected(inputFile);
 
                         // Excel 2007 - 2013
-                        return ExtractFromOfficeOpenXmlFormat(inputFile, "/xl/embeddings/", outputFolder);
-                    }
+                        result = ExtractFromOfficeOpenXmlFormat(inputFile, "/xl/embeddings/", outputFolder, "Excel");
+                        break;
 
                     case ".POT":
                     case ".PPT":
                     case ".PPS":
-                    {
-                        var result = _passwordProtectedChecker.IsFileProtected(inputFile);
-                        if (result.Protected)
+                        if(_passwordProtectedChecker.IsFileProtected(inputFile).Protected)
                             ThrowPasswordProtected(inputFile);
 
                         // PowerPoint 97 - 2003
-                        return PowerPoint.Extract(inputFile, outputFolder);
-                    }
+                        result = PowerPoint.Extract(inputFile, outputFolder);
+                        break;
 
                     case ".POTM":
                     case ".POTX":
@@ -373,14 +363,12 @@ namespace OfficeExtractor
                     case ".PPSX":
                     case ".PPTM":
                     case ".PPTX":
-                    {
-                        var result = _passwordProtectedChecker.IsFileProtected(inputFile);
-                        if (result.Protected)
+                        if(_passwordProtectedChecker.IsFileProtected(inputFile).Protected)
                             ThrowPasswordProtected(inputFile);
 
                         // PowerPoint 2007 - 2013
-                        return ExtractFromOfficeOpenXmlFormat(inputFile, "/ppt/embeddings/", outputFolder);
-                    }
+                        result = ExtractFromOfficeOpenXmlFormat(inputFile, "/ppt/embeddings/", outputFolder, "PowerPoint");
+                        break;
 
                     default:
                         var message = "The file '" + Path.GetFileName(inputFile) +
@@ -393,13 +381,17 @@ namespace OfficeExtractor
             }
             catch (CFCorruptedFileException)
             {
-                throw new OEFileIsCorrupt("The file '" + Path.GetFileName(inputFile) + "' is corrupt");
+                throw new OEFileIsCorrupt($"The file '{Path.GetFileName(inputFile)}' is corrupt");
             }
             catch (Exception exception)
             {
                 Logger.WriteToLog($"Cant check for embedded object because an error occured, error: {exception.Message}");
                 throw;
             }
+
+            var count = result.Count;
+            Logger.WriteToLog($"Found {count} embedded object{(count == 1 ? string.Empty : "s")}");
+            return result;
         }
         #endregion
 
@@ -411,11 +403,12 @@ namespace OfficeExtractor
         /// <param name="inputFile">The Office Open XML format file</param>
         /// <param name="embeddingPartString">The folder in the Office Open XML format (zip) file</param>
         /// <param name="outputFolder">The output folder</param>
+        /// <param name="programm"></param>
         /// <returns>List with files or an empty list when there are nog embedded files</returns>
         /// <exception cref="OEFileIsPasswordProtected">Raised when the Microsoft Office file is password protected</exception>
-        internal List<string> ExtractFromOfficeOpenXmlFormat(string inputFile, string embeddingPartString, string outputFolder)
+        private List<string> ExtractFromOfficeOpenXmlFormat(string inputFile, string embeddingPartString, string outputFolder, string programm)
         {
-            Logger.WriteToLog("The file is of type 'Open XML format'");
+            Logger.WriteToLog($"The {programm} file is of the type 'Open XML format'");
 
             var result = new List<string>();
 
@@ -483,7 +476,7 @@ namespace OfficeExtractor
         /// <param name="entryName">The name of the entry, which is the file or directory name.
         /// The search is done case insensitive.</param>
         /// <returns>Returns the reference of the entry if found and null if the entry doesn't exists in the archive.</returns>
-        internal SharpCompress.Archives.IArchiveEntry FindEntryByName(SharpCompress.Archives.IArchive archive, string entryName)
+        private SharpCompress.Archives.IArchiveEntry FindEntryByName(SharpCompress.Archives.IArchive archive, string entryName)
         {
             try
             {
@@ -503,11 +496,12 @@ namespace OfficeExtractor
         /// </summary>
         /// <param name="inputFile">The OpenDocument format file</param>
         /// <param name="outputFolder">The output folder</param>
+        /// <param name="programm"></param>
         /// <returns>List with files or en empty list when there are nog embedded files</returns>
         /// <exception cref="OEFileIsPasswordProtected">Raised when the OpenDocument format file is password protected</exception>
-        internal List<string> ExtractFromOpenDocumentFormat(string inputFile, string outputFolder)
+        private List<string> ExtractFromOpenDocumentFormat(string inputFile, string outputFolder, string programm)
         {
-            Logger.WriteToLog("The file is of type 'Open document format'");
+            Logger.WriteToLog($"The {programm} file is of the type 'Open document format'");
 
             var result = new List<string>();
             using(var zipFile = SharpCompress.Archives.Zip.ZipArchive.Open(inputFile))
@@ -525,8 +519,7 @@ namespace OfficeExtractor
                         {
                             var manifest = streamReader.ReadToEnd();
                             if (manifest.ToUpperInvariant().Contains("ENCRYPTION-DATA"))
-                                throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
-                                                                    "' is password protected");
+                                throw new OEFileIsPasswordProtected($"The file '{Path.GetFileName(inputFile)}' is password protected");
                         }
                     }
                 }
@@ -535,8 +528,7 @@ namespace OfficeExtractor
                 {
                     if (zipEntry.IsDirectory) continue;
                     if (zipEntry.IsEncrypted)
-                        throw new OEFileIsPasswordProtected("The file '" + Path.GetFileName(inputFile) +
-                                                            "' is password protected");
+                        throw new OEFileIsPasswordProtected($"The file '{Path.GetFileName(inputFile)}' is password protected");
 
                     var name = zipEntry.Key.ToUpperInvariant();
                     if (!name.StartsWith("OBJECT") || name.Contains("/"))

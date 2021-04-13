@@ -73,6 +73,8 @@ namespace OfficeExtractor
         /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile"/> is password protected</exception>
         internal List<string> Extract(string inputFile, string outputFolder)
         {
+            Logger.WriteToLog("The file is a binary Word document");
+
             using (var compoundFile = new CompoundFile(inputFile))
             {
                 var result = new List<string>();
@@ -80,7 +82,7 @@ namespace OfficeExtractor
                 if(!compoundFile.RootStorage.TryGetStorage("ObjectPool", out var objectPoolStorage))
                     return result;
 
-                Logger.WriteToLog("Object Pool stream found (Word)");
+                Logger.WriteToLog("Object Pool stream found");
                 
                 void Entries(CFItem item)
                 {
@@ -89,33 +91,53 @@ namespace OfficeExtractor
 
                     string extractedFileName;
 
-                    if (!childStorage.TryGetStream("\x0001Ole10Native", out _))
+                    if (!childStorage.TryGetStream("Ole10Native", out _))
                     {
-                        if(childStorage.TryGetStream("\x0001CompObj", out var compObj))
+                        Logger.WriteToLog("Ole10Native stream found");
+
+                        if(childStorage.TryGetStream("CompObj", out var compObj))
                         {
+                            Logger.WriteToLog("CompObj stream found");
+
                             var compObjStream = new CompObjStream(compObj);
                             if (compObjStream.AnsiUserType == "OLE Package")
                             {
+                                Logger.WriteToLog("CompObj is of the ansi user type 'OLE Package'");
                                 extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder, null);
                                 if (!string.IsNullOrEmpty(extractedFileName)) result.Add(extractedFileName);
                                 return;
                             }
+
+                            Logger.WriteToLog($"CompObj is of the ansi user type '{compObjStream.AnsiUserType}' ... ignoring");
                         }
 
-                        if(childStorage.TryGetStream("\x0003ObjInfo", out var objInfo))
+                        if(childStorage.TryGetStream("ObjInfo", out var objInfo))
                         {
+                            Logger.WriteToLog("ObjInfo stream found");
+
                             var objInfoStream = new ObjInfoStream(objInfo);
                             // We don't want to export linked objects and objects that are not shown as an icon... 
                             // because these objects are already visible on the Word document
-                            if (objInfoStream.Link || !objInfoStream.Icon) return;
+                            if (objInfoStream.Link || !objInfoStream.Icon)
+                            {
+                                if (objInfoStream.Link)
+                                    Logger.WriteToLog("ObjInfo stream is a link ... ignoring");
+
+                                if (objInfoStream.Icon)
+                                    Logger.WriteToLog("ObjInfo stream is an icon ... ignoring");
+
+                                return;
+                            }
                         }
 
                         extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder, null);
                     }
                     else
                     {
+                        Logger.WriteToLog("ObjInfo stream found");
+
                         // Get the objInfo stream to check if this is a linked file... if so then ignore it
-                        var objInfo = childStorage.GetStream("\x0003ObjInfo");
+                        var objInfo = childStorage.GetStream("ObjInfo");
                         var objInfoStream = new ObjInfoStream(objInfo);
 
                         // We don't want to export linked objects and objects that are not shown as an icon... 

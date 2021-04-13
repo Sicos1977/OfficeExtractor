@@ -78,6 +78,8 @@ namespace OfficeExtractor
         /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
         internal List<string> Extract(string inputFile, string outputFolder)
         {
+            Logger.WriteToLog("The file is a binary Excel sheet");
+
             using (var compoundFile = new CompoundFile(inputFile))
             {
                 var result = new List<string>();
@@ -170,8 +172,7 @@ namespace OfficeExtractor
             }
             catch (Exception exception)
             {
-                throw new OEFileIsCorrupt(
-                    "Could not check workbook visibility because the file seems to be corrupt", exception);
+                throw new OEFileIsCorrupt("Could not check workbook visibility because the file seems to be corrupt", exception);
             }
             
         }
@@ -203,8 +204,7 @@ namespace OfficeExtractor
             }
             catch (Exception exception)
             {
-                throw new OEFileIsCorrupt(
-                    "Could not check workbook visibility because the file seems to be corrupt", exception);
+                throw new OEFileIsCorrupt("Could not check workbook visibility because the file seems to be corrupt", exception);
             }
         }
         #endregion

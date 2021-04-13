@@ -74,11 +74,16 @@ namespace OfficeExtractor
         /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile"/> is password protected</exception>
         internal List<string> Extract(string inputFile, string outputFolder)
         {
+            Logger.WriteToLog("The file is a binary PowerPoint document");
+
             using (var compoundFile = new CompoundFile(inputFile))
             {
                 var result = new List<string>();
-                var stream = compoundFile.RootStorage.TryGetStream("PowerPoint Document");
-                if (stream == null) return result;
+                if (!compoundFile.RootStorage.TryGetStream("PowerPoint Document", out var stream))
+                {
+                    Logger.WriteToLog("Could not find the PowerPoint Document stream inside the file");
+                    return result;
+                }
 
                 Logger.WriteToLog("PowerPoint Document stream found");
 
@@ -107,7 +112,13 @@ namespace OfficeExtractor
                                 if (Extraction.IsCompoundFile(bytes))
                                     result.Add(Extraction.SaveFromStorageNode(bytes, outputFolder));
                                 else
-                                    Extraction.SaveByteArrayToFile(bytes, outputFolder + Extraction.DefaultEmbeddedObjectName);
+                                {
+                                    var fileName = outputFolder + Extraction.DefaultEmbeddedObjectName;
+                                    var extractedFileName = Extraction.SaveByteArrayToFile(bytes, fileName);
+
+                                    if (!string.IsNullOrEmpty(extractedFileName))
+                                        result.Add(extractedFileName);
+                                }
                             }
                             else
                             {
@@ -121,8 +132,10 @@ namespace OfficeExtractor
 
                                 // Decompress the bytes
                                 var decompressedBytes = new byte[decompressedSize];
+                                Logger.WriteToLog("Uncompressing byte array");
                                 var deflateStream = new DeflateStream(compressedMemoryStream, CompressionMode.Decompress, true);
                                 deflateStream.Read(decompressedBytes, 0, decompressedBytes.Length);
+                                Logger.WriteToLog("Byte array uncompressed");
 
                                 string extractedFileName;
 
@@ -130,8 +143,10 @@ namespace OfficeExtractor
                                 if (Extraction.IsCompoundFile(decompressedBytes))
                                     extractedFileName = Extraction.SaveFromStorageNode(decompressedBytes, outputFolder);
                                 else
-                                    extractedFileName = Extraction.SaveByteArrayToFile(decompressedBytes,
-                                        outputFolder + Extraction.DefaultEmbeddedObjectName);
+                                {
+                                    var fileName = outputFolder + Extraction.DefaultEmbeddedObjectName;
+                                    extractedFileName = Extraction.SaveByteArrayToFile(decompressedBytes, fileName);
+                                }
 
                                 if (!string.IsNullOrEmpty(extractedFileName))
                                     result.Add(extractedFileName);
