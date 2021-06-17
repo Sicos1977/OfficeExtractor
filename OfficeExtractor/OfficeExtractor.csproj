@@ -3,19 +3,21 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.14.2</Version>
+    <Version>1.15.0</Version>
     <Copyright>(c)2013-2021 Kees van Spelde</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>office ole word excel powerpoint rtf</PackageTags>
-    <PackageReleaseNotes>- Do not only log error but also throw it</PackageReleaseNotes>
+    <PackageReleaseNotes>- Updated nuget packages
+- Ignoring Ole10Native type Bitmap Image
+- Added some extra logging</PackageReleaseNotes>
     <PackageIcon>extract-icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Sicos1977/OfficeExtractor</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
     <PackageProjectUrl>https://github.com/Sicos1977/OfficeExtractor</PackageProjectUrl>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>OfficeExtractor.snk</AssemblyOriginatorKeyFile>
-    <AssemblyVersion>1.14.2.0</AssemblyVersion>
-    <FileVersion>1.14.2.0</FileVersion>
+    <AssemblyVersion>1.15.0.0</AssemblyVersion>
+    <FileVersion>1.15.0.0</FileVersion>
     <Description>Extracts embedded OLE objects from Word, Excel, PowerPoint and Open Office files without needing the original programs.</Description>
   </PropertyGroup>
 
