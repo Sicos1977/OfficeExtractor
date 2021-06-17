@@ -1,7 +1,10 @@
 using System;
 using System.IO;
 using OfficeExtractor.Exceptions;
+using OfficeExtractor.Helpers;
 using OpenMcdf;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 //
 // Ole10Native.cs
@@ -126,7 +129,7 @@ namespace OfficeExtractor.Ole
                     break;
 
                 case "Pakket":
-                    // Ignore
+                    Logger.WriteToLog("Ignoring Ole10Native type 'Pakket'");
                     break;
 
                 // MathType (http://docs.wiris.com/en/mathtype/start) is a equations editor
@@ -137,17 +140,25 @@ namespace OfficeExtractor.Ole
                 // directly possible and would require a conversion into the mentioned file formats.
                 // Due that facts, it make no sense try to export the data.
                 case "MathType 5.0 Equation":
+                    Logger.WriteToLog("Ignoring Ole10Native type 'MathType 5.0 Equation'");
                     break;
 
                 // Used by the depreciated Microsoft Office ClipArt Gallery
                 // supposedly to store some metadata
                 case "MS_ClipArt_Gallery": 
+                    Logger.WriteToLog("MS_ClipArt_Gallery'");
+                    break;
+
                 case "Microsoft ClipArt Gallery":
+                    Logger.WriteToLog("Ignoring Ole10Native type 'Microsoft ClipArt Gallery'");
+                    break;
+
+                case "Bitmap Image":
+                    Logger.WriteToLog("Ignoring Ole10Native type 'Bitmap Image'");
                     break;
 
                 default:
-                    throw new OEObjectTypeNotSupported("Unsupported OleNative AnsiUserType '" +
-                                                        compObjStream.AnsiUserType + "' found");
+                    throw new OEObjectTypeNotSupported($"Unsupported OleNative AnsiUserType '{compObjStream.AnsiUserType}' found");
             }
         }
         #endregion

@@ -305,7 +305,7 @@ namespace OfficeExtractor.Ole
 
                 default:
                     throw new OEObjectTypeNotSupported(
-                        "Unsupported classname '" + ClassName + "' found, expected METAFILEPICT, BITMAP or DIB");
+                        $"Unsupported classname '{ClassName}' found, expected METAFILEPICT, BITMAP or DIB");
             }
         }
         #endregion
