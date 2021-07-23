@@ -435,7 +435,7 @@ namespace OfficeExtractor
                                 {
                                     Logger.WriteToLog("OLEOBJECT found");
                                     
-                                    using (var compoundFile = new CompoundFile(packagePartStream))
+                                    using (var compoundFile = new CompoundFile(packagePartMemoryStream))
                                     {
                                         var resultFileName = Extraction.SaveFromStorageNode(compoundFile.RootStorage, outputFolder);
                                         if (resultFileName != null)
