@@ -65,7 +65,23 @@ namespace OfficeExtractorTest
             var files = extractor.Extract("TestFiles\\A DOC word document without embedded files.doc", outputFolder);
             Assert.IsTrue(files.Count == 0);
         }
-        
+
+        [TestMethod]
+        public void DocWithoutAttachmentsButWithEmbeddings_All()
+            => DocWithoutAttachmentsButWithEmbeddings(false, 7);
+
+        [TestMethod]
+        public void DocWithoutAttachmentsButWithEmbeddings_AttachmentsOnly()
+            => DocWithoutAttachmentsButWithEmbeddings(true, 0);
+
+        private void DocWithoutAttachmentsButWithEmbeddings(bool attachmentsOnly, int expectedCount)
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new OfficeExtractor.Extractor();
+            var files = extractor.Extract("TestFiles\\A DOC file without attachments but with embeddings.doc", outputFolder, attachmentsOnly: attachmentsOnly);
+            Assert.AreEqual(expectedCount, files.Count);
+        }
+
         [TestMethod]
         public void DocWith2EmbeddedImages()
         {
@@ -141,7 +157,11 @@ namespace OfficeExtractorTest
         }
 
         [TestMethod]
+#if NET5_0_OR_GREATER
+        [ExpectedException(typeof(IOException))]
+#else
         [ExpectedException(typeof(ArgumentException))]
+#endif
         public void DocWithDocumentOleObjectAttachedPathBroken()
         {
             var outputFolder = CreateTemporaryFolder();
@@ -157,9 +177,9 @@ namespace OfficeExtractorTest
             var files = extractor.Extract("TestFiles\\MathType 5 Object.docx", outputFolder);
             Assert.AreEqual(0, files.Count);
         }
-        #endregion
+#endregion
 
-        #region Microsoft Office Excel tests
+#region Microsoft Office Excel tests
         [TestMethod]
         public void XlsWithoutEmbeddedFiles()
         {
@@ -213,9 +233,9 @@ namespace OfficeExtractorTest
             var extractor = new OfficeExtractor.Extractor();
             extractor.Extract("TestFiles\\A XLSX excel document with password.xlsx", outputFolder);
         }
-        #endregion
+#endregion
 
-        #region Microsoft Office PowerPoint tests
+#region Microsoft Office PowerPoint tests
         [TestMethod]
         public void PptWithoutEmbeddedFiles()
         {
@@ -287,9 +307,9 @@ namespace OfficeExtractorTest
             var files = extractor.Extract("TestFiles\\A PPT PowerPoint document containing a MS ClipArt Gallery object.ppt", outputFolder);
             Assert.IsTrue(files.Count == 0);
         }
-        #endregion
+#endregion
 
-        #region Open Office Writer tests
+#region Open Office Writer tests
         [TestMethod]
         public void OdtWithoutEmbeddedFiles()
         {
@@ -316,9 +336,9 @@ namespace OfficeExtractorTest
             var extractor = new OfficeExtractor.Extractor();
             extractor.Extract("TestFiles\\An ODT document with password.odt", outputFolder);
         }
-        #endregion
+#endregion
         
-        #region Open Office Calc tests
+#region Open Office Calc tests
         [TestMethod]
         public void OdsWithoutEmbeddedFiles()
         {
@@ -345,9 +365,9 @@ namespace OfficeExtractorTest
             var extractor = new OfficeExtractor.Extractor();
             extractor.Extract("TestFiles\\An ODS document with password.ods", outputFolder);
         }
-        #endregion
+#endregion
 
-        #region Open Office Impress tests
+#region Open Office Impress tests
         [TestMethod]
         public void OdpWithoutEmbeddedFiles()
         {
@@ -374,9 +394,9 @@ namespace OfficeExtractorTest
             var extractor = new OfficeExtractor.Extractor();
             extractor.Extract("TestFiles\\An ODP document with password.odp", outputFolder);
         }
-        #endregion
+#endregion
 
-        #region RTF tests
+#region RTF tests
         [TestMethod]
         public void RtfWitht11EmbeddedFiles()
         {
@@ -394,9 +414,9 @@ namespace OfficeExtractorTest
             var files = extractor.Extract("TestFiles\\A RTF document with 3 embedded files and no space delimiters.rtf", outputFolder);
             Assert.IsTrue(files.Count == 3);
         }
-        #endregion
+#endregion
 
-        #region Helper methods
+#region Helper methods
         /// <summary>
         /// Creates a new temporary folder and returns the path to it
         /// </summary>
@@ -427,6 +447,6 @@ namespace OfficeExtractorTest
             foreach (var tempFolder in _tempFolders)
                 DeleteTemporaryFolder(tempFolder);
         }
-        #endregion
+#endregion
     }
 }

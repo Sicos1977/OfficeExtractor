@@ -266,6 +266,7 @@ namespace OfficeExtractor
         /// <param name="inputFile">The Microsoft Office file</param>
         /// <param name="outputFolder">The output folder</param>
         /// <param name="logStream">When set then logging is written to this stream</param>
+        /// <param name="attachmentsOnly">Sets whether all OLE objects shall be extracted or only attachment-like ones </param>
         /// <returns>List with files or en empty list when there are nog embedded files</returns>
         /// <exception cref="ArgumentNullException">Raised when the <paramref name="inputFile"/> or <paramref name="outputFolder"/> is null or empty</exception>
         /// <exception cref="FileNotFoundException">Raised when the <sparamref name="inputFile"/> does not exist</exception>
@@ -273,7 +274,7 @@ namespace OfficeExtractor
         /// <exception cref="OEFileIsCorrupt">Raised when the <paramref name="inputFile" /> is corrupt</exception>
         /// <exception cref="OEFileTypeNotSupported">Raised when the <paramref name="inputFile"/> is not supported</exception>
         /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile"/> is password protected</exception>
-        public List<string> Extract(string inputFile, string outputFolder, Stream logStream = null)
+        public List<string> Extract(string inputFile, string outputFolder, Stream logStream = null, bool attachmentsOnly = false)
         {
             if (logStream != null)
                 Logger.LogStream = logStream;
@@ -307,7 +308,7 @@ namespace OfficeExtractor
                             ThrowPasswordProtected(inputFile);
 
                         // Word 97 - 2003
-                        result = Word.Extract(inputFile, outputFolder);
+                        result = Word.Extract(inputFile, outputFolder, attachmentsOnly);
                         break;
 
                     case ".DOCM":

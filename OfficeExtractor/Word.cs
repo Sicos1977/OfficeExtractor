@@ -37,6 +37,18 @@ namespace OfficeExtractor
     /// </summary>
     internal class Word
     {
+        #region Constants
+
+        private const string OLE10_NATIVE = "Ole10Native";
+        private const string COMP_OBJECT = "CompObj";
+        private const string OBJECT_INFO = "ObjInfo";
+
+        private const string PREFIX_OLE10_NATIVE = "\x0001";
+        private const string PREFIX_COMP_OBJECT = "\x0001";
+        private const string PREFIX_OBJECT_INFO = "\x0003";
+
+        #endregion
+
         #region Fields
         /// <summary>
         ///     <see cref="Extraction"/>
@@ -71,9 +83,13 @@ namespace OfficeExtractor
         /// <param name="outputFolder">The output folder</param>
         /// <returns></returns>
         /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile"/> is password protected</exception>
-        internal List<string> Extract(string inputFile, string outputFolder)
+        internal List<string> Extract(string inputFile, string outputFolder, bool attachmentsOnly = false)
         {
             Logger.WriteToLog("The file is a binary Word document");
+
+            string idOle10Native = (attachmentsOnly ? PREFIX_OLE10_NATIVE : "") + OLE10_NATIVE;
+            string idCompOb = (attachmentsOnly ? PREFIX_COMP_OBJECT : "") + COMP_OBJECT;
+            string idObjInfo = (attachmentsOnly ? PREFIX_OBJECT_INFO : "") + OBJECT_INFO;
 
             using (var compoundFile = new CompoundFile(inputFile))
             {
@@ -91,11 +107,11 @@ namespace OfficeExtractor
 
                     string extractedFileName;
 
-                    if (!childStorage.TryGetStream("Ole10Native", out _))
+                    if (!childStorage.TryGetStream(idOle10Native, out _))
                     {
                         Logger.WriteToLog("Ole10Native stream found");
 
-                        if(childStorage.TryGetStream("CompObj", out var compObj))
+                        if(childStorage.TryGetStream(idCompOb, out var compObj))
                         {
                             Logger.WriteToLog("CompObj stream found");
 
@@ -111,7 +127,7 @@ namespace OfficeExtractor
                             Logger.WriteToLog($"CompObj is of the ansi user type '{compObjStream.AnsiUserType}' ... ignoring");
                         }
 
-                        if(childStorage.TryGetStream("ObjInfo", out var objInfo))
+                        if(childStorage.TryGetStream(idObjInfo, out var objInfo))
                         {
                             Logger.WriteToLog("ObjInfo stream found");
 
@@ -137,7 +153,7 @@ namespace OfficeExtractor
                         Logger.WriteToLog("ObjInfo stream found");
 
                         // Get the objInfo stream to check if this is a linked file... if so then ignore it
-                        var objInfo = childStorage.GetStream("ObjInfo");
+                        var objInfo = childStorage.GetStream(idObjInfo);
                         var objInfoStream = new ObjInfoStream(objInfo);
 
                         // We don't want to export linked objects and objects that are not shown as an icon... 
