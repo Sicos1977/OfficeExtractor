@@ -65,7 +65,23 @@ namespace OfficeExtractorTest
             var files = extractor.Extract("TestFiles\\A DOC word document without embedded files.doc", outputFolder);
             Assert.IsTrue(files.Count == 0);
         }
-        
+
+        [TestMethod]
+        public void DocWithoutAttachmentsButWithEmbeddings_All()
+            => DocWithoutAttachmentsButWithEmbeddings(false, 7);
+
+        [TestMethod]
+        public void DocWithoutAttachmentsButWithEmbeddings_AttachmentsOnly()
+            => DocWithoutAttachmentsButWithEmbeddings(true, 0);
+
+        private void DocWithoutAttachmentsButWithEmbeddings(bool attachmentsOnly, int expectedCount)
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new OfficeExtractor.Extractor();
+            var files = extractor.Extract("TestFiles\\A DOC file without attachments but with embeddings.doc", outputFolder, attachmentsOnly: attachmentsOnly);
+            Assert.AreEqual(expectedCount, files.Count);
+        }
+
         [TestMethod]
         public void DocWith2EmbeddedImages()
         {
