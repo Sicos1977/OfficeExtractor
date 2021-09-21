@@ -67,12 +67,10 @@ namespace OfficeExtractorTest
         }
 
         [TestMethod]
-        public void DocWithoutAttachmentsButWithEmbeddings_All()
-            => DocWithoutAttachmentsButWithEmbeddings(false, 7);
+        public void DocWithoutAttachmentsButWithEmbeddings_All() => DocWithoutAttachmentsButWithEmbeddings(false, 7);
 
         [TestMethod]
-        public void DocWithoutAttachmentsButWithEmbeddings_AttachmentsOnly()
-            => DocWithoutAttachmentsButWithEmbeddings(true, 0);
+        public void DocWithoutAttachmentsButWithEmbeddings_AttachmentsOnly() => DocWithoutAttachmentsButWithEmbeddings(true, 0);
 
         private void DocWithoutAttachmentsButWithEmbeddings(bool attachmentsOnly, int expectedCount)
         {
@@ -179,7 +177,7 @@ namespace OfficeExtractorTest
         }
 #endregion
 
-#region Microsoft Office Excel tests
+        #region Microsoft Office Excel tests
         [TestMethod]
         public void XlsWithoutEmbeddedFiles()
         {
@@ -233,9 +231,9 @@ namespace OfficeExtractorTest
             var extractor = new OfficeExtractor.Extractor();
             extractor.Extract("TestFiles\\A XLSX excel document with password.xlsx", outputFolder);
         }
-#endregion
+        #endregion
 
-#region Microsoft Office PowerPoint tests
+        #region Microsoft Office PowerPoint tests
         [TestMethod]
         public void PptWithoutEmbeddedFiles()
         {
@@ -307,9 +305,9 @@ namespace OfficeExtractorTest
             var files = extractor.Extract("TestFiles\\A PPT PowerPoint document containing a MS ClipArt Gallery object.ppt", outputFolder);
             Assert.IsTrue(files.Count == 0);
         }
-#endregion
+        #endregion
 
-#region Open Office Writer tests
+        #region Open Office Writer tests
         [TestMethod]
         public void OdtWithoutEmbeddedFiles()
         {
@@ -336,9 +334,9 @@ namespace OfficeExtractorTest
             var extractor = new OfficeExtractor.Extractor();
             extractor.Extract("TestFiles\\An ODT document with password.odt", outputFolder);
         }
-#endregion
-        
-#region Open Office Calc tests
+        #endregion
+                
+        #region Open Office Calc tests
         [TestMethod]
         public void OdsWithoutEmbeddedFiles()
         {
@@ -365,9 +363,9 @@ namespace OfficeExtractorTest
             var extractor = new OfficeExtractor.Extractor();
             extractor.Extract("TestFiles\\An ODS document with password.ods", outputFolder);
         }
-#endregion
+        #endregion
 
-#region Open Office Impress tests
+        #region Open Office Impress tests
         [TestMethod]
         public void OdpWithoutEmbeddedFiles()
         {
@@ -394,9 +392,9 @@ namespace OfficeExtractorTest
             var extractor = new OfficeExtractor.Extractor();
             extractor.Extract("TestFiles\\An ODP document with password.odp", outputFolder);
         }
-#endregion
+        #endregion
 
-#region RTF tests
+        #region RTF tests
         [TestMethod]
         public void RtfWitht11EmbeddedFiles()
         {
@@ -414,9 +412,9 @@ namespace OfficeExtractorTest
             var files = extractor.Extract("TestFiles\\A RTF document with 3 embedded files and no space delimiters.rtf", outputFolder);
             Assert.IsTrue(files.Count == 3);
         }
-#endregion
+        #endregion
 
-#region Helper methods
+        #region Helper methods
         /// <summary>
         /// Creates a new temporary folder and returns the path to it
         /// </summary>
@@ -436,9 +434,10 @@ namespace OfficeExtractorTest
                 if (Directory.Exists(folder))
                     Directory.Delete(folder, true);
             }
-            // ReSharper disable once EmptyGeneralCatchClause
             catch (Exception)
-            { }
+            {
+                // Ignore
+            }
         }
 
         [TestCleanup]
@@ -447,6 +446,6 @@ namespace OfficeExtractorTest
             foreach (var tempFolder in _tempFolders)
                 DeleteTemporaryFolder(tempFolder);
         }
-#endregion
+        #endregion
     }
 }

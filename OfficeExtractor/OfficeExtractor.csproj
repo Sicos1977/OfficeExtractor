@@ -7,8 +7,7 @@
     <Copyright>(c)2013-2021 Kees van Spelde</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>office ole word excel powerpoint rtf</PackageTags>
-    <PackageReleaseNotes>- Use packagePartMemoryStream instead of packagePartStream to fix the error  cannot load a non-seekable stream in .NET5
-- Updated nuget packages</PackageReleaseNotes>
+    <PackageReleaseNotes>- Updated nuget packages</PackageReleaseNotes>
     <PackageIcon>extract-icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Sicos1977/OfficeExtractor</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
