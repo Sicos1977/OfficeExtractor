@@ -3,10 +3,10 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.17.0</Version>
+    <Version>1.18.0</Version>
     <Copyright>(c)2013-2021 Kees van Spelde</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageTags>office ole word excel powerpoint rtf</PackageTags>
+    <PackageTags>office ole word excel powerpoint rtf openoffice libreoffice</PackageTags>
     <PackageReleaseNotes>- Updated nuget packages
 - Bring back some old behavior that can be set with attachmentsonly flag</PackageReleaseNotes>
     <PackageIcon>extract-icon.png</PackageIcon>
@@ -15,8 +15,8 @@
     <PackageProjectUrl>https://github.com/Sicos1977/OfficeExtractor</PackageProjectUrl>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>OfficeExtractor.snk</AssemblyOriginatorKeyFile>
-    <AssemblyVersion>1.17.0.0</AssemblyVersion>
-    <FileVersion>1.17.0.0</FileVersion>
+    <AssemblyVersion>1.18.0.0</AssemblyVersion>
+    <FileVersion>1.18.0.0</FileVersion>
     <Description>Extracts embedded OLE objects from Word, Excel, PowerPoint and Open Office files without needing the original programs.</Description>
   </PropertyGroup>
 
