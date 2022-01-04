@@ -134,7 +134,13 @@ namespace OfficeExtractor
                                 var decompressedBytes = new byte[decompressedSize];
                                 Logger.WriteToLog("Uncompressing byte array");
                                 var deflateStream = new DeflateStream(compressedMemoryStream, CompressionMode.Decompress, true);
-                                deflateStream.Read(decompressedBytes, 0, decompressedBytes.Length);
+
+                                // NET6 had a breaking change in DeflateStream (et.al.): calling int Read(..) tends to
+                                // not read until the desired count but only fewer bytes, one must rely on returned count
+                                var decrByteCount = 0;
+                                while (decrByteCount < decompressedSize)
+                                    decrByteCount += deflateStream.Read(decompressedBytes, decrByteCount, (int)(decompressedSize - decrByteCount));
+
                                 Logger.WriteToLog("Byte array uncompressed");
 
                                 string extractedFileName;

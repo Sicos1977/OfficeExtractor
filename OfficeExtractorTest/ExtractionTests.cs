@@ -254,6 +254,16 @@ namespace OfficeExtractorTest
             Assert.IsTrue(files.Count == 3);
         }
 
+        /// <summary> Test failed in NET6 prior to adaptions in reading <see cref="System.IO.Compression.DeflateStream"/> </summary>
+        [TestMethod]
+        public void PptWith1EmbeddedFile()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new OfficeExtractor.Extractor();
+            var files = extractor.Extract("TestFiles\\A PPT PowerPoint document with 1 embedded file.ppt", outputFolder);
+            Assert.IsTrue(files.Count == 1);
+        }
+
         [TestMethod]
         [ExpectedException(typeof(OEFileIsPasswordProtected))]
         public void PptWithPassword()
