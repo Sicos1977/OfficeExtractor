@@ -1,0 +1,435 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>System.IO.Packaging</name>
+    </assembly>
+    <members>
+        <member name="P:System.SR.BadPackageFormat">
+            <summary>Format error in package.</summary>
+        </member>
+        <member name="P:System.SR.CannotModifyReadOnlyContainer">
+            <summary>Cannot modify readonly container</summary>
+        </member>
+        <member name="P:System.SR.CannotRetrievePartsOfWriteOnlyContainer">
+            <summary>Cannot retrieve parts of writeonly container</summary>
+        </member>
+        <member name="P:System.SR.ContainerAndPartModeIncompatible">
+            <summary>FileMode/FileAccess for Part.GetStream is not compatible with FileMode/FileAccess used to open the Package.</summary>
+        </member>
+        <member name="P:System.SR.ContentTypeCannotHaveLeadingTrailingLWS">
+            <summary>ContentType string cannot have leading/trailing Linear White Spaces [LWS - RFC 2616].</summary>
+        </member>
+        <member name="P:System.SR.CorePropertiesElementExpected">
+            <summary>Unrecognized root element in Core Properties part.</summary>
+        </member>
+        <member name="P:System.SR.CreateNewNotSupported">
+            <summary>CreateNew not supported</summary>
+        </member>
+        <member name="P:System.SR.DanglingMetadataRelationship">
+            <summary>The target of the Core Properties relationship does not reference an existing part.</summary>
+        </member>
+        <member name="P:System.SR.DefaultTagDoesNotMatchSchema">
+            <summary>Default tag is not valid per the schema. Verify that attributes are correct.</summary>
+        </member>
+        <member name="P:System.SR.DuplicateCorePropertyName">
+            <summary>More than one '{0}' property found.</summary>
+        </member>
+        <member name="P:System.SR.ElementIsNotEmptyElement">
+            <summary>'{0}' element must be empty.</summary>
+        </member>
+        <member name="P:System.SR.EncodingNotSupported">
+            <summary>Encoding format is not supported. Only UTF-8 and UTF-16 are supported.</summary>
+        </member>
+        <member name="P:System.SR.ExpectedRelationshipsElementTag">
+            <summary>Relationships tag expected at root level.</summary>
+        </member>
+        <member name="P:System.SR.ExpectingParameterValuePairs">
+            <summary>';' must be followed by parameter=value pair.</summary>
+        </member>
+        <member name="P:System.SR.ExpectingSemicolon">
+            <summary>Semicolon separator is required between two valid parameter=value pairs.</summary>
+        </member>
+        <member name="P:System.SR.FileFormatException">
+            <summary>Invalid file format.</summary>
+        </member>
+        <member name="P:System.SR.FileFormatExceptionWithFileName">
+            <summary>Invalid file format.</summary>
+        </member>
+        <member name="P:System.SR.GetContentTypeCoreNotImplemented">
+            <summary>PackagePart subclass must implement GetContentTypeCore method if passing a null value for the content type when PackagePart object is constructed.</summary>
+        </member>
+        <member name="P:System.SR.InvalidLinearWhiteSpaceCharacter">
+            <summary>A Linear White Space character is not valid.</summary>
+        </member>
+        <member name="P:System.SR.InvalidParameterValue">
+            <summary>Parameter value must be a valid token or a quoted string as per RFC 2616.</summary>
+        </member>
+        <member name="P:System.SR.InvalidParameterValuePair">
+            <summary>Parameter and value pair is not valid. Expected form is parameter=value.</summary>
+        </member>
+        <member name="P:System.SR.InvalidPartUri">
+            <summary>Part URI is not valid per rules defined in the Open Packaging Conventions specification.</summary>
+        </member>
+        <member name="P:System.SR.InvalidPropertyNameInCorePropertiesPart">
+            <summary>'{0}' property name is not valid in Core Properties part.</summary>
+        </member>
+        <member name="P:System.SR.InvalidRelationshipType">
+            <summary>Relationship Type cannot contain only spaces or be empty.</summary>
+        </member>
+        <member name="P:System.SR.InvalidToken_ContentType">
+            <summary>A token is not valid. Refer to RFC 2616 for correct grammar of content types.</summary>
+        </member>
+        <member name="P:System.SR.InvalidTypeSubType">
+            <summary>ContentType string is not valid. Expected format is type/subtype.</summary>
+        </member>
+        <member name="P:System.SR.InvalidValueForTheAttribute">
+            <summary>'{0}' attribute value is not valid.</summary>
+        </member>
+        <member name="P:System.SR.InvalidXmlBaseAttributePresent">
+            <summary>Relationships XML elements cannot specify attribute '{0}'.</summary>
+        </member>
+        <member name="P:System.SR.MoreThanOneMetadataRelationships">
+            <summary>Package has more than one Core Properties relationship.</summary>
+        </member>
+        <member name="P:System.SR.NoExternalTargetForMetadataRelationship">
+            <summary>TargetMode for a Core Properties relationship must be 'Internal'.</summary>
+        </member>
+        <member name="P:System.SR.NoStructuredContentInsideProperties">
+            <summary>Core Properties part: core property elements can contain only text data.</summary>
+        </member>
+        <member name="P:System.SR.NotAUniqueRelationshipId">
+            <summary>'{0}' ID conflicts with the ID of an existing relationship for the specified source.</summary>
+        </member>
+        <member name="P:System.SR.NotAValidRelationshipPartUri">
+            <summary>PackageRelationship part URI syntax is not valid.</summary>
+        </member>
+        <member name="P:System.SR.NotAValidXmlIdString">
+            <summary>'{0}' ID is not a valid XSD ID.</summary>
+        </member>
+        <member name="P:System.SR.NullContentTypeProvided">
+            <summary>GetContentTypeCore method cannot return null for the content type stream.</summary>
+        </member>
+        <member name="P:System.SR.NullStreamReturned">
+            <summary>Returned stream for the part is null.</summary>
+        </member>
+        <member name="P:System.SR.ObjectDisposed">
+            <summary>Package object was closed and disposed, so cannot carry out operations on this object or any stream opened on a part of this package.</summary>
+        </member>
+        <member name="P:System.SR.OverrideTagDoesNotMatchSchema">
+            <summary>Override tag is not valid per the schema. Verify that attributes are correct.</summary>
+        </member>
+        <member name="P:System.SR.PackagePartDeleted">
+            <summary>Part was deleted.</summary>
+        </member>
+        <member name="P:System.SR.PackagePartRelationshipDoesNotExist">
+            <summary>PackageRelationship with specified ID does not exist for the source part.</summary>
+        </member>
+        <member name="P:System.SR.PackageRelationshipDoesNotExist">
+            <summary>PackageRelationship with specified ID does not exist at the Package level.</summary>
+        </member>
+        <member name="P:System.SR.ParentContainerClosed">
+            <summary>Cannot access part because parent package was closed.</summary>
+        </member>
+        <member name="P:System.SR.PartAlreadyExists">
+            <summary>Cannot add part for the specified URI because it is already in the package.</summary>
+        </member>
+        <member name="P:System.SR.PartDoesNotExist">
+            <summary>Specified part does not exist in the package.</summary>
+        </member>
+        <member name="P:System.SR.PartNamePrefixExists">
+            <summary>Cannot add part to the package. Part names cannot be derived from another part name by appending segments to it.</summary>
+        </member>
+        <member name="P:System.SR.PartUriCannotHaveAFragment">
+            <summary>Part URI cannot contain a Fragment component.</summary>
+        </member>
+        <member name="P:System.SR.PartUriIsEmpty">
+            <summary>Part URI is empty.</summary>
+        </member>
+        <member name="P:System.SR.PartUriShouldNotEndWithForwardSlash">
+            <summary>Part URI cannot end with a forward slash.</summary>
+        </member>
+        <member name="P:System.SR.PartUriShouldNotStartWithTwoForwardSlashes">
+            <summary>Part URI cannot start with two forward slashes.</summary>
+        </member>
+        <member name="P:System.SR.PartUriShouldStartWithForwardSlash">
+            <summary>Part URI must start with a forward slash.</summary>
+        </member>
+        <member name="P:System.SR.PropertyStartTagExpected">
+            <summary>Core Properties part: A property start-tag was expected.</summary>
+        </member>
+        <member name="P:System.SR.PropertyWrongNumbOfAttribsDefinedOn">
+            <summary>Unexpected number of attributes is found on '{0}'.</summary>
+        </member>
+        <member name="P:System.SR.RelationshipPartIncorrectContentType">
+            <summary>Incorrect content type for PackageRelationship part.</summary>
+        </member>
+        <member name="P:System.SR.RelationshipPartsCannotHaveRelationships">
+            <summary>PackageRelationship parts cannot have relationships to other parts.</summary>
+        </member>
+        <member name="P:System.SR.RelationshipPartUriExpected">
+            <summary>PackageRelationship part URI is expected.</summary>
+        </member>
+        <member name="P:System.SR.RelationshipPartUriNotExpected">
+            <summary>PackageRelationship part URI is not expected.</summary>
+        </member>
+        <member name="P:System.SR.RelationshipsTagHasExtraAttributes">
+            <summary>Relationships tag has extra attributes.</summary>
+        </member>
+        <member name="P:System.SR.RelationshipTagDoesntMatchSchema">
+            <summary>Relationship tag contains incorrect attribute.</summary>
+        </member>
+        <member name="P:System.SR.RelationshipTargetMustBeRelative">
+            <summary>PackageRelationship target must be relative URI if TargetMode is Internal.</summary>
+        </member>
+        <member name="P:System.SR.RelationshipToRelationshipIllegal">
+            <summary>PackageRelationship cannot target another PackageRelationship.</summary>
+        </member>
+        <member name="P:System.SR.RequiredAttributeEmpty">
+            <summary>'{0}' tag requires a nonempty '{1}' attribute.</summary>
+        </member>
+        <member name="P:System.SR.RequiredAttributeMissing">
+            <summary>'{0}' tag requires attribute '{1}'.</summary>
+        </member>
+        <member name="P:System.SR.RequiredRelationshipAttributeMissing">
+            <summary>Relationship tag requires attribute '{0}'.</summary>
+        </member>
+        <member name="P:System.SR.StreamObjectDisposed">
+            <summary>Cannot access Stream object because it was closed or disposed.</summary>
+        </member>
+        <member name="P:System.SR.TruncateNotSupported">
+            <summary>Truncate not supported</summary>
+        </member>
+        <member name="P:System.SR.TypesElementExpected">
+            <summary>Required Types tag not found.</summary>
+        </member>
+        <member name="P:System.SR.TypesTagHasExtraAttributes">
+            <summary>Types tag has attributes not valid per the schema.</summary>
+        </member>
+        <member name="P:System.SR.TypesXmlDoesNotMatchSchema">
+            <summary>Content Types XML does not match schema.</summary>
+        </member>
+        <member name="P:System.SR.UnknownDCDateTimeXsiType">
+            <summary>Unknown xsi:type for DateTime on '{0}'.</summary>
+        </member>
+        <member name="P:System.SR.UnknownNamespaceInCorePropertiesPart">
+            <summary>Unrecognized namespace in Core Properties part.</summary>
+        </member>
+        <member name="P:System.SR.UnknownTagEncountered">
+            <summary>Unrecognized tag found in Relationships XML.</summary>
+        </member>
+        <member name="P:System.SR.UnsupportedCombinationOfModeAccess">
+            <summary>Cannot get stream with FileMode.Create, FileMode.CreateNew, FileMode.Truncate, FileMode.Append when access is FileAccess.Read.</summary>
+        </member>
+        <member name="P:System.SR.URIShouldNotBeAbsolute">
+            <summary>Cannot be an absolute URI.</summary>
+        </member>
+        <member name="P:System.SR.WrongContentTypeForPropertyPart">
+            <summary>The Core Properties relationship references a part that has an incorrect content type.</summary>
+        </member>
+        <member name="P:System.SR.XCRChoiceAfterFallback">
+            <summary>Choice cannot follow a Fallback.</summary>
+        </member>
+        <member name="P:System.SR.XCRChoiceNotFound">
+            <summary>AlternateContent must contain one or more Choice elements.</summary>
+        </member>
+        <member name="P:System.SR.XCRChoiceOnlyInAC">
+            <summary>Choice is valid only in AlternateContent.</summary>
+        </member>
+        <member name="P:System.SR.XCRCompatCycle">
+            <summary>There is a cycle of XML compatibility definitions, such that namespace '{0}' overrides itself. This could be due to inconsistent XmlnsCompatibilityAttributes in different assemblies. Please change the definitions to eliminate this cycle.</summary>
+        </member>
+        <member name="P:System.SR.XCRDuplicatePreserve">
+            <summary>Duplicate Preserve declaration for element {1} in namespace '{0}'.</summary>
+        </member>
+        <member name="P:System.SR.XCRDuplicateProcessContent">
+            <summary>Duplicate ProcessContent declaration for element '{1}' in namespace '{0}'.</summary>
+        </member>
+        <member name="P:System.SR.XCRDuplicateWildcardPreserve">
+            <summary>Duplicate wildcard Preserve declaration for namespace '{0}'.</summary>
+        </member>
+        <member name="P:System.SR.XCRDuplicateWildcardProcessContent">
+            <summary>Duplicate wildcard ProcessContent declaration for namespace '{0}'.</summary>
+        </member>
+        <member name="P:System.SR.XCRFallbackOnlyInAC">
+            <summary>Fallback is valid only in AlternateContent.</summary>
+        </member>
+        <member name="P:System.SR.XCRInvalidACChild">
+            <summary>'{0}' element is not a valid child of AlternateContent. Only Choice and Fallback elements are valid children of an AlternateContent element.</summary>
+        </member>
+        <member name="P:System.SR.XCRInvalidAttribInElement">
+            <summary>'{0}' attribute is not valid for '{1}' element.</summary>
+        </member>
+        <member name="P:System.SR.XCRInvalidFormat">
+            <summary>'{0}' format is not valid.</summary>
+        </member>
+        <member name="P:System.SR.XCRInvalidPreserve">
+            <summary>Cannot have both a specific and a wildcard Preserve declaration for namespace '{0}'.</summary>
+        </member>
+        <member name="P:System.SR.XCRInvalidProcessContent">
+            <summary>Cannot have both a specific and a wildcard ProcessContent declaration for namespace '{0}'.</summary>
+        </member>
+        <member name="P:System.SR.XCRInvalidRequiresAttribute">
+            <summary>Requires attribute must contain a valid namespace prefix.</summary>
+        </member>
+        <member name="P:System.SR.XCRInvalidXMLName">
+            <summary>'{0}' attribute value is not a valid XML name.</summary>
+        </member>
+        <member name="P:System.SR.XCRMultipleFallbackFound">
+            <summary>AlternateContent must contain only one Fallback element.</summary>
+        </member>
+        <member name="P:System.SR.XCRMustUnderstandFailed">
+            <summary>MustUnderstand condition failed on namespace '{0}'</summary>
+        </member>
+        <member name="P:System.SR.XCRNSPreserveNotIgnorable">
+            <summary>'{0}' namespace cannot preserve items; it must be declared Ignorable first.</summary>
+        </member>
+        <member name="P:System.SR.XCRNSProcessContentNotIgnorable">
+            <summary>'{0}' namespace cannot process content; it must be declared Ignorable first.</summary>
+        </member>
+        <member name="P:System.SR.XCRRequiresAttribNotFound">
+            <summary>Choice must contain Requires attribute.</summary>
+        </member>
+        <member name="P:System.SR.XCRUndefinedPrefix">
+            <summary>'{0}' prefix is not defined.</summary>
+        </member>
+        <member name="P:System.SR.XCRUnknownCompatAttrib">
+            <summary>Unrecognized compatibility attribute '{0}'.</summary>
+        </member>
+        <member name="P:System.SR.XCRUnknownCompatElement">
+            <summary>Unrecognized Compatibility element '{0}'.</summary>
+        </member>
+        <member name="P:System.SR.XsdDateTimeExpected">
+            <summary>Core Properties part: Text data of XSD type 'DateTime' was expected.</summary>
+        </member>
+        <member name="P:System.SR.CreateNewOnNonEmptyStream">
+            <summary>CreateNew is not a valid FileMode for a non-empty stream.</summary>
+        </member>
+        <member name="P:System.SR.ZipZeroSizeFileIsNotValidArchive">
+            <summary>Archive file cannot be size 0.</summary>
+        </member>
+        <member name="P:System.SR.InnerPackageUriHasFragment">
+            <summary>Package URI obtained from the pack URI cannot contain a Fragment.</summary>
+        </member>
+        <member name="P:System.SR.FragmentMustStartWithHash">
+            <summary>The '{0}' parameter must start with '#'.</summary>
+        </member>
+        <member name="P:System.SR.UriShouldBePackScheme">
+            <summary>URI must contain pack:// scheme.</summary>
+        </member>
+        <member name="P:System.SR.UriShouldBeAbsolute">
+            <summary>Must have absolute URI.</summary>
+        </member>
+        <member name="P:System.SR.FileContainsCorruptedData">
+            <summary>File contains corrupted data.</summary>
+        </member>
+        <member name="T:System.Diagnostics.CodeAnalysis.AllowNullAttribute">
+            <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
+        </member>
+        <member name="T:System.Diagnostics.CodeAnalysis.DisallowNullAttribute">
+            <summary>Specifies that null is disallowed as an input even if the corresponding type allows it.</summary>
+        </member>
+        <member name="T:System.Diagnostics.CodeAnalysis.MaybeNullAttribute">
+            <summary>Specifies that an output may be null even if the corresponding type disallows it.</summary>
+        </member>
+        <member name="T:System.Diagnostics.CodeAnalysis.NotNullAttribute">
+            <summary>Specifies that an output will not be null even if the corresponding type allows it. Specifies that an input argument was not null when the call returns.</summary>
+        </member>
+        <member name="T:System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute">
+            <summary>Specifies that when a method returns <see cref="P:System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute.ReturnValue"/>, the parameter may be null even if the corresponding type disallows it.</summary>
+        </member>
+        <member name="M:System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute.#ctor(System.Boolean)">
+            <summary>Initializes the attribute with the specified return value condition.</summary>
+            <param name="returnValue">
+            The return value condition. If the method returns this value, the associated parameter may be null.
+            </param>
+        </member>
+        <member name="P:System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute.ReturnValue">
+            <summary>Gets the return value condition.</summary>
+        </member>
+        <member name="T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute">
+            <summary>Specifies that when a method returns <see cref="P:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute.ReturnValue"/>, the parameter will not be null even if the corresponding type allows it.</summary>
+        </member>
+        <member name="M:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute.#ctor(System.Boolean)">
+            <summary>Initializes the attribute with the specified return value condition.</summary>
+            <param name="returnValue">
+            The return value condition. If the method returns this value, the associated parameter will not be null.
+            </param>
+        </member>
+        <member name="P:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute.ReturnValue">
+            <summary>Gets the return value condition.</summary>
+        </member>
+        <member name="T:System.Diagnostics.CodeAnalysis.NotNullIfNotNullAttribute">
+            <summary>Specifies that the output will be non-null if the named parameter is non-null.</summary>
+        </member>
+        <member name="M:System.Diagnostics.CodeAnalysis.NotNullIfNotNullAttribute.#ctor(System.String)">
+            <summary>Initializes the attribute with the associated parameter name.</summary>
+            <param name="parameterName">
+            The associated parameter name.  The output will be non-null if the argument to the parameter specified is non-null.
+            </param>
+        </member>
+        <member name="P:System.Diagnostics.CodeAnalysis.NotNullIfNotNullAttribute.ParameterName">
+            <summary>Gets the associated parameter name.</summary>
+        </member>
+        <member name="T:System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute">
+            <summary>Applied to a method that will never return under any circumstance.</summary>
+        </member>
+        <member name="T:System.Diagnostics.CodeAnalysis.DoesNotReturnIfAttribute">
+            <summary>Specifies that the method will not return if the associated Boolean parameter is passed the specified value.</summary>
+        </member>
+        <member name="M:System.Diagnostics.CodeAnalysis.DoesNotReturnIfAttribute.#ctor(System.Boolean)">
+            <summary>Initializes the attribute with the specified parameter value.</summary>
+            <param name="parameterValue">
+            The condition parameter value. Code after the method will be considered unreachable by diagnostics if the argument to
+            the associated parameter matches this value.
+            </param>
+        </member>
+        <member name="P:System.Diagnostics.CodeAnalysis.DoesNotReturnIfAttribute.ParameterValue">
+            <summary>Gets the condition parameter value.</summary>
+        </member>
+        <member name="T:System.Diagnostics.CodeAnalysis.MemberNotNullAttribute">
+            <summary>Specifies that the method or property will ensure that the listed field and property members have not-null values.</summary>
+        </member>
+        <member name="M:System.Diagnostics.CodeAnalysis.MemberNotNullAttribute.#ctor(System.String)">
+            <summary>Initializes the attribute with a field or property member.</summary>
+            <param name="member">
+            The field or property member that is promised to be not-null.
+            </param>
+        </member>
+        <member name="M:System.Diagnostics.CodeAnalysis.MemberNotNullAttribute.#ctor(System.String[])">
+            <summary>Initializes the attribute with the list of field and property members.</summary>
+            <param name="members">
+            The list of field and property members that are promised to be not-null.
+            </param>
+        </member>
+        <member name="P:System.Diagnostics.CodeAnalysis.MemberNotNullAttribute.Members">
+            <summary>Gets field or property member names.</summary>
+        </member>
+        <member name="T:System.Diagnostics.CodeAnalysis.MemberNotNullWhenAttribute">
+            <summary>Specifies that the method or property will ensure that the listed field and property members have not-null values when returning with the specified return value condition.</summary>
+        </member>
+        <member name="M:System.Diagnostics.CodeAnalysis.MemberNotNullWhenAttribute.#ctor(System.Boolean,System.String)">
+            <summary>Initializes the attribute with the specified return value condition and a field or property member.</summary>
+            <param name="returnValue">
+            The return value condition. If the method returns this value, the associated parameter will not be null.
+            </param>
+            <param name="member">
+            The field or property member that is promised to be not-null.
+            </param>
+        </member>
+        <member name="M:System.Diagnostics.CodeAnalysis.MemberNotNullWhenAttribute.#ctor(System.Boolean,System.String[])">
+            <summary>Initializes the attribute with the specified return value condition and list of field and property members.</summary>
+            <param name="returnValue">
+            The return value condition. If the method returns this value, the associated parameter will not be null.
+            </param>
+            <param name="members">
+            The list of field and property members that are promised to be not-null.
+            </param>
+        </member>
+        <member name="P:System.Diagnostics.CodeAnalysis.MemberNotNullWhenAttribute.ReturnValue">
+            <summary>Gets the return value condition.</summary>
+        </member>
+        <member name="P:System.Diagnostics.CodeAnalysis.MemberNotNullWhenAttribute.Members">
+            <summary>Gets field or property member names.</summary>
+        </member>
+    </members>
+</doc>
