@@ -117,6 +117,7 @@ namespace OfficeExtractor.Ole
                     break;
 
                 case "PBrush":
+                case "Paintbrush-Bild":
                 case "Paintbrush-afbeelding":
                     var pbBrushSize = (int)ole10Native.Size - 4;
                     if (pbBrushSize <= 0)
