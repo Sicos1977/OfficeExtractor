@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 //
@@ -194,6 +195,7 @@ namespace OfficeExtractor.Helpers
         }
         #endregion
 
+
         #region GetFileNameWithoutExtension
         /// <summary>
         /// Returns the file name of the specified <paramref name="path"/> string without the extension
@@ -269,6 +271,68 @@ namespace OfficeExtractor.Helpers
 
             return result;
         }
+        #endregion
+
+
+        #region
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   A String extension method that returns clean filename. </summary>
+        ///
+        /// <remarks>   seal-mb, 12.09.2022. 
+        ///             Check a String for not allowed signs for a file name.
+        ///             </remarks>
+        ///
+        /// <param name="fileName2Check">   The file name to check to act on. </param>
+        /// <param name="fIsFullPath">      True if is full path, false if not. </param>
+        ///
+        /// <returns>   The clean filename. </returns>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static String ReturnCleanFilename( this String fileName2Check, bool fIsFullPath  )
+        {
+            // Get the wrong signs for file name
+            var notAllowedFilenameSign = Path.GetInvalidFileNameChars ();
+
+            // Get the filename with extension
+            var fileName = fIsFullPath ? Path.GetFileName(fileName2Check) : fileName2Check;
+
+            // Contains the given name not allowed signs. 
+            // If not return the original.
+            if ( false == fileName.Any ( s => notAllowedFilenameSign.Contains ( s ) ) )
+                return fileName2Check;
+
+            // String for the new file name
+            var newFileName = new StringBuilder();
+
+            // Check any sign and replace it by the hex value of the sign.
+            foreach ( var sign in fileName )
+            {
+                if ( notAllowedFilenameSign.Contains ( sign ) )
+                {
+                    // append the sign as hex code
+                    newFileName.Append ( $"{( ( byte )sign ):x2}" );
+                }
+                else
+                {
+                    // append the sign that is allow
+                    newFileName.Append ( sign );
+                }
+            }
+
+            // Build new full file name
+            if( fIsFullPath )
+            {
+                var path = Path.GetDirectoryName( fileName2Check );
+                return Path.Combine ( path, newFileName.ToString () );
+
+            }
+            else
+            {
+                return newFileName.ToString ();
+            }
+        }
+
         #endregion
     }
 }
