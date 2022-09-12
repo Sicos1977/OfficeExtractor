@@ -124,6 +124,15 @@ namespace OfficeExtractorTest
             var files = extractor.Extract("TestFiles\\A DOCX word document with 7 embedded files.docx", outputFolder);
             Assert.IsTrue(files.Count == 7);
         }
+        [TestMethod]
+        public void DocxWithUNICODE_EmbeddedZipFile()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new OfficeExtractor.Extractor();
+            var files = extractor.Extract("TestFiles\\A DOCX word document with embedding Zip with UNICODE Sign.docx", outputFolder);
+            Assert.IsTrue (files.Count == 1);
+            Assert.IsTrue( files[0].EndsWith("unicode-3f3f3f.zip"));
+        }
 
         [TestMethod]
         [ExpectedException(typeof(OEFileIsPasswordProtected))]

@@ -30,5 +30,14 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="TestFiles\A DOCX word document with embedding Zip with UNICODE Sign.docx" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="TestFiles\A DOCX word document with embedding Zip with UNICODE Sign.docx" />
+	  <Content Include="TestFiles\A DOCX word document with embeding Zip with UNICODE Sign.docx" />
+	</ItemGroup>
 	
 </Project>
