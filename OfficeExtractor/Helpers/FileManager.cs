@@ -50,24 +50,7 @@ namespace OfficeExtractor.Helpers
         private const int MaxFileNameLength = 255;
         #endregion
 
-        #region Initialize static members
-
-        private static readonly char[]  _notAllowFileNameChars;  ///< (Immutable) the not allow file name characters
-
-        ///-------------------------------------------------------------------------------------------------
-        /// <summary>   Static constructor. </summary>
-        ///
-        /// <remarks>   seal-mb, 13.09.2022. </remarks>
-        ///-------------------------------------------------------------------------------------------------
-
-        static FileManager()
-        {
-            // This variable is used in the "ReturnCleanFilename" method 
-            // to test for disallowed characters in a file name.
-            _notAllowFileNameChars = Path.GetInvalidFileNameChars ();
-        }
-
-        #endregion
+        
 
         #region CheckForDirectorySeparator
         /// <summary>
@@ -293,48 +276,6 @@ namespace OfficeExtractor.Helpers
         #endregion
 
 
-        #region
-
-        ///-------------------------------------------------------------------------------------------------
-        /// <summary>   A String extension method that returns clean filename. </summary>
-        ///
-        /// <remarks>   seal-mb, 12.09.2022. 
-        ///             Check a String for not allowed signs for a file name.
-        ///             </remarks>
-        ///
-        /// <param name="fileName2Check">   The file name to check to act on. </param>
-        /// <param name="fIsFullPath">      True if is full path, false if not. </param>
-        ///
-        /// <returns>   The clean filename. </returns>
-        ///-------------------------------------------------------------------------------------------------
-
-        public static String ReturnCleanFilename( this String fileName2Check, bool fIsFullPath  )
-        {
-            // Get the filename with extension
-            var fileName = fIsFullPath ? Path.GetFileName(fileName2Check) : fileName2Check;
-
-            // Contains the given name not allowed signs. 
-            // If not return the original.
-            if ( false == fileName.Any ( s => _notAllowFileNameChars.Contains ( s ) ) )
-                return fileName2Check;
-
-            // String for the new file name
-            var newFileName = _notAllowFileNameChars.Aggregate(fileName, 
-                (current,c) => current.Replace(c.ToString(CultureInfo.InvariantCulture), $"{((byte)c):x2}")  );
-
-            // Build new full file name
-            if( fIsFullPath )
-            {
-                var path = Path.GetDirectoryName( fileName2Check );
-                return Path.Combine ( path, newFileName.ToString () );
-
-            }
-            else
-            {
-                return newFileName.ToString ();
-            }
-        }
-
-        #endregion
+        
     }
 }

@@ -129,9 +129,11 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new OfficeExtractor.Extractor();
+            // New for replace not exceptions
+            OfficeExtractor.Extractor.ReplaceDisallowedCharsInFileNames = true;
             var files = extractor.Extract("TestFiles\\A DOCX word document with embedding Zip with UNICODE Sign.docx", outputFolder);
             Assert.IsTrue (files.Count == 1);
-            Assert.IsTrue( files[0].EndsWith("unicode-3f3f3f.zip"));
+            Assert.IsTrue( files[0].EndsWith("unicode-___.zip"));
         }
 
         [TestMethod]

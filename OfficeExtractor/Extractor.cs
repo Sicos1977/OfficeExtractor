@@ -76,6 +76,17 @@ namespace OfficeExtractor
         #endregion
 
         #region Properties
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>
+        /// Gets or sets a value indicating whether the replace disallowed characters in file names.
+        /// </summary>
+        ///
+        /// <value> True if replace disallowed characters in file names, false if not. </value>
+        ///-------------------------------------------------------------------------------------------------
+
+        public static bool ReplaceDisallowedCharsInFileNames { get; set; } = false;
+
         /// <summary>
         ///     An unique id that can be used to identify the logging of the converter when
         ///     calling the code from multiple threads and writing all the logging to the same file
