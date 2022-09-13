@@ -50,6 +50,25 @@ namespace OfficeExtractor.Helpers
         private const int MaxFileNameLength = 255;
         #endregion
 
+        #region Initialize static members
+
+        private static readonly char[]  NotAllowFileNameChars;  ///< (Immutable) the not allow file name characters
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Static constructor. </summary>
+        ///
+        /// <remarks>   seal-mb, 13.09.2022. </remarks>
+        ///-------------------------------------------------------------------------------------------------
+
+        static FileManager()
+        {
+            // This variable is used in the "ReturnCleanFilename" method 
+            // to test for disallowed characters in a file name.
+            NotAllowFileNameChars = Path.GetInvalidFileNameChars ();
+        }
+
+        #endregion
+
         #region CheckForDirectorySeparator
         /// <summary>
         /// Check if there is a directory separator char at the end of the string and if not add it
@@ -291,15 +310,12 @@ namespace OfficeExtractor.Helpers
 
         public static String ReturnCleanFilename( this String fileName2Check, bool fIsFullPath  )
         {
-            // Get the wrong signs for file name
-            var notAllowedFilenameSign = Path.GetInvalidFileNameChars ();
-
             // Get the filename with extension
             var fileName = fIsFullPath ? Path.GetFileName(fileName2Check) : fileName2Check;
 
             // Contains the given name not allowed signs. 
             // If not return the original.
-            if ( false == fileName.Any ( s => notAllowedFilenameSign.Contains ( s ) ) )
+            if ( false == fileName.Any ( s => NotAllowFileNameChars.Contains ( s ) ) )
                 return fileName2Check;
 
             // String for the new file name
@@ -308,7 +324,7 @@ namespace OfficeExtractor.Helpers
             // Check any sign and replace it by the hex value of the sign.
             foreach ( var sign in fileName )
             {
-                if ( notAllowedFilenameSign.Contains ( sign ) )
+                if ( NotAllowFileNameChars.Contains ( sign ) )
                 {
                     // append the sign as hex code
                     newFileName.Append ( $"{( ( byte )sign ):x2}" );
