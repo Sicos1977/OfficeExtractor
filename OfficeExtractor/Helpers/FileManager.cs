@@ -52,7 +52,7 @@ namespace OfficeExtractor.Helpers
 
         #region Initialize static members
 
-        private static readonly char[]  NotAllowFileNameChars;  ///< (Immutable) the not allow file name characters
+        private static readonly char[]  _notAllowFileNameChars;  ///< (Immutable) the not allow file name characters
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>   Static constructor. </summary>
@@ -64,7 +64,7 @@ namespace OfficeExtractor.Helpers
         {
             // This variable is used in the "ReturnCleanFilename" method 
             // to test for disallowed characters in a file name.
-            NotAllowFileNameChars = Path.GetInvalidFileNameChars ();
+            _notAllowFileNameChars = Path.GetInvalidFileNameChars ();
         }
 
         #endregion
@@ -315,26 +315,12 @@ namespace OfficeExtractor.Helpers
 
             // Contains the given name not allowed signs. 
             // If not return the original.
-            if ( false == fileName.Any ( s => NotAllowFileNameChars.Contains ( s ) ) )
+            if ( false == fileName.Any ( s => _notAllowFileNameChars.Contains ( s ) ) )
                 return fileName2Check;
 
             // String for the new file name
-            var newFileName = new StringBuilder();
-
-            // Check any sign and replace it by the hex value of the sign.
-            foreach ( var sign in fileName )
-            {
-                if ( NotAllowFileNameChars.Contains ( sign ) )
-                {
-                    // append the sign as hex code
-                    newFileName.Append ( $"{( ( byte )sign ):x2}" );
-                }
-                else
-                {
-                    // append the sign that is allow
-                    newFileName.Append ( sign );
-                }
-            }
+            var newFileName = _notAllowFileNameChars.Aggregate(fileName, 
+                (current,c) => current.Replace(c.ToString(CultureInfo.InvariantCulture), $"{((byte)c):x2}")  );
 
             // Build new full file name
             if( fIsFullPath )
