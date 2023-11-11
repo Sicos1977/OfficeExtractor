@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 //
@@ -48,6 +49,8 @@ namespace OfficeExtractor.Helpers
         /// </summary>
         private const int MaxFileNameLength = 255;
         #endregion
+
+        
 
         #region CheckForDirectorySeparator
         /// <summary>
@@ -194,6 +197,7 @@ namespace OfficeExtractor.Helpers
         }
         #endregion
 
+
         #region GetFileNameWithoutExtension
         /// <summary>
         /// Returns the file name of the specified <paramref name="path"/> string without the extension
@@ -270,5 +274,8 @@ namespace OfficeExtractor.Helpers
             return result;
         }
         #endregion
+
+
+        
     }
 }

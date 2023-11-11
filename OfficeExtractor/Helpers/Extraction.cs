@@ -363,10 +363,21 @@ namespace OfficeExtractor.Helpers
         /// <exception cref="OfficeExtractor.Exceptions.OEFileIsCorrupt">Raised when the file is corrupt</exception> 
         internal string SaveByteArrayToFile(byte[] data, string outputFile)
         {
+            // seal-mb
+            // Check name of file
+            // maybe the name contains question marks, because the OLE Bin file
+            // use it fore UNICODE signs
+            if( Extractor.ReplaceDisallowedCharsInFileNames)
+            {
+                var fileName = FileManager.RemoveInvalidFileNameChars( Path.GetFileName(outputFile) );
+                outputFile = Path.Combine( Path.GetDirectoryName(outputFile), fileName );
+            }
+           
+
             // Because the data is stored in a stream we have no name for it so we
             // have to check the magic bytes to see with what kind of file we are dealing
             Logger.WriteToLog($"Saving byte array with length '{data.Length}' to file '{outputFile}'");
-            
+
             var extension = Path.GetExtension(outputFile);
 
             if (string.IsNullOrEmpty(extension))
@@ -444,5 +455,7 @@ namespace OfficeExtractor.Helpers
             return delimitedString;
         }
         #endregion
+
+        
     }
 }
