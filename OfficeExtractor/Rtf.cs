@@ -114,7 +114,7 @@ internal class Rtf
     /// </summary>
     /// <param name="stream"></param>
     /// <param name="outputFolder">The output folder</param>
-    internal string ExtractOle10(Stream stream, string outputFolder)
+    private string ExtractOle10(Stream stream, string outputFolder)
     {
         var ole10 = new Ole10(stream);
 
@@ -153,7 +153,7 @@ internal class Rtf
     /// </summary>
     /// <param name="stream">The AttachDesc stream</param>
     /// <returns></returns>
-    private string GetFileNameFromAttachDescStream(CfbStream stream)
+    private static string GetFileNameFromAttachDescStream(CfbStream stream)
     {
         // https://msdn.microsoft.com/en-us/library/ee157577(v=exchg.80).aspx
         if (stream == null) return null;
@@ -174,7 +174,7 @@ internal class Rtf
     /// </summary>
     /// <param name="stream"></param>
     /// <param name="outputFolder">The output folder</param>
-    internal string ExtractOutlookAttachmentObject(Stream stream, string outputFolder)
+    private string ExtractOutlookAttachmentObject(Stream stream, string outputFolder)
     {
         // Outlook attachments embedded in RTF are firstly embedded in an OLE v1.0 object
         var ole10 = new Ole10(stream);
