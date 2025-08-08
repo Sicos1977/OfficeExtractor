@@ -1,7 +1,5 @@
-using System;
-
-//
-// Object.cs
+﻿//
+// OpenMcdfHelpers.cs
 //
 // Author: Kees van Spelde <sicos2002@hotmail.com>
 //
@@ -26,17 +24,28 @@ using System;
 // THE SOFTWARE.
 //
 
-namespace OfficeExtractor.RtfParser;
+using System.IO;
+using OpenMcdf;
 
-internal class Object
+namespace OfficeExtractor.Helpers;
+
+internal static class OpenMcdfHelpers
 {
-    internal Object(string text)
+    #region GetData
+    internal static byte[] GetData(this CfbStream stream)
     {
-        if (text == null)
-            throw new ArgumentNullException(nameof(text));
-
-        Text = text.Trim();
+        using var memoryStream = new MemoryStream();
+        stream.CopyTo(memoryStream);
+        return memoryStream.ToArray();
     }
+    #endregion
 
-    internal string Text { get; }
+    #region SetData
+    internal static void SetData(this CfbStream stream, byte[] data)
+    {
+        stream.Position = 0;
+        using var memoryStream = new MemoryStream(data);
+        memoryStream.CopyTo(stream);
+    }
+    #endregion
 }

@@ -10,7 +10,7 @@ using OpenMcdf;
 //
 // Author: Kees van Spelde <sicos2002@hotmail.com>
 //
-// Copyright (c) 2013-2023 Magic-Sessions. (www.magic-sessions.com)
+// Copyright (c) 2013-2025 Magic-Sessions. (www.magic-sessions.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -76,95 +76,90 @@ namespace OfficeExtractor
         {
             Logger.WriteToLog("The file is a binary PowerPoint document");
 
-            using (var compoundFile = new CompoundFile(inputFile))
+            using var compoundFile = RootStorage.OpenRead(inputFile);
+            var result = new List<string>();
+            if (!compoundFile.TryOpenStream("PowerPoint Document", out var stream))
             {
-                var result = new List<string>();
-                if (!compoundFile.RootStorage.TryGetStream("PowerPoint Document", out var stream))
-                {
-                    Logger.WriteToLog("Could not find the PowerPoint Document stream inside the file");
-                    return result;
-                }
-
-                Logger.WriteToLog("PowerPoint Document stream found");
-
-                using (var memoryStream = new MemoryStream(stream.GetData()))
-                using (var binaryReader = new BinaryReader(memoryStream))
-                {
-                    while (binaryReader.BaseStream.Position != memoryStream.Length)
-                    {
-                        var verAndInstance = binaryReader.ReadUInt16();
-                        // ReSharper disable once UnusedVariable
-                        var version = verAndInstance & 0x000FU; // First 4 bit of field verAndInstance
-                        var instance = (verAndInstance & 0xFFF0U) >> 4; // Last 12 bit of field verAndInstance
-
-                        var typeCode = binaryReader.ReadUInt16();
-                        var size = binaryReader.ReadUInt32();
-
-                        // Embedded OLE objects start with code 4113
-                        if (typeCode == 4113)
-                        {
-                            if (instance == 0)
-                            {
-                                // Uncompressed
-                                var bytes = binaryReader.ReadBytes((int)size);
-
-                                // Check if the ole object is another compound storage node with a package stream
-                                if (Extraction.IsCompoundFile(bytes))
-                                    result.Add(Extraction.SaveFromStorageNode(bytes, outputFolder));
-                                else
-                                {
-                                    var fileName = outputFolder + Extraction.DefaultEmbeddedObjectName;
-                                    var extractedFileName = Extraction.SaveByteArrayToFile(bytes, fileName);
-
-                                    if (!string.IsNullOrEmpty(extractedFileName))
-                                        result.Add(extractedFileName);
-                                }
-                            }
-                            else
-                            {
-                                var decompressedSize = binaryReader.ReadUInt32();
-                                var data = binaryReader.ReadBytes((int)size - 4);
-                                var compressedMemoryStream = new MemoryStream(data);
-
-                                // skip the first 2 bytes
-                                compressedMemoryStream.ReadByte();
-                                compressedMemoryStream.ReadByte();
-
-                                // Decompress the bytes
-                                var decompressedBytes = new byte[decompressedSize];
-                                Logger.WriteToLog("Uncompressing byte array");
-                                var deflateStream = new DeflateStream(compressedMemoryStream, CompressionMode.Decompress, true);
-
-                                // NET6 had a breaking change in DeflateStream (et.al.): calling int Read(..) tends to
-                                // not read until the desired count but only fewer bytes, one must rely on returned count
-                                var decrByteCount = 0;
-                                while (decrByteCount < decompressedSize)
-                                    decrByteCount += deflateStream.Read(decompressedBytes, decrByteCount, (int)(decompressedSize - decrByteCount));
-
-                                Logger.WriteToLog("Byte array uncompressed");
-
-                                string extractedFileName;
-
-                                // Check if the ole object is another compound storage node with a package stream
-                                if (Extraction.IsCompoundFile(decompressedBytes))
-                                    extractedFileName = Extraction.SaveFromStorageNode(decompressedBytes, outputFolder);
-                                else
-                                {
-                                    var fileName = outputFolder + Extraction.DefaultEmbeddedObjectName;
-                                    extractedFileName = Extraction.SaveByteArrayToFile(decompressedBytes, fileName);
-                                }
-
-                                if (!string.IsNullOrEmpty(extractedFileName))
-                                    result.Add(extractedFileName);
-                            }
-                        }
-                        else
-                            binaryReader.BaseStream.Position += size;
-                    }
-                }
-
+                Logger.WriteToLog("Could not find the PowerPoint Document stream inside the file");
                 return result;
             }
+
+            Logger.WriteToLog("PowerPoint Document stream found");
+
+            using var binaryReader = new BinaryReader(stream);
+            while (binaryReader.BaseStream.Position != stream.Length)
+            {
+                var verAndInstance = binaryReader.ReadUInt16();
+                // ReSharper disable once UnusedVariable
+                var version = verAndInstance & 0x000FU; // First 4 bit of field verAndInstance
+                var instance = (verAndInstance & 0xFFF0U) >> 4; // Last 12 bit of field verAndInstance
+
+                var typeCode = binaryReader.ReadUInt16();
+                var size = binaryReader.ReadUInt32();
+
+                // Embedded OLE objects start with code 4113
+                if (typeCode == 4113)
+                {
+                    if (instance == 0)
+                    {
+                        // Uncompressed
+                        var bytes = binaryReader.ReadBytes((int)size);
+
+                        // Check if the ole object is another compound storage node with a package stream
+                        if (Extraction.IsCompoundFile(bytes))
+                            result.Add(Extraction.SaveFromStorageNode(bytes, outputFolder));
+                        else
+                        {
+                            var fileName = outputFolder + Extraction.DefaultEmbeddedObjectName;
+                            var extractedFileName = Extraction.SaveByteArrayToFile(bytes, fileName);
+
+                            if (!string.IsNullOrEmpty(extractedFileName))
+                                result.Add(extractedFileName);
+                        }
+                    }
+                    else
+                    {
+                        var decompressedSize = binaryReader.ReadUInt32();
+                        var data = binaryReader.ReadBytes((int)size - 4);
+                        var compressedMemoryStream = new MemoryStream(data);
+
+                        // skip the first 2 bytes
+                        compressedMemoryStream.ReadByte();
+                        compressedMemoryStream.ReadByte();
+
+                        // Decompress the bytes
+                        var decompressedBytes = new byte[decompressedSize];
+                        Logger.WriteToLog("Uncompressing byte array");
+                        var deflateStream = new DeflateStream(compressedMemoryStream, CompressionMode.Decompress, true);
+
+                        // NET6 had a breaking change in DeflateStream (et.al.): calling int Read(..) tends to
+                        // not read until the desired count but only fewer bytes, one must rely on returned count
+                        var decrByteCount = 0;
+                        while (decrByteCount < decompressedSize)
+                            decrByteCount += deflateStream.Read(decompressedBytes, decrByteCount, (int)(decompressedSize - decrByteCount));
+
+                        Logger.WriteToLog("Byte array uncompressed");
+
+                        string extractedFileName;
+
+                        // Check if the ole object is another compound storage node with a package stream
+                        if (Extraction.IsCompoundFile(decompressedBytes))
+                            extractedFileName = Extraction.SaveFromStorageNode(decompressedBytes, outputFolder);
+                        else
+                        {
+                            var fileName = outputFolder + Extraction.DefaultEmbeddedObjectName;
+                            extractedFileName = Extraction.SaveByteArrayToFile(decompressedBytes, fileName);
+                        }
+
+                        if (!string.IsNullOrEmpty(extractedFileName))
+                            result.Add(extractedFileName);
+                    }
+                }
+                else
+                    binaryReader.BaseStream.Position += size;
+            }
+
+            return result;
         }
         #endregion
     }

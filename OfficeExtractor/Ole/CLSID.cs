@@ -7,7 +7,7 @@ using System.Linq;
 //
 // Author: Kees van Spelde <sicos2002@hotmail.com>
 //
-// Copyright (c) 2013-2023 Magic-Sessions. (www.magic-sessions.com)
+// Copyright (c) 2013-2025 Magic-Sessions. (www.magic-sessions.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,58 +28,57 @@ using System.Linq;
 // THE SOFTWARE.
 //
 
-namespace OfficeExtractor.Ole
+namespace OfficeExtractor.Ole;
+
+/// <summary>
+///     The packet version of the CLSID structure represents a class identifier (CLSID) in a serialized manner.
+/// </summary>
+internal class CLSID
 {
+    #region Constructor
     /// <summary>
-    ///     The packet version of the CLSID structure represents a class identifier (CLSID) in a serialized manner.
+    ///     Creatis this object and sets all it properties
     /// </summary>
-    internal class CLSID
+    /// <param name="binaryReader"></param>
+    internal CLSID(BinaryReader binaryReader)
     {
-        #region Properties
-        /// <summary>
-        ///     Data1 (4 bytes): This MUST be identical in meaning to the Data1 field specified in [MS-DTYP] section 2.3.4.
-        /// </summary>
-        public byte[] Data1 { get; private set; }
-
-        /// <summary>
-        ///     Data2 (2 bytes): This MUST be identical in meaning to the Data2 field specified in [MS-DTYP] section 2.3.4.
-        /// </summary>
-        public byte[] Data2 { get; private set; }
-
-        /// <summary>
-        ///     Data3 (2 bytes): This MUST be identical in meaning to the Data3 field specified in [MS-DTYP] section 2.3.4.
-        /// </summary>
-        public byte[] Data3 { get; private set; }
-
-        /// <summary>
-        ///     Data4 (8 bytes): This MUST be identical in meaning to the Data4 field specified in [MS-DTYP] section 2.3.4.
-        /// </summary>
-        public byte[] Data4 { get; private set; }
-        #endregion
-
-        #region Constructor
-        /// <summary>
-        ///     Creatis this object and sets all it properties
-        /// </summary>
-        /// <param name="binaryReader"></param>
-        internal CLSID(BinaryReader binaryReader)
-        {
-            Data1 = binaryReader.ReadBytes(4).Reverse().ToArray();
-            Data2 = binaryReader.ReadBytes(2).Reverse().ToArray();
-            Data3 = binaryReader.ReadBytes(2).Reverse().ToArray();
-            Data4 = binaryReader.ReadBytes(8).Reverse().ToArray();
-        }
-        #endregion
-
-        #region ToGuid
-        /// <summary>
-        ///     Returns <see cref="Data1" />, <see cref="Data2" />, <see cref="Data3" />, <see cref="Data4" /> as
-        ///     a <see cref="Guid" />
-        /// </summary>
-        public Guid ToGuid()
-        {
-            return new Guid(Data1.Concat(Data2).Concat(Data3).Concat(Data4).ToArray());
-        }
-        #endregion
+        Data1 = binaryReader.ReadBytes(4).Reverse().ToArray();
+        Data2 = binaryReader.ReadBytes(2).Reverse().ToArray();
+        Data3 = binaryReader.ReadBytes(2).Reverse().ToArray();
+        Data4 = binaryReader.ReadBytes(8).Reverse().ToArray();
     }
+    #endregion
+
+    #region ToGuid
+    /// <summary>
+    ///     Returns <see cref="Data1" />, <see cref="Data2" />, <see cref="Data3" />, <see cref="Data4" /> as
+    ///     a <see cref="Guid" />
+    /// </summary>
+    public Guid ToGuid()
+    {
+        return new Guid(Data1.Concat(Data2).Concat(Data3).Concat(Data4).ToArray());
+    }
+    #endregion
+
+    #region Properties
+    /// <summary>
+    ///     Data1 (4 bytes): This MUST be identical in meaning to the Data1 field specified in [MS-DTYP] section 2.3.4.
+    /// </summary>
+    public byte[] Data1 { get; }
+
+    /// <summary>
+    ///     Data2 (2 bytes): This MUST be identical in meaning to the Data2 field specified in [MS-DTYP] section 2.3.4.
+    /// </summary>
+    public byte[] Data2 { get; }
+
+    /// <summary>
+    ///     Data3 (2 bytes): This MUST be identical in meaning to the Data3 field specified in [MS-DTYP] section 2.3.4.
+    /// </summary>
+    public byte[] Data3 { get; }
+
+    /// <summary>
+    ///     Data4 (8 bytes): This MUST be identical in meaning to the Data4 field specified in [MS-DTYP] section 2.3.4.
+    /// </summary>
+    public byte[] Data4 { get; }
+    #endregion
 }

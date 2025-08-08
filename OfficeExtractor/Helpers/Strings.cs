@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Text;
 
 //
@@ -6,7 +7,7 @@ using System.Text;
 //
 // Author: Kees van Spelde <sicos2002@hotmail.com>
 //
-// Copyright (c) 2013-2023 Magic-Sessions. (www.magic-sessions.com)
+// Copyright (c) 2013-2025 Magic-Sessions. (www.magic-sessions.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,80 +28,93 @@ using System.Text;
 // THE SOFTWARE.
 //
 
-namespace OfficeExtractor.Helpers
+namespace OfficeExtractor.Helpers;
+
+internal static class Strings
 {
-    internal static class Strings
+    #region ReadNullTerminatedAnsiString
+    /// <summary>
+    ///     Reads a null terminated ansi string from given <paramref name="binaryReader" /> until the
+    ///     null char has been found
+    /// </summary>
+    /// <param name="binaryReader"></param>
+    /// <returns></returns>
+    internal static string ReadNullTerminatedAnsiString(BinaryReader binaryReader)
     {
-        #region ReadNullTerminatedAnsiString
-        /// <summary>
-        ///     Reads an null terminated ansi string from given <paramref name="binaryReader"/> until the 
-        ///     null char has been found
-        /// </summary>
-        /// <param name="binaryReader"></param>
-        /// <returns></returns>
-        internal static string ReadNullTerminatedAnsiString(BinaryReader binaryReader)
+        var bytes = new byte[1024];
+        var index = 0;
+
+        do
         {
-            var bytes = new byte[1024];
-            var index = 0;
+            var b = binaryReader.ReadByte();
+            bytes[index++] = b;
+            if (b == 0)
+                break;
+        } while (true);
 
-            do
-            {
-                var b = binaryReader.ReadByte();
-                bytes[index++] = b;
-                if (b == 0)
-                    break;
-
-            } while (true);
-
-            var bytesUnicode = Encoding.Convert(Encoding.Default, Encoding.Unicode, bytes);
-            var str = Encoding.Unicode.GetString(bytesUnicode);
-            return str.TrimEnd('\0');
-        }
-        #endregion
-
-        #region Read1ByteLengthPrefixedAnsiString
-        /// <summary>
-        ///     Reads a 1 byte length prefixed ansi string from the given <paramref name="binaryReader" />
-        /// </summary>
-        /// <param name="binaryReader"></param>
-        /// <returns></returns>
-        internal static string Read1ByteLengthPrefixedAnsiString(BinaryReader binaryReader)
-        {
-            var length = (int) binaryReader.ReadByte();
-            var bytes = binaryReader.ReadBytes(length);
-            var str = Encoding.UTF8.GetString(bytes);
-            return str.TrimEnd('\0');
-        }
-        #endregion
-
-        #region Read4ByteLengthPrefixedAnsiString
-        /// <summary>
-        ///     Reads a 4 byte length prefixed ansi string from the given <paramref name="binaryReader" />
-        /// </summary>
-        /// <param name="binaryReader"></param>
-        /// <returns></returns>
-        internal static string Read4ByteLengthPrefixedAnsiString(BinaryReader binaryReader)
-        {
-            var length = (int) binaryReader.ReadUInt32();
-            var bytes = binaryReader.ReadBytes(length);
-            var str = Encoding.UTF8.GetString(bytes);
-            return str.TrimEnd('\0');
-        }
-        #endregion
-
-        #region Read4ByteLengthPrefixedUnicodeString
-        /// <summary>
-        ///     Reads a 4 byte length prefixed ansi string from the given <paramref name="binaryReader" />
-        /// </summary>
-        /// <param name="binaryReader"></param>
-        /// <returns></returns>
-        internal static string Read4ByteLengthPrefixedUnicodeString(BinaryReader binaryReader)
-        {
-            var length = (int)binaryReader.ReadUInt32() * 2;
-            var bytes = binaryReader.ReadBytes(length);
-            var str = Encoding.Unicode.GetString(bytes);
-            return str.TrimEnd('\0');
-        }
-        #endregion
+        var bytesUnicode = Encoding.Convert(Encoding.Default, Encoding.Unicode, bytes);
+        var str = Encoding.Unicode.GetString(bytesUnicode);
+        return str.TrimEnd('\0');
     }
+    #endregion
+
+    #region Read1ByteLengthPrefixedAnsiString
+    /// <summary>
+    ///     Reads a 1 byte length prefixed ansi string from the given <paramref name="binaryReader" />
+    /// </summary>
+    /// <param name="binaryReader"></param>
+    /// <returns></returns>
+    internal static string Read1ByteLengthPrefixedAnsiString(BinaryReader binaryReader)
+    {
+        var length = (int)binaryReader.ReadByte();
+        var bytes = binaryReader.ReadBytes(length);
+        var str = Encoding.UTF8.GetString(bytes);
+        return str.TrimEnd('\0');
+    }
+    #endregion
+
+    #region Read4ByteLengthPrefixedAnsiString
+    /// <summary>
+    ///     Reads a 4 byte length prefixed ansi string from the given <paramref name="binaryReader" />
+    /// </summary>
+    /// <param name="binaryReader"></param>
+    /// <returns></returns>
+    internal static string Read4ByteLengthPrefixedAnsiString(BinaryReader binaryReader)
+    {
+        var length = (int)binaryReader.ReadUInt32();
+        var bytes = binaryReader.ReadBytes(length);
+        var str = Encoding.UTF8.GetString(bytes);
+        return str.TrimEnd('\0');
+    }
+    #endregion
+
+    #region Read4ByteLengthPrefixedUnicodeString
+    /// <summary>
+    ///     Reads a 4 byte length prefixed ansi string from the given <paramref name="binaryReader" />
+    /// </summary>
+    /// <param name="binaryReader"></param>
+    /// <returns></returns>
+    internal static string Read4ByteLengthPrefixedUnicodeString(BinaryReader binaryReader)
+    {
+        var length = (int)binaryReader.ReadUInt32() * 2;
+        var bytes = binaryReader.ReadBytes(length);
+        var str = Encoding.Unicode.GetString(bytes);
+        return str.TrimEnd('\0');
+    }
+    #endregion
+
+    #region ToAscii
+    /// <summary>
+    ///     Retourneert de string als ASCII string
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    internal static string ToAscii(this string text)
+    {
+        var sb = new StringBuilder();
+        foreach (var c in from c in text let unicode = c where unicode < 128 select c)
+            sb.Append(c);
+        return sb.ToString();
+    }
+    #endregion
 }
