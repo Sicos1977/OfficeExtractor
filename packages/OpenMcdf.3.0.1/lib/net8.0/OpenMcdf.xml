@@ -1,0 +1,591 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>OpenMcdf</name>
+    </assembly>
+    <members>
+        <member name="T:OpenMcdf.CfbBinaryReader">
+            <summary>
+            Reads CFB data types from a stream.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.CfbBinaryWriter">
+            <summary>
+            Writes CFB data types to a stream.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.CfbStream">
+            <summary>
+            Represents a stream in a compound file.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.ContextBase">
+            <summary>
+            Supports switching the <see cref="T:OpenMcdf.RootContext"/> object.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.DifatSectorEnumerator">
+            <summary>
+            Enumerates the <see cref="T:OpenMcdf.Sector"/>s in a DIFAT chain.
+            </summary>
+        </member>
+        <member name="M:OpenMcdf.DifatSectorEnumerator.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.DifatSectorEnumerator.Current">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.DifatSectorEnumerator.System#Collections#IEnumerator#Current">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.DifatSectorEnumerator.MoveNext">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.DifatSectorEnumerator.Reset">
+            <inheritdoc/>
+        </member>
+        <member name="T:OpenMcdf.DirectoryEntries">
+            <summary>
+            Encapsulates getting and adding <see cref="T:OpenMcdf.DirectoryEntry"/> objects."
+            </summary>
+        </member>
+        <member name="M:OpenMcdf.DirectoryEntries.GetDictionaryEntry(System.UInt32)">
+            <summary>
+            Gets the <see cref="T:OpenMcdf.DirectoryEntry"/> for the specified stream ID.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.StorageType">
+            <summary>
+            The storage type of a <see cref="T:OpenMcdf.DirectoryEntry"/>.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.NodeColor">
+            <summary>
+            Red-black node color.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.DirectoryEntry">
+            <summary>
+            Encapsulates data about a <see cref="T:OpenMcdf.Storage"/> or Stream.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.DirectoryEntry.Type">
+            <summary>
+            The type of the storage object.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.DirectoryEntry.LeftSiblingId">
+            <summary>
+            Stream ID of the left sibling.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.DirectoryEntry.RightSiblingId">
+            <summary>
+            Stream ID of the right sibling.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.DirectoryEntry.ChildId">
+            <summary>
+            Stream ID of the child.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.DirectoryEntry.CLSID">
+            <summary>
+            GUID for storage objects.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.DirectoryEntry.StateBits">
+            <summary>
+            User defined flags for storage objects.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.DirectoryEntry.CreationTime">
+            <summary>
+            The creation time of the storage object.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.DirectoryEntry.ModifiedTime">
+            <summary>
+            The modified time of the storage object.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.DirectoryEntry.StartSectorId">
+            <summary>
+            The starting sector location for a stream or the first sector of the mini-stream for the root storage object.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.DirectoryEntry.StreamLength">
+            <summary>
+            The length of the stream.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.DirectoryEntryComparer">
+            <summary>
+            Provides a <see cref="T:System.Collections.Generic.IComparer`1"/> for <see cref="T:OpenMcdf.DirectoryEntry"/> objects.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.DirectoryEntryEnumerator">
+            <summary>
+            Enumerates <see cref="T:OpenMcdf.DirectoryEntry"/> instances from a <see cref="T:OpenMcdf.DirectoryEntries"/>.
+            </summary>
+        </member>
+        <member name="M:OpenMcdf.DirectoryEntryEnumerator.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.DirectoryEntryEnumerator.Current">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.DirectoryEntryEnumerator.System#Collections#IEnumerator#Current">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.DirectoryEntryEnumerator.MoveNext">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.DirectoryEntryEnumerator.Reset">
+            <inheritdoc/>
+        </member>
+        <member name="T:OpenMcdf.DirectoryTree">
+            <summary>
+            Encapsulates adding and removing <see cref="T:OpenMcdf.DirectoryEntry"/> objects to a tree.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.DirectoryTreeEnumerator">
+            <summary>
+            Enumerates the children of a <see cref="T:OpenMcdf.DirectoryEntry"/>.
+            </summary>
+        </member>
+        <member name="M:OpenMcdf.DirectoryTreeEnumerator.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.DirectoryTreeEnumerator.Current">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.DirectoryTreeEnumerator.System#Collections#IEnumerator#Current">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.DirectoryTreeEnumerator.MoveNext">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.DirectoryTreeEnumerator.Reset">
+            <inheritdoc/>
+        </member>
+        <member name="T:OpenMcdf.EntryInfo">
+            <summary>
+            Encapsulates information about an entry in a <see cref="T:OpenMcdf.Storage"/>.
+            </summary>
+        </member>
+        <member name="M:OpenMcdf.EntryInfo.#ctor(OpenMcdf.EntryType,System.String,System.String,System.Int64,System.Guid,System.DateTime,System.DateTime)">
+            <summary>
+            Encapsulates information about an entry in a <see cref="T:OpenMcdf.Storage"/>.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.Fat">
+            <summary>
+            Encapsulates getting and setting entries in the FAT.
+            </summary>
+        </member>
+        <member name="M:OpenMcdf.Fat.Add(OpenMcdf.FatEnumerator,System.UInt32)">
+            <summary>
+            Adds a new entry to the FAT.
+            </summary>
+            <returns>The index of the new entry in the FAT</returns>
+        </member>
+        <member name="T:OpenMcdf.FatChainEnumerator">
+            <summary>
+            Enumerates the <see cref="T:OpenMcdf.Sector"/>s in a FAT sector chain.
+            </summary>
+        </member>
+        <member name="M:OpenMcdf.FatChainEnumerator.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.FatChainEnumerator.Current">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.FatChainEnumerator.System#Collections#IEnumerator#Current">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.FatChainEnumerator.MoveNext">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.FatChainEnumerator.MoveTo(System.UInt32)">
+            <summary>
+            Moves to the specified index within the FAT sector chain.
+            </summary>
+            <param name="index"></param>
+            <returns>true if the enumerator was successfully advanced to the given index</returns>
+        </member>
+        <member name="M:OpenMcdf.FatChainEnumerator.Extend">
+            <summary>
+            Extends the chain by one
+            </summary>
+            <returns>The ID of the new sector</returns>
+        </member>
+        <member name="M:OpenMcdf.FatChainEnumerator.Extend(System.UInt32)">
+            <summary>
+            Returns the ID of the first sector in the chain.
+            </summary>
+        </member>
+        <member name="M:OpenMcdf.FatChainEnumerator.Reset">
+            <inheritdoc/>
+        </member>
+        <member name="T:OpenMcdf.FatEntry">
+            <summary>
+            Encapsulates an entry in the File Allocation Table (FAT).
+            </summary>
+        </member>
+        <member name="M:OpenMcdf.FatEntry.#ctor(System.UInt32,System.UInt32)">
+            <summary>
+            Encapsulates an entry in the File Allocation Table (FAT).
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.FatEnumerator">
+            <summary>
+            Enumerates the <see cref="T:OpenMcdf.FatEntry"/> records in a <see cref="T:OpenMcdf.Fat"/>.
+            </summary>
+        </member>
+        <member name="M:OpenMcdf.FatEnumerator.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.FatEnumerator.Current">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.FatEnumerator.System#Collections#IEnumerator#Current">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.FatEnumerator.MoveNext">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.FatEnumerator.Reset">
+            <inheritdoc/>
+        </member>
+        <member name="T:OpenMcdf.FatSectorEnumerator">
+            <summary>
+            Enumerates the <see cref="T:OpenMcdf.Sector"/>s of a compound file.
+            </summary>
+        </member>
+        <member name="M:OpenMcdf.FatSectorEnumerator.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.FatSectorEnumerator.Current">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.FatSectorEnumerator.System#Collections#IEnumerator#Current">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.FatSectorEnumerator.MoveNext">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.FatSectorEnumerator.MoveTo(System.UInt32)">
+            <summary>
+            Moves the enumerator to the specified sector.
+            </summary>
+        </member>
+        <member name="M:OpenMcdf.FatSectorEnumerator.Reset">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.FatSectorEnumerator.Add">
+            <summary>
+            Extends the FAT by adding a new sector.
+            </summary>
+            <returns>The ID of the new sector that was added</returns>
+        </member>
+        <member name="T:OpenMcdf.FatStream">
+            <summary>
+            Provides a <inheritdoc cref="T:System.IO.Stream"/> for a stream object in a compound file./>
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.FatStream.DirectoryEntry">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.FatStream.CanRead">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.FatStream.CanSeek">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.FatStream.CanWrite">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.FatStream.Length">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.FatStream.Position">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.FatStream.Dispose(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.FatStream.Flush">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.FatStream.Read(System.Byte[],System.Int32,System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.FatStream.Seek(System.Int64,System.IO.SeekOrigin)">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.FatStream.SetLength(System.Int64)">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.FatStream.Write(System.Byte[],System.Int32,System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="T:OpenMcdf.FileFormatException">
+            <summary>
+            The exception that is thrown when an compound file data stream contains invalid data.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.Header">
+            <summary>
+            The structure at the beginning of a compound file.
+            </summary>
+        </member>
+        <member name="F:OpenMcdf.Header.Signature">
+            <summary>
+            Identification signature for the compound file structure.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.Header.CLSID">
+            <summary>
+            Reserved and unused class ID.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.Header.MinorVersion">
+            <summary>
+            Version number for non-breaking changes.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.Header.MajorVersion">
+            <summary>
+            Version number for breaking changes.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.Header.SectorShift">
+            <summary>
+            Specifies the sector size of the compound file.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.Header.DirectorySectorCount">
+            <summary>
+            The number of directory sectors in the compound file (not used in V3).
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.Header.FatSectorCount">
+            <summary>
+            The number of FAT sectors in the compound file.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.Header.FirstDirectorySectorId">
+            <summary>
+            The starting sector ID of the directory stream.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.Header.TransactionSignature">
+            <summary>
+            A sequence number that is incremented every time the compound file is saved by an implementation that supports file transactions.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.Header.FirstMiniFatSectorId">
+            <summary>
+            This integer field contains the starting sector ID of the mini FAT.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.Header.MiniFatSectorCount">
+            <summary>
+            The number of sectors in the mini FAT.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.Header.FirstDifatSectorId">
+            <summary>
+            The starting sector ID of the DIFAT.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.Header.DifatSectorCount">
+            <summary>
+            The number of DIFAT sectors in the compound file.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.Header.Difat">
+            <summary>
+            An array of the first FAT sector IDs.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.MiniFat">
+            <summary>
+            Encapsulates getting and setting <see cref="T:OpenMcdf.FatEntry"/> records in the mini FAT.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.MiniFatChainEnumerator">
+            <summary>
+            Enumerates the <see cref="T:OpenMcdf.MiniSector"/>s in a Mini FAT chain.
+            </summary>
+        </member>
+        <member name="M:OpenMcdf.MiniFatChainEnumerator.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.MiniFatChainEnumerator.CurrentSector">
+            <summary>
+            The index within the Mini FAT sector chain, or <see cref="F:System.UInt32.MaxValue"/> if the enumeration has not started.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.MiniFatChainEnumerator.Current">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.MiniFatChainEnumerator.System#Collections#IEnumerator#Current">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.MiniFatChainEnumerator.MoveNext">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.MiniFatChainEnumerator.MoveTo(System.UInt32)">
+            <summary>
+            Moves to the specified index within the mini FAT sector chain.
+            </summary>
+            <param name="index"></param>
+            <returns>true if the enumerator was successfully advanced to the given index</returns>
+        </member>
+        <member name="M:OpenMcdf.MiniFatChainEnumerator.Reset">
+            <inheritdoc/>
+        </member>
+        <member name="T:OpenMcdf.MiniFatEnumerator">
+            <summary>
+            Enumerates the <see cref="T:OpenMcdf.MiniSector"/>s from the FAT chain for the mini FAT.
+            </summary>
+        </member>
+        <member name="M:OpenMcdf.MiniFatEnumerator.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.MiniFatEnumerator.Current">
+            <inheritdoc/>
+        </member>
+        <member name="P:OpenMcdf.MiniFatEnumerator.System#Collections#IEnumerator#Current">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.MiniFatEnumerator.MoveNext">
+            <inheritdoc/>
+        </member>
+        <member name="M:OpenMcdf.MiniFatEnumerator.Reset">
+            <inheritdoc/>
+        </member>
+        <member name="T:OpenMcdf.MiniFatStream">
+            <summary>
+            Provides a <see cref="T:System.IO.Stream"/> for reading a <see cref="P:OpenMcdf.MiniFatStream.DirectoryEntry"/> from the mini FAT stream.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.MiniSector">
+            <summary>
+            Encapsulates information about a mini sector in a compound file.
+            </summary>
+            <param name="Id">The ID of the mini sector</param>
+            <param name="Length">The sector length</param>
+        </member>
+        <member name="M:OpenMcdf.MiniSector.#ctor(System.UInt32,System.Int32)">
+            <summary>
+            Encapsulates information about a mini sector in a compound file.
+            </summary>
+            <param name="Id">The ID of the mini sector</param>
+            <param name="Length">The sector length</param>
+        </member>
+        <member name="P:OpenMcdf.MiniSector.Id">
+            <summary>The ID of the mini sector</summary>
+        </member>
+        <member name="P:OpenMcdf.MiniSector.Length">
+            <summary>The sector length</summary>
+        </member>
+        <member name="P:OpenMcdf.MiniSector.Position">
+            <summary>
+            The position of the mini sector in the mini FAT stream.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.MiniSector.EndPosition">
+            <summary>
+            The end position of the mini sector in the mini FAT stream.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.RootContext">
+            <summary>
+            Encapsulates the objects required to read and write data to and from a compound file.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.RootContext.SectorSize">
+            <summary>
+            The size of a regular sector.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.RootContextSite">
+            <summary>
+            A site for the <see cref="T:OpenMcdf.RootContext"/> object, to allow switching streams.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.RootStorage">
+            <summary>
+            Encapsulates the root <see cref="T:OpenMcdf.Storage"/> of a compound file.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.Sector">
+            <summary>
+            Encapsulates information about a sector in a compound file.
+            </summary>
+            <param name="Id">The sector ID</param>
+            <param name="Length">The sector length</param>
+        </member>
+        <member name="M:OpenMcdf.Sector.#ctor(System.UInt32,System.Int32)">
+            <summary>
+            Encapsulates information about a sector in a compound file.
+            </summary>
+            <param name="Id">The sector ID</param>
+            <param name="Length">The sector length</param>
+        </member>
+        <member name="P:OpenMcdf.Sector.Id">
+            <summary>The sector ID</summary>
+        </member>
+        <member name="P:OpenMcdf.Sector.Length">
+            <summary>The sector length</summary>
+        </member>
+        <member name="P:OpenMcdf.Sector.Position">
+            <summary>
+            The position of the sector in the compound file stream.
+            </summary>
+        </member>
+        <member name="P:OpenMcdf.Sector.EndPosition">
+            <summary>
+            The end position of the sector in the compound file stream.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.SectorDataCache">
+            <summary>
+            Caches data for adding new sectors to the FAT.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.SectorType">
+            <summary>
+            Defines the types of sectors in a compound file.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.Storage">
+            <summary>
+            An object in a compound file that is analogous to a file system directory.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.StreamExtensions">
+            <summary>
+            Adds modern extension methods to the <see cref="T:System.IO.Stream"/> class for netstandard2.0.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.StreamId">
+            <summary>
+            Stream ID constants for <see cref="T:OpenMcdf.DirectoryEntry"/>.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.ThrowHelper">
+            <summary>
+            Extensions to consistently throw exceptions.
+            </summary>
+        </member>
+        <member name="T:OpenMcdf.TransactedStream">
+            <summary>
+            Stores modifications to a CFB stream that can be committed or reverted.
+            </summary>
+        </member>
+    </members>
+</doc>

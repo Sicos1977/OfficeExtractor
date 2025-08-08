@@ -49,7 +49,7 @@ namespace OfficeExtractorTest
         //}
 
         [TestMethod]
-        [ExpectedException(typeof(PPCFileIsCorrupt))]
+        [ExpectedException(typeof(OEFileIsCorrupt))]
         public void FileIsCorrupt()
         {
             var outputFolder = CreateTemporaryFolder();
@@ -439,7 +439,7 @@ namespace OfficeExtractorTest
 
         #region RTF tests
         [TestMethod]
-        public void RtfWitht11EmbeddedFiles()
+        public void RtfWith11EmbeddedFiles()
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new Extractor();
@@ -448,7 +448,7 @@ namespace OfficeExtractorTest
         }
 
         [TestMethod]
-        public void RtfWitht3EmbeddedFilesAndNoSpaceDelimiters()
+        public void RtfWith3EmbeddedFilesAndNoSpaceDelimiters()
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new Extractor();

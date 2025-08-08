@@ -156,8 +156,7 @@ public class Extractor
     /// <exception cref="OEFileIsCorrupt">Raised when the <paramref name="inputFile" /> is corrupt</exception>
     /// <exception cref="OEFileTypeNotSupported">Raised when the <paramref name="inputFile" /> is not supported</exception>
     /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile" /> is password protected</exception>
-    public List<string> Extract(string inputFile, string outputFolder, Stream logStream = null,
-        bool attachmentsOnly = false)
+    public List<string> Extract(string inputFile, string outputFolder, Stream logStream = null, bool attachmentsOnly = false)
     {
         if (logStream != null)
             Logger.LogStream = logStream;

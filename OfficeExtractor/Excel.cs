@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using OfficeExtractor.Exceptions;
@@ -116,61 +117,51 @@ internal class Excel
 
         try
         {
-            var bytes = stream.GetData();
-            using (var binaryReader = new BinaryReader(stream))
+            using (var binaryReader = new BinaryReader(stream, Encoding.Default, leaveOpen: true))
+            using (var binaryWriter = new BinaryWriter(stream, Encoding.Default, leaveOpen: true))
             {
-                // Get the record type, at the beginning of the stream this should always be the BOF
                 var recordType = binaryReader.ReadUInt16();
-                var recordLength = binaryReader.ReadUInt16();
-
-                // Something seems to be wrong, we would expect a BOF but for some reason it isn't 
-                if (recordType != 0x809)
-                    throw new OEFileIsCorrupt("The file is corrupt");
-
-                binaryReader.BaseStream.Position += recordLength;
-
                 while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
                 {
-                    recordType = binaryReader.ReadUInt16();
-                    recordLength = binaryReader.ReadUInt16();
+                    var recordStartPos = binaryReader.BaseStream.Position;
 
-                    // Window1 record (0x3D)
-                    if (recordType == 0x3D)
+                    var recordLength = binaryReader.ReadUInt16();
+
+                    var grbit = binaryReader.ReadBytes(2);
+                    if (recordType == 0x3D) // Window1 record
                     {
-                        // ReSharper disable UnusedVariable
-                        var xWn = binaryReader.ReadUInt16();
-                        var yWn = binaryReader.ReadUInt16();
-                        var dxWn = binaryReader.ReadUInt16();
-                        var dyWn = binaryReader.ReadUInt16();
-                        // ReSharper restore UnusedVariable
+                        // Skip xWn, yWn, dxWn, dyWn (4 × 2 bytes)
+                        binaryReader.ReadUInt16(); // xWn
+                        binaryReader.ReadUInt16(); // yWn
+                        binaryReader.ReadUInt16(); // dxWn
+                        binaryReader.ReadUInt16(); // dyWn
 
-                        // The grbit contains the bit that hides the sheet
-                        var grbit = binaryReader.ReadBytes(2);
+                        var grbitPos = binaryReader.BaseStream.Position;
+
                         var bitArray = new BitArray(grbit);
 
-                        // When the bit is set then unset it (bitArray.Get(0) == true)
                         if (bitArray.Get(0))
                         {
                             bitArray.Set(0, false);
 
-                            // Copy the byte back into the stream, 2 positions back so that we overwrite the old bytes
-                            bitArray.CopyTo(bytes, (int)binaryReader.BaseStream.Position - 2);
+                            var modified = new byte[2];
+                            bitArray.CopyTo(modified, 0);
+                            binaryWriter.BaseStream.Position = grbitPos;
+                            binaryWriter.Write(modified);
                         }
 
                         break;
                     }
 
-                    binaryReader.BaseStream.Position += recordLength;
+                    binaryReader.BaseStream.Position = recordStartPos + 4 + recordLength; // Skip this record
                 }
             }
 
             stream.Position = 0;
-            stream.SetData(bytes);
         }
         catch (Exception exception)
         {
-            throw new OEFileIsCorrupt("Could not check workbook visibility because the file seems to be corrupt",
-                exception);
+            throw new OEFileIsCorrupt("Could not check workbook visibility because the file seems to be corrupt", exception);
         }
     }
 

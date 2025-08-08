@@ -1,0 +1,767 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>UtfUnknown</name>
+    </assembly>
+    <members>
+        <member name="T:UtfUnknown.CharsetDetector">
+            <summary>
+            Default implementation of charset detection interface. 
+            The detector can be fed by a System.IO.Stream:
+            </summary>                
+        </member>
+        <member name="F:UtfUnknown.CharsetDetector._start">
+            <summary>
+            Start of the file
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.CharsetDetector._gotData">
+            <summary>
+            De byte array has data?
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.CharsetDetector._done">
+            <summary>
+            Most of the time true of <see cref="F:UtfUnknown.CharsetDetector._detectionDetail"/> is set. TODO not always
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.CharsetDetector._lastChar">
+            <summary>
+            Lastchar, but not always filled. TODO remove?
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.CharsetDetector._charsetProbers">
+            <summary>
+            "list" of probers
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.CharsetDetector._escCharsetProber">
+            <summary>
+            TODO unknown
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.CharsetDetector._detectionDetail">
+            <summary>
+            Detected charset. Most of the time <see cref="F:UtfUnknown.CharsetDetector._done"/> is true
+            </summary>
+        </member>
+        <member name="M:UtfUnknown.CharsetDetector.DetectFromBytes(System.Byte[])">
+            <summary>
+            Detect the character encoding form this byte array.
+            It searchs for BOM from bytes[0].
+            </summary>
+            <param name="bytes">The byte array containing the text</param>
+            <returns></returns>
+        </member>
+        <member name="M:UtfUnknown.CharsetDetector.DetectFromBytes(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Detect the character encoding form this byte array. 
+            It searchs for BOM from bytes[offset].
+            </summary>
+            <param name="bytes">The byte array containing the text</param>
+            <param name="offset">The zero-based byte offset in buffer at which to begin reading the data from</param>
+            <param name="len">The maximum number of bytes to be read</param>
+            <returns></returns>
+        </member>
+        <member name="M:UtfUnknown.CharsetDetector.DetectFromStream(System.IO.Stream)">
+            <summary>
+            Detect the character encoding by reading the stream.
+            
+            Note: stream position is not reset before and after.
+            </summary>
+            <param name="stream">The steam. </param>
+        </member>
+        <member name="M:UtfUnknown.CharsetDetector.DetectFromStream(System.IO.Stream,System.Nullable{System.Int64})">
+            <summary>
+            Detect the character encoding by reading the stream.
+            
+            Note: stream position is not reset before and after.
+            </summary>
+            <param name="stream">The steam. </param>
+            <param name="maxBytesToRead">max bytes to read from <paramref name="stream"/>. If <c>null</c>, then no max</param>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="maxBytesToRead"/> 0 or lower.</exception>
+        </member>
+        <member name="M:UtfUnknown.CharsetDetector.DetectFromFile(System.String)">
+            <summary>
+            Detect the character encoding of this file.
+            </summary>
+            <param name="filePath">Path to file</param>
+            <returns></returns>
+        </member>
+        <member name="M:UtfUnknown.CharsetDetector.DetectFromFile(System.IO.FileInfo)">
+            <summary>
+            Detect the character encoding of this file.
+            </summary>
+            <param name="file">The file</param>
+            <returns></returns>
+        </member>
+        <member name="M:UtfUnknown.CharsetDetector.DataEnd">
+            <summary>
+            Notify detector that no further data is available. 
+            </summary>
+        </member>
+        <member name="T:UtfUnknown.Core.Analyzers.CharDistributionAnalyser">
+            <summary>
+            Base class for the Character Distribution Method, used for 
+            the CJK encodings
+            </summary>
+        </member>
+        <member name="M:UtfUnknown.Core.Analyzers.CharDistributionAnalyser.GetOrder(System.Byte[],System.Int32)">
+            <summary>
+            Feed a block of data and do distribution analysis
+            </summary>
+            <remarks>
+            we do not handle character base on its original encoding string, but 
+            convert this encoding string to a number, here called order.
+            This allow multiple encoding of a language to share one frequency table
+            </remarks>
+            <param name="buf">A <see cref="T:System.Byte"/></param>
+            <param name="offset"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UtfUnknown.Core.Analyzers.CharDistributionAnalyser.HandleOneChar(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Feed a character with known length 
+            </summary>
+            <param name="buf">A <see cref="T:System.Byte"/></param>
+            <param name="offset">buf offset</param>
+            <param name="charLen">1 of 2 char length?</param>
+        </member>
+        <member name="M:UtfUnknown.Core.Analyzers.CharDistributionAnalyser.GetConfidence">
+            <summary>
+            return confidence base on received data
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UtfUnknown.Core.Analyzers.Chinese.BIG5DistributionAnalyser.GetOrder(System.Byte[],System.Int32)">
+            <summary>
+            first  byte range: 0xa4 -- 0xfe
+             second byte range: 0x40 -- 0x7e , 0xa1 -- 0xfe
+            no validation needed here. State machine has done that
+            </summary>
+        </member>
+        <member name="M:UtfUnknown.Core.Analyzers.Chinese.EUCTWDistributionAnalyser.GetOrder(System.Byte[],System.Int32)">
+            <summary>
+            first  byte range: 0xc4 -- 0xfe
+             second byte range: 0xa1 -- 0xfe
+            no validation needed here. State machine has done that
+            </summary>
+        </member>
+        <member name="M:UtfUnknown.Core.Analyzers.Chinese.GB18030DistributionAnalyser.GetOrder(System.Byte[],System.Int32)">
+            <summary>
+            for GB2312 encoding, we are interested
+              first  byte range: 0xb0 -- 0xfe
+              second byte range: 0xa1 -- 0xfe
+            no validation needed here. State machine has done that
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UtfUnknown.Core.Analyzers.Japanese.EUCJPDistributionAnalyser.GetOrder(System.Byte[],System.Int32)">
+            <summary>
+            first  byte range: 0xa0 -- 0xfe
+             second byte range: 0xa1 -- 0xfe
+            no validation needed here. State machine has done that
+            </summary>
+        </member>
+        <member name="M:UtfUnknown.Core.Analyzers.Japanese.SJISDistributionAnalyser.GetOrder(System.Byte[],System.Int32)">
+            <summary>
+            first  byte range: 0x81 -- 0x9f , 0xe0 -- 0xfe
+             second byte range: 0x40 -- 0x7e,  0x81 -- oxfe
+            no validation needed here. State machine has done that
+            </summary>
+        </member>
+        <member name="M:UtfUnknown.Core.Analyzers.Korean.EUCKRDistributionAnalyser.GetOrder(System.Byte[],System.Int32)">
+            <summary>
+            first  byte range: 0xb0 -- 0xfe
+             second byte range: 0xa1 -- 0xfe
+            no validation needed here. State machine has done that
+            </summary>
+        </member>
+        <member name="T:UtfUnknown.Core.CodepageName">
+            <summary>
+            This class defines the available codepage .NET Name.
+            </summary>
+            <remarks>Based on https://github.com/dotnet/corefx/blob/cf28b7896a762f71c990a5896a160a4138d833c9/src/System.Text.Encoding.CodePages/src/System/Text/EncodingTable.Data.cs</remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ASCII">
+            <summary>
+            ASCII codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.UTF7">
+            <summary>
+            UTF-7 codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.UTF8">
+            <summary>
+            UTF-8 codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.UTF16_LE">
+            <summary>
+            UTF-16LE codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.UTF16_BE">
+            <summary>
+            UTF-16BE codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.UTF32_LE">
+            <summary>
+            UTF-32LE codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.UTF32_BE">
+            <summary>
+            UTF-32BE codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.EUC_JP">
+            <summary>
+            EUC Japanese codepage name.
+            </summary>
+            <remarks>
+            Are other aliases x-euc, x-euc-jp, iso-2022-jpeuc, extended_unix_code_packed_format_for_japanese in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.EUC_KR">
+            <summary>
+            EUC Korean codepage name.
+            </summary>
+            <remarks>
+            Are other aliases iso-2022-kr-8, iso-2022-kr-8bit, cseuckr in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.EUC_TW">
+            <summary>
+            EUC Taiwan codepage name.
+            </summary>
+            <remarks>
+            Not supported.
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_2022_CN">
+            <summary>
+            ISO 2022 Chinese codepage name.
+            </summary>
+            <remarks>
+            Supported by alias is x-cp50227 (Codepage 50227) in. NET. Codepage identifier 50229 is currently unsupported (see for example https://github.com/microsoft/referencesource/blob/17b97365645da62cf8a49444d979f94a59bbb155/mscorlib/system/text/iso2022encoding.cs#L92).
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_2022_KR">
+            <summary>
+            ISO 2022 Korean codepage name.
+            </summary>
+            <remarks>
+            Are other aliases iso-2022-kr-7, iso-2022-kr-7bit, csiso2022kr in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_2022_JP">
+            <summary>
+            ISO 2022 Japanese codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.X_CP50227">
+            <summary>
+            ISO 2022 Simplified Chinese codepage name.
+            </summary>
+            <remarks>
+            Other alias is cp50227.
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.BIG5">
+            <summary>
+            Big5 codepage name.
+            </summary>
+            <remarks>
+            Are other aliases big5-hkscs, cn-big5, csbig5, x-x-big5 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.GB18030">
+            <summary>
+            GB18030 codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.HZ_GB_2312">
+            <summary>
+            HZ-GB2312 codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.SHIFT_JIS">
+            <summary>
+            Shift-JIS codepage name.
+            </summary>
+            <remarks>
+            Are other aliases shift_jis, sjis, csshiftjis, cswindows31j, ms_kanji, x-sjis in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.KS_C_5601_1987">
+            <summary>
+            ANSI/OEM Korean codepage name.
+            </summary>
+            <remarks>
+            Are other aliases korean, ks-c-5601, ks-c5601, ks_c_5601, ks_c_5601-1989, ks_c_5601_1987, ksc5601, ksc_5601, iso-ir-149, csksc56011987 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.CP949">
+            <summary>
+            CP949 codepage name.
+            </summary>
+            <remarks>
+            Not supported in .NET. A nearly identical version of cp949 is ks_c_5601-1987 (see https://lists.w3.org/Archives/Public/ietf-charsets/2002JulSep/0020.html)
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.IBM852">
+            <summary>
+            OEM Latin-2 codepage name.
+            </summary>
+            <remarks>
+            Is other alias cp852 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.IBM855">
+            <summary>
+            OEM Cyrillic (primarily Russian) codepage name.
+            </summary>
+            <remarks>
+            Is other alias cp855 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.IBM866">
+            <summary>
+            OEM Cyrillic (primarily Russian) codepage name.
+            </summary>
+            <remarks>
+            Is other alias cp866 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_8859_1">
+            <summary>
+            ISO 8859-1 Latin-1 Western European codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_8859_2">
+            <summary>
+            ISO 8859-2 Central European (Latin 2 Eastern European) codepage name.
+            </summary>
+            <remarks>
+            Are other aliases iso8859-2, iso_8859-2, iso_8859-2:1987, iso-ir-101, l2, latin2, csisolatin2 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_8859_3">
+            <summary>
+            ISO 8859-3 Latin-3 (South European) codepage name.
+            </summary>
+            <remarks>
+            Are other aliases iso_8859-3, iso_8859-3:1988, iso-ir-109, l3, latin3, csisolatin3 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_8859_4">
+            <summary>
+            ISO 8859-4 Baltic (Latin-4 North European) codepage name.
+            </summary>
+            <remarks>
+            Are other aliases iso_8859-4, iso_8859-4:1988, iso-ir-110, l4, latin4, csisolatin4 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_8859_5">
+            <summary>
+            ISO 8859-5 Cyrillic codepage name.
+            </summary>
+            <remarks>
+            Are other aliases iso_8859-5, iso_8859-5:1988, iso-ir-144, cyrillic, csisolatincyrillic in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_8859_6">
+            <summary>
+            ISO 8859-6 Arabic codepage name.
+            </summary>
+            <remarks>
+            Are other aliases iso_8859-6, iso_8859-6:1987, iso-ir-127, arabic, csisolatinarabic, ecma-114 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_8859_7">
+            <summary>
+            ISO 8859-7 Greek codepage name.
+            </summary>
+            <remarks>
+            Are other aliases iso_8859-7, iso_8859-7:1987, iso-ir-126, greek, greek8, csisolatingreek, ecma-118, elot_928 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_8859_8">
+            <summary>
+            ISO 8859-8 Hebrew codepage name.
+            </summary>
+            <remarks>
+            Are other aliases iso_8859-8, iso_8859-8:1988, iso-8859-8 visual, iso-ir-138, hebrew, logical, visual, csisolatinhebrew in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_8859_9">
+            <summary>
+            ISO 8859-9 Latin-5 Turkish codepage name.
+            </summary>
+            <remarks>
+            Is other alias iso-ir-148 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_8859_10">
+            <summary>
+            ISO 8859-10 Latin-6 Nordic codepage name.
+            </summary>
+            <remarks>
+            Not supported.
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_8859_11">
+            <summary>
+            ANSI/OEM Thai codepage name.
+            </summary>
+            <remarks>
+            Are other aliases tis-620, windows-874, dos-874 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_8859_13">
+            <summary>
+            ISO 8859-13 Estonian (Latin 7 BalticRim) codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_8859_15">
+            <summary>
+            ISO 8859-15 Latin-9 (Western European) codepage name.
+            </summary>
+            <remarks>
+            Are other aliases iso_8859-15, l9, latin9, csisolatin9 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.ISO_8859_16">
+            <summary>
+            ISO 8859-16 codepage name.
+            </summary>
+            <remarks>
+            Not supported.
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.WINDOWS_1250">
+            <summary>
+            ANSI Central European codepage name.
+            </summary>
+            <remarks>
+            Is other alias x-cp1250 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.WINDOWS_1251">
+            <summary>
+            ANSI Cyrillic codepage name.
+            </summary>
+            <remarks>
+            Is other alias x-cp1251 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.WINDOWS_1252">
+            <summary>
+            ANSI Latin-1 codepage name.
+            </summary>
+            <remarks>
+            Is other alias x-ansi in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.WINDOWS_1253">
+            <summary>
+            ANSI Greek codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.WINDOWS_1255">
+            <summary>
+            ANSI Hebrew codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.WINDOWS_1256">
+            <summary>
+            ANSI Arabic codepage name.
+            </summary>
+            <remarks>
+            Is other alias cp1256 in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.WINDOWS_1257">
+            <summary>
+            ANSI Baltic codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.WINDOWS_1258">
+            <summary>
+            ANSI/OEM Vietnamese codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.X_MAC_CE">
+            <summary>
+            MAC Latin-2 codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.X_MAC_CYRILLIC">
+            <summary>
+            Cyrillic (Mac) codepage name.
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.KOI8_R">
+            <summary>
+            Cyrillic (KOI8-R) codepage name.
+            </summary>
+            <remarks>
+            Are other aliases koi, koi8, koi8r, cskoi8r in .NET
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.TIS_620">
+            <summary>
+            TIS-620 codepage name.
+            </summary>
+            <remarks>
+            A nearly identical version of TIS-620 is iso-8859-11. The sole difference being that iso-8859-11 defines hex A0 as a non-breaking space, while TIS-620 leaves it undefined but reserved.
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.VISCII">
+            <summary>
+            VISCII codepage name.
+            </summary>
+            <remarks>
+            Not supported. It's an unofficially-defined modified ASCII character encoding for using the Vietnamese language with computers.
+            See https://en.wikipedia.org/wiki/VISCII
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.X_ISO_10646_UCS_4_3412">
+            <summary>
+            X-ISO-10646-UCS-4-3412 codepage name.
+            </summary>
+            <remarks>
+            Not supported? ISO 10646 and Unicode only include big-endian and little-endian UCS-4/UTF-32, not middle-endian.
+            See https://stackoverflow.com/a/21896370
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.CodepageName.X_ISO_10646_UCS_4_2143">
+            <summary>
+            X-ISO-10646-UCS-4-2143 codepage name.
+            </summary>
+            <remarks>
+            Not supported? ISO 10646 and Unicode only include big-endian and little-endian UCS-4/UTF-32, not middle-endian.
+            See https://stackoverflow.com/a/21896370
+            </remarks>
+        </member>
+        <member name="F:UtfUnknown.Core.InputState.EscASCII">
+            <summary>
+            Found escape character or HZ "~{"
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.InputState.Highbyte">
+            <summary>
+            non-ascii byte (high-byte)
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.Models.SequenceModel.keepEnglishLetter">
+            <summary>
+            TODO not used?
+            </summary>
+        </member>
+        <member name="P:UtfUnknown.Core.Models.SequenceModel.KeepEnglishLetter">
+            <summary>
+            TODO not used?
+            </summary>
+        </member>
+        <member name="T:UtfUnknown.Core.Models.StateMachineModel">
+            <summary>
+            State machine model
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.Models.StateMachineModel.START">
+            <summary>
+            Start node
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.Models.StateMachineModel.ERROR">
+            <summary>
+            Error node <see cref="F:UtfUnknown.Core.Probers.ProbingState.NotMe"/> ?
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.Models.StateMachineModel.ITSME">
+            <summary>
+            <see cref="F:UtfUnknown.Core.Probers.ProbingState.FoundIt"/> ?
+            </summary>
+        </member>
+        <member name="M:UtfUnknown.Core.Probers.CharsetProber.HandleData(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Feed data to the prober
+            </summary>
+            <param name="buf">a buffer</param>
+            <param name="offset">offset into buffer</param>
+            <param name="len">number of bytes available into buffer</param>
+            <returns>
+            A <see cref="T:UtfUnknown.Core.Probers.ProbingState"/>
+            </returns>
+        </member>
+        <member name="M:UtfUnknown.Core.Probers.CharsetProber.Reset">
+            <summary>
+            Reset prober state
+            </summary>
+        </member>
+        <member name="M:UtfUnknown.Core.Probers.CharsetProber.FilterWithoutEnglishLetters(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+             
+            </summary>
+            <returns>filtered buffer</returns>
+        </member>
+        <member name="M:UtfUnknown.Core.Probers.CharsetProber.FilterWithEnglishLetters(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Do filtering to reduce load to probers (Remove ASCII symbols, 
+            collapse spaces). This filter applies to all scripts which contain 
+            both English characters and upper ASCII characters.
+            </summary>
+            <returns>a filtered copy of the input buffer</returns>
+        </member>
+        <member name="T:UtfUnknown.Core.Probers.CodingStateMachine">
+            <summary>
+            Parallel state machine for the Coding Scheme Method
+            </summary>
+        </member>
+        <member name="T:UtfUnknown.Core.Probers.HebrewProber">
+            <summary>
+            This prober doesn't actually recognize a language or a charset.
+            It is a helper prober for the use of the Hebrew model probers
+            </summary>
+        </member>
+        <member name="M:UtfUnknown.Core.Probers.HebrewProber.HandleData(System.Byte[],System.Int32,System.Int32)">
+             Final letter analysis for logical-visual decision.
+             Look for evidence that the received buffer is either logical Hebrew or 
+             visual Hebrew.
+             The following cases are checked:
+             1) A word longer than 1 letter, ending with a final letter. This is an 
+                indication that the text is laid out "naturally" since the final letter 
+                really appears at the end. +1 for logical score.
+             2) A word longer than 1 letter, ending with a Non-Final letter. In normal
+                Hebrew, words ending with Kaf, Mem, Nun, Pe or Tsadi, should not end with
+                the Non-Final form of that letter. Exceptions to this rule are mentioned
+                above in isNonFinal(). This is an indication that the text is laid out
+                backwards. +1 for visual score
+             3) A word longer than 1 letter, starting with a final letter. Final letters 
+                should not appear at the beginning of a word. This is an indication that 
+                the text is laid out backwards. +1 for visual score.
+            
+             The visual score and logical score are accumulated throughout the text and 
+             are finally checked against each other in GetCharSetName().
+             No checking for final letters in the middle of words is done since that case
+             is not an indication for either Logical or Visual text.
+            
+             The input buffer should not contain any white spaces that are not (' ')
+             or any low-ascii punctuation marks. 
+        </member>
+        <member name="T:UtfUnknown.Core.Probers.MBCSGroupProber">
+            <summary>
+            Multi-byte charsets probers
+            </summary>
+        </member>
+        <member name="T:UtfUnknown.Core.Probers.MultiByte.Japanese.SJISProber">
+            <summary>
+            for S-JIS encoding, observe characteristic:
+            1, kana character (or hankaku?) often have hight frequency of appereance
+            2, kana character often exist in group
+            3, certain combination of kana is never used in japanese language
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.Probers.ProbingState.Detecting">
+            <summary>
+            No sure answer yet, but caller can ask for confidence
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.Probers.ProbingState.FoundIt">
+            <summary>
+            Positive answer
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.Core.Probers.ProbingState.NotMe">
+            <summary>
+            Negative answer 
+            </summary>
+        </member>
+        <member name="T:UtfUnknown.DetectionDetail">
+            <summary>
+            Detailed result of a detection
+            </summary>
+        </member>
+        <member name="F:UtfUnknown.DetectionDetail.FixedToSupportCodepageName">
+            <summary>
+            A dictionary for replace unsupported codepage name in .NET to the nearly identical version.
+            </summary>
+        </member>
+        <member name="M:UtfUnknown.DetectionDetail.#ctor(System.String,System.Single,UtfUnknown.Core.Probers.CharsetProber,System.Nullable{System.TimeSpan},System.String)">
+            <summary>
+            New result
+            </summary>
+        </member>
+        <member name="M:UtfUnknown.DetectionDetail.#ctor(UtfUnknown.Core.Probers.CharsetProber,System.Nullable{System.TimeSpan})">
+            <summary>
+            New Result
+            </summary>
+        </member>
+        <member name="P:UtfUnknown.DetectionDetail.EncodingName">
+            <summary>
+            The (short) name of the detected encoding. For full details, check <see cref="P:UtfUnknown.DetectionDetail.Encoding"/>
+            </summary>
+        </member>
+        <member name="P:UtfUnknown.DetectionDetail.Encoding">
+            <summary>
+            The detected encoding. 
+            </summary>
+        </member>
+        <member name="P:UtfUnknown.DetectionDetail.Confidence">
+            <summary>
+            The confidence of the found encoding. Between 0 and 1.
+            </summary>
+        </member>
+        <member name="P:UtfUnknown.DetectionDetail.Prober">
+            <summary>
+            The used prober for detection
+            </summary>
+        </member>
+        <member name="P:UtfUnknown.DetectionDetail.HasBOM">
+            <summary>
+            A Byte Order Mark was detected
+            </summary>
+        </member>
+        <member name="P:UtfUnknown.DetectionDetail.Time">
+            <summary>
+            The time spend
+            </summary>
+        </member>
+        <member name="T:UtfUnknown.DetectionResult">
+            <summary>
+            Result of a detection.
+            </summary>
+        </member>
+        <member name="M:UtfUnknown.DetectionResult.#ctor">
+            <summary>
+            Empty
+            </summary>
+        </member>
+        <member name="M:UtfUnknown.DetectionResult.#ctor(System.Collections.Generic.IList{UtfUnknown.DetectionDetail})">
+            <summary>
+            Multiple results
+            </summary>
+        </member>
+        <member name="M:UtfUnknown.DetectionResult.#ctor(UtfUnknown.DetectionDetail)">
+            <summary>
+            Single result
+            </summary>
+            <param name="detectionDetail"></param>
+        </member>
+        <member name="P:UtfUnknown.DetectionResult.Detected">
+            <summary>
+            Get the best Detection
+            </summary>
+        </member>
+        <member name="P:UtfUnknown.DetectionResult.Details">
+            <summary>
+            All results
+            </summary>
+        </member>
+    </members>
+</doc>

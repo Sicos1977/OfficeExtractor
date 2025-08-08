@@ -44,10 +44,7 @@ internal class Reader
     /// <param name="reader"></param>
     public Reader(TextReader reader)
     {
-        if (reader == null)
-            throw new ArgumentNullException(nameof(reader));
-
-        TextReader = reader;
+        TextReader = reader ?? throw new ArgumentNullException(nameof(reader));
     }
     #endregion
 
@@ -207,7 +204,7 @@ internal class Reader
                     {
                         try
                         {
-                            text.Append(FromHexa((char)TextReader.Read(), (char)TextReader.Read()));
+                            text.Append(FromHexA((char)TextReader.Read(), (char)TextReader.Read()));
                         }
                         catch (Exception)
                         {
@@ -264,8 +261,7 @@ internal class Reader
 
         while (enumerator.MoveNext())
         {
-            var rtfText = enumerator.Current as Text;
-            if (rtfText != null)
+            if (enumerator.Current is Text rtfText)
                 return rtfText.Text;
         }
 
@@ -291,7 +287,7 @@ internal class Reader
             var bytes = new List<byte>();
 
             for (var i = 0; i < rtfText.Text.Length; i += 2)
-                bytes.Add((byte)FromHexa(rtfText.Text[i], rtfText.Text[i + 1]));
+                bytes.Add((byte)FromHexA(rtfText.Text[i], rtfText.Text[i + 1]));
 
             return bytes.ToArray();
         }
@@ -307,7 +303,7 @@ internal class Reader
     /// <param name="hi"></param>
     /// <param name="lo"></param>
     /// <returns></returns>
-    private static char FromHexa(char hi, char lo)
+    private static char FromHexA(char hi, char lo)
     {
         return (char)byte.Parse(hi.ToString() + lo, NumberStyles.HexNumber);
     }

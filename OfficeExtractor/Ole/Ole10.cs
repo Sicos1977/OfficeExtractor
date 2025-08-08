@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
 
@@ -392,10 +393,8 @@ internal class Ole10
 
         inputStream.Position = 0;
 
-        using (var binaryReader = new BinaryReader(inputStream))
-        {
-            ParseOle(binaryReader);
-        }
+        using var binaryReader = new BinaryReader(inputStream, Encoding.Default, true);
+        ParseOle(binaryReader);
     }
 
     /// <summary>

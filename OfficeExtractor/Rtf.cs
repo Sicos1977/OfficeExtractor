@@ -123,7 +123,7 @@ internal class Rtf
         switch (ole10.ClassName)
         {
             case "Package":
-                var package = new Package(ole10.NativeData);
+                var package = new Package(stream, 4);
                 if (package.Format == OleFormat.Link) return null;
 
                 var fileName = Path.GetFileName(package.FileName);

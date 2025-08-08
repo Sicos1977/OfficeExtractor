@@ -67,12 +67,7 @@ internal class Ole10Native
         switch (compObjStream.AnsiUserType)
         {
             case "OLE Package":
-                var olePackageSize = (int)ole10Native.Length - 4;
-                if (olePackageSize <= 0)
-                    break;
-                var olePackageData = new byte[olePackageSize];
-                _ = ole10Native.Read(olePackageData, 4, olePackageSize);
-                var package = new Package(olePackageData);
+                var package = new Package(ole10Native, 4);
                 Format = package.Format;
                 FileName = Path.GetFileName(package.FileName);
                 FilePath = package.FilePath;

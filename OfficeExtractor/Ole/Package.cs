@@ -1,6 +1,8 @@
 ﻿using System.IO;
+using System.Text;
 using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
+using OpenMcdf;
 
 //
 // Package.cs
@@ -37,9 +39,11 @@ internal class Package
     ///     Creates this object and sets all its properties
     /// </summary>
     /// <param name="data">The Package object as a byte array</param>
-    internal Package(byte[] data)
+    /// <param name="skip">The amount of bytes to skip before processing the stream</param>
+    internal Package(Stream data, int skip = 0)
     {
-        ParsePackage(data);
+        data.Position = 0;
+        ParsePackage(data, skip);
     }
     #endregion
 
@@ -47,11 +51,12 @@ internal class Package
     /// <summary>
     ///     Parses the byte array and sets all the package properties
     /// </summary>
-    /// <param name="data"></param>
-    private void ParsePackage(byte[] data)
+    /// <param name="stream"></param>
+    /// <param name="skip">The amount of bytes to skip before processing the stream</param>
+    private void ParsePackage(Stream stream, int skip)
     {
-        using var memoryStream = new MemoryStream(data);
-        using var binaryReader = new BinaryReader(memoryStream);
+        using var binaryReader = new BinaryReader(stream, Encoding.Default, true);
+        binaryReader.ReadBytes(skip);
         // Check signature
         var signature = binaryReader.ReadUInt16();
         if (signature != 0x0002)

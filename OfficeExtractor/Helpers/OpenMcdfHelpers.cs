@@ -34,8 +34,10 @@ internal static class OpenMcdfHelpers
     #region GetData
     internal static byte[] GetData(this CfbStream stream)
     {
+        var position = stream.Position;
         using var memoryStream = new MemoryStream();
         stream.CopyTo(memoryStream);
+        stream.Position = position; // Reset the position to the original value        
         return memoryStream.ToArray();
     }
     #endregion
@@ -46,6 +48,16 @@ internal static class OpenMcdfHelpers
         stream.Position = 0;
         using var memoryStream = new MemoryStream(data);
         memoryStream.CopyTo(stream);
+    }
+    #endregion
+
+    #region AsMemoryStream
+    internal static MemoryStream AsMemoryStream(this CfbStream stream)
+    {
+        stream.Position = 0;
+        var memoryStream = new MemoryStream();
+        stream.CopyTo(memoryStream);
+        return memoryStream;
     }
     #endregion
 }

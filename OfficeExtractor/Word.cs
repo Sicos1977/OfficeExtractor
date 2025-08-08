@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
 using OfficeExtractor.Ole;
@@ -89,19 +90,19 @@ internal class Word
         var idCompOb = (attachmentsOnly ? PrefixCompObject : "") + CompObject;
         var idObjInfo = (attachmentsOnly ? PrefixObjectInfo : "") + ObjectInfo;
 
-        using var compoundFile = RootStorage.OpenRead(inputFile);
+        using var compoundFile = RootStorage.Open(inputFile, FileMode.Open, FileAccess.ReadWrite, StorageModeFlags.Transacted);
         var result = new List<string>();
 
-        if (!compoundFile.TryOpenStorage("ObjectPool", out _))
+        if (!compoundFile.TryOpenStorage("ObjectPool", out var objectPool))
             return result;
 
         Logger.WriteToLog("Object Pool stream found");
 
-        foreach(var item in compoundFile.EnumerateEntries())
+        foreach(var item in objectPool.EnumerateEntries())
         {
             if (item.Type != EntryType.Storage) continue;
 
-            if(!compoundFile.TryOpenStorage(item.Name, out var childStorage)) continue;
+            if(!objectPool.TryOpenStorage(item.Name, out var childStorage)) continue;
             
             string extractedFileName;
 
@@ -122,8 +123,7 @@ internal class Word
                         continue;
                     }
 
-                    Logger.WriteToLog(
-                        $"CompObj is of the ansi user type '{compObjStream.AnsiUserType}' ... ignoring");
+                    Logger.WriteToLog($"CompObj is of the ansi user type '{compObjStream.AnsiUserType}' ... ignoring");
                 }
 
                 if (childStorage.TryOpenStream(idObjInfo, out var objInfo))

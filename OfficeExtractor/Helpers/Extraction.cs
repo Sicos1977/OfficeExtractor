@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -354,17 +355,16 @@ internal class Extraction
 
             const string delimiter = "%DocumentOle:";
 
-            var documentOleFileName = GetDelimitedStringFromData(delimiter, contents.GetData());
-            if (documentOleFileName != null)
-            {
-                if (!documentOleFileName.Equals(string.Empty))
-                    fileName = Path.GetFileName(documentOleFileName);
+            var contentsData = contents.GetData();
 
-                contents.SetData(contents.GetData().Skip(delimiter.Length * 2 + documentOleFileName.Length).ToArray());
-            }
+            var documentOleFileName = GetDelimitedStringFromData(delimiter, contentsData);
+            if (documentOleFileName == null)
+                return SaveByteArrayToFile(contents.GetData(), FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
+            
+            if (!documentOleFileName.Equals(string.Empty))
+                fileName = Path.GetFileName(documentOleFileName);
 
-            return SaveByteArrayToFile(contents.GetData(),
-                FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
+            return SaveByteArrayToFile(contentsData.Skip(delimiter.Length * 2 + documentOleFileName.Length).ToArray(), FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
         }
 
         if (storage.TryOpenStream("Package", out var package))
@@ -378,8 +378,7 @@ internal class Extraction
             }
 
             if (string.IsNullOrWhiteSpace(fileName)) fileName = DefaultEmbeddedObjectName;
-            return SaveByteArrayToFile(package.GetData(),
-                FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
+            return SaveByteArrayToFile(package.GetData(), FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
         }
 
         if (storage.TryOpenStream("EmbeddedOdf", out var embeddedOdf))
@@ -394,8 +393,7 @@ internal class Extraction
             }
 
             if (string.IsNullOrWhiteSpace(fileName)) fileName = DefaultEmbeddedObjectName;
-            return SaveByteArrayToFile(embeddedOdf.GetData(),
-                FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
+            return SaveByteArrayToFile(embeddedOdf.GetData(), FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
         }
 
         if (storage.TryOpenStream("\x0001Ole10Native", out _))
@@ -406,8 +404,7 @@ internal class Extraction
             Logger.WriteToLog($"Ole10Native stream format is '{ole10Native.Format}'");
 
             if (ole10Native.Format == OleFormat.File)
-                return SaveByteArrayToFile(ole10Native.NativeData,
-                    FileManager.FileExistsMakeNew(Path.Combine(outputFolder, ole10Native.FileName)));
+                return SaveByteArrayToFile(ole10Native.NativeData, FileManager.FileExistsMakeNew(Path.Combine(outputFolder, ole10Native.FileName)));
 
             Logger.WriteToLog("Ole10Native is ignored");
             return null;
@@ -419,8 +416,7 @@ internal class Extraction
 
             // The embedded object is a Word file
             if (string.IsNullOrWhiteSpace(fileName)) fileName = "Embedded Word document.doc";
-            return SaveStorageTreeToCompoundFile(storage,
-                FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
+            return SaveStorageTreeToCompoundFile(storage, FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
         }
 
         if (storage.TryOpenStream("Workbook", out _))
@@ -430,8 +426,7 @@ internal class Extraction
             // The embedded object is an Excel file   
             if (string.IsNullOrWhiteSpace(fileName)) fileName = "Embedded Excel document.xls";
             Excel.SetWorkbookVisibility(storage);
-            return SaveStorageTreeToCompoundFile(storage,
-                FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
+            return SaveStorageTreeToCompoundFile(storage, FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
         }
 
         if (storage.TryOpenStream("PowerPoint Document", out _))
@@ -440,8 +435,7 @@ internal class Extraction
 
             // The embedded object is a PowerPoint file
             if (string.IsNullOrWhiteSpace(fileName)) fileName = "Embedded PowerPoint document.ppt";
-            return SaveStorageTreeToCompoundFile(storage,
-                FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
+            return SaveStorageTreeToCompoundFile(storage, FileManager.FileExistsMakeNew(Path.Combine(outputFolder, fileName)));
         }
 
         return null;
