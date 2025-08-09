@@ -123,7 +123,8 @@ internal class Rtf
         switch (ole10.ClassName)
         {
             case "Package":
-                var package = new Package(stream, 4);
+                // Skip the first 32 bytes, which is the header
+                var package = new Package(stream, 32);
                 if (package.Format == OleFormat.Link) return null;
 
                 var fileName = Path.GetFileName(package.FileName);
@@ -141,8 +142,7 @@ internal class Rtf
                 if (Extraction.IsCompoundFile(ole10.NativeData))
                     return Extraction.SaveFromStorageNode(ole10.NativeData, outputFolder, ole10.ItemName);
 
-                throw new OEObjectTypeNotSupported("Unsupported OleNative ClassName '" +
-                                                   ole10.ClassName + "' found");
+                throw new OEObjectTypeNotSupported($"Unsupported OleNative ClassName '{ole10.ClassName}' found");
         }
     }
     #endregion

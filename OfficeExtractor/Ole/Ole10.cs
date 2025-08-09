@@ -56,8 +56,7 @@ internal class Ole10
         }
         catch (Exception)
         {
-            throw new OEObjectTypeNotSupported(
-                "Invalid OLE version 1.0 format, expected 0x00000000, 0x00000002 or 0x00000005");
+            throw new OEObjectTypeNotSupported("Invalid OLE version 1.0 format, expected 0x00000000, 0x00000002 or 0x00000005");
         }
 
         if (Format != OleFormat.NotSet)

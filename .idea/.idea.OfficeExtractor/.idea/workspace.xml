@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="b3eaa599-eaf7-4c09-8092-f3a15b8f85cb" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/OfficeExtractor/Rtf.cs" beforeDir="false" afterPath="$PROJECT_DIR$/OfficeExtractor/Rtf.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.OfficeExtractor/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.OfficeExtractor/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/OfficeExtractorTest/ExtractionTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/OfficeExtractorTest/ExtractionTests.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -10,13 +13,20 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="DpaMonitoringSettings">
+    <option name="firstShow" value="false" />
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 7
-}]]></component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="3112YJEalvt7gbJ8g4uZR2z9FvS" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -24,11 +34,16 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "314a21f9-c50a-4a54-ab2a-b3e79151c764.executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
   }
@@ -66,6 +81,8 @@
       <option name="presentableId" value="Default" />
       <updated>1754677305566</updated>
       <workItem from="1754677308084" duration="299000" />
+      <workItem from="1754721748081" duration="21000" />
+      <workItem from="1754721783884" duration="991000" />
     </task>
     <servers />
   </component>
@@ -91,6 +108,32 @@
           <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
           <option name="timeStamp" value="3" />
         </breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/OfficeExtractor/Ole/Package.cs</url>
+          <line>79</line>
+          <properties documentPath="D:\Progsoft\_GitHub_\OfficeExtractor\OfficeExtractor\Ole\Package.cs" containingFunctionPresentation="Method 'ParsePackage'">
+            <startOffsets>
+              <option value="2965" />
+            </startOffsets>
+            <endOffsets>
+              <option value="2980" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/OfficeExtractor/Ole/Ole10Native.cs</url>
+          <line>69</line>
+          <properties documentPath="D:\Progsoft\_GitHub_\OfficeExtractor\OfficeExtractor\Ole\Ole10Native.cs" containingFunctionPresentation="Constructor 'Ole10Native'">
+            <startOffsets>
+              <option value="2651" />
+            </startOffsets>
+            <endOffsets>
+              <option value="2693" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>

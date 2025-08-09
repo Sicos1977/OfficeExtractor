@@ -2,7 +2,6 @@
 using System.Text;
 using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
-using OpenMcdf;
 
 //
 // Package.cs
@@ -62,7 +61,7 @@ internal class Package
         if (signature != 0x0002)
             throw new OEFileIsCorrupt("Invalid package type signature, expected 0x0002");
 
-        if (binaryReader.PeekChar() == 00)
+        while (binaryReader.PeekChar() == 00)
             binaryReader.ReadByte();
 
         FileName = Path.GetFileName(Strings.ReadNullTerminatedAnsiString(binaryReader));

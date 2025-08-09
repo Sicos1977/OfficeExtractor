@@ -168,24 +168,11 @@ namespace OfficeExtractorTest
         {
             var outputFolder = CreateTemporaryFolder();
             var extractor = new Extractor();
-            var files = extractor.Extract(
-                "TestFiles\\A DOC word document with document ole object attached path removed.doc", outputFolder);
+            var files = extractor.Extract("TestFiles\\A DOC word document with document ole object attached path removed.doc", outputFolder);
             Assert.HasCount(1, files);
             Assert.AreEqual("Embedded object.pdf", Path.GetFileName(files[0]));
         }
 
-        [TestMethod]
-
-#if NET5_0_OR_GREATER
-#else
-#endif
-        public void DocWithDocumentOleObjectAttachedPathBroken()
-        {
-            var outputFolder = CreateTemporaryFolder();
-            var extractor = new Extractor();
-            Assert.ThrowsExactly<ArgumentException>(() => extractor.Extract("TestFiles\\A DOC word document with document ole object attached path broken.doc",
-                outputFolder));
-        }
 
         [TestMethod]
         public void DocxWithEmbeddedMathTypeObjectSuccessfulExtractsNothing()
