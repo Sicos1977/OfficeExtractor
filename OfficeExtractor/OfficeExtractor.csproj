@@ -3,20 +3,19 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.1</Version>
+    <Version>2.0.2</Version>
     <Copyright>(c)2013-2025 Kees van Spelde</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>office ole word excel powerpoint rtf</PackageTags>
-    <PackageReleaseNotes>- Updated nuget packages
-- Made everything work with OpenMCDF version 3+</PackageReleaseNotes>
+    <PackageReleaseNotes>- Updated nuget packages</PackageReleaseNotes>
     <PackageIcon>extract-icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Sicos1977/OfficeExtractor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/Sicos1977/OfficeExtractor</PackageProjectUrl>
     <SignAssembly>False</SignAssembly>
     <AssemblyOriginatorKeyFile>OfficeExtractor.snk</AssemblyOriginatorKeyFile>
-    <AssemblyVersion>2.0.1.0</AssemblyVersion>
-    <FileVersion>2.0.1.0</FileVersion>
+    <AssemblyVersion>2.0.2.0</AssemblyVersion>
+    <FileVersion>2.0.2.0</FileVersion>
     <Description>Extracts embedded OLE objects from Word, Excel, PowerPoint and Open Office files without needing the original programs.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <LangVersion>latest</LangVersion>
@@ -24,9 +23,9 @@
 
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
-    <PackageReference Include="MsgReader" Version="6.0.3" />
-    <PackageReference Include="OpenMcdf" Version="3.0.1" />
-    <PackageReference Include="PasswordProtectedChecker" Version="2.1.0" />
+    <PackageReference Include="MsgReader" Version="6.0.4" />
+    <PackageReference Include="OpenMcdf" Version="3.0.2" />
+    <PackageReference Include="PasswordProtectedChecker" Version="2.1.1" />
     <PackageReference Include="SharpCompress" Version="0.40.0" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
   </ItemGroup>
