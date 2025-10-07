@@ -82,6 +82,12 @@ internal static class FileManager
     public static string FileExistsMakeNew(string fileName, bool validateLongFileName = true,
         int extraTruncateSize = -1)
     {
+        // Remove invalid characters from the filename to prevent file system errors
+        var baseFileName = Path.GetFileName(fileName);
+        var sanitizedFileName = RemoveInvalidFileNameChars(baseFileName);
+        var directory = Path.GetDirectoryName(fileName);
+        fileName = string.IsNullOrEmpty(directory) ? sanitizedFileName : Path.Combine(directory, sanitizedFileName);
+
         var tempFileName = fileName;
         var fileNameWithoutExtension = GetFileNameWithoutExtension(fileName);
         var extension = GetExtension(fileName);
@@ -123,6 +129,9 @@ internal static class FileManager
         var result = Path.GetInvalidFileNameChars()
             .Aggregate(fileName, (current, c) => current.Replace(c.ToString(CultureInfo.InvariantCulture), "_"));
 
+        // Also replace question marks as they are often the result of ANSI conversion of Unicode characters
+        // and are invalid on Windows even though they may be valid on the current platform
+        result = result.Replace("?", "_");
         result = result.Replace(",", string.Empty);
 
         return result;
