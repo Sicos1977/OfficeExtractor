@@ -57,7 +57,30 @@ internal class Ole10Native
             throw new ArgumentNullException(nameof(storage));
 
         var ole10Native = storage.OpenStream("\x0001Ole10Native");
-        var compObj = storage.OpenStream("\x0001CompObj");
+
+        // Check if CompObj stream exists
+        if (!storage.TryOpenStream("\x0001CompObj", out var compObj))
+        {
+            Logger.WriteToLog("CompObj stream not found, attempting to parse Ole10Native as Package");
+            
+            // When CompObj is missing, try to parse as a Package directly
+            try
+            {
+                var package = new Package(ole10Native, 4);
+                Format = package.Format;
+                FileName = Path.GetFileName(package.FileName);
+                FilePath = package.FilePath;
+                NativeData = package.Data;
+                AnsiUserType = "OLE Package";
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteToLog($"Failed to parse Ole10Native without CompObj: {ex.Message}");
+                throw new OEObjectTypeNotSupported("Unable to parse Ole10Native stream without CompObj stream", ex);
+            }
+            return;
+        }
+
         var compObjStream = new CompObjStream(compObj);
 
         AnsiUserType = compObjStream.AnsiUserType;
