@@ -94,10 +94,29 @@ internal class Package
 
         if (binaryReader.BaseStream.Position >= binaryReader.BaseStream.Length) return;
         var tempFileName = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
-        if (string.IsNullOrEmpty(FileName)) FileName = tempFileName;
+        // Prefer Unicode filename if ANSI filename is empty or contains invalid characters
+        if (string.IsNullOrEmpty(FileName) || (!string.IsNullOrEmpty(tempFileName) && HasInvalidFileNameChars(FileName)))
+            FileName = tempFileName;
         var tempFilePath = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
-        if (string.IsNullOrEmpty(FilePath)) FilePath = tempFilePath;
+        if (string.IsNullOrEmpty(FilePath) || (!string.IsNullOrEmpty(tempFilePath) && HasInvalidFileNameChars(FilePath)))
+            FilePath = tempFilePath;
         TemporaryPath = Strings.Read4ByteLengthPrefixedUnicodeString(binaryReader);
+    }
+    #endregion
+
+    #region HasInvalidFileNameChars
+    /// <summary>
+    ///     Checks if the filename contains invalid characters
+    /// </summary>
+    /// <param name="fileName">The filename to check</param>
+    /// <returns>True if the filename contains invalid characters</returns>
+    private static bool HasInvalidFileNameChars(string fileName)
+    {
+        if (string.IsNullOrEmpty(fileName))
+            return false;
+
+        var invalidChars = Path.GetInvalidFileNameChars();
+        return fileName.IndexOfAny(invalidChars) >= 0;
     }
     #endregion
 
