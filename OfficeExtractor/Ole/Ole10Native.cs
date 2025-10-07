@@ -46,6 +46,47 @@ namespace OfficeExtractor.Ole;
 /// </remarks>
 internal class Ole10Native
 {
+    #region Properties
+    /// <summary>
+    ///     This MUST be set to <see cref="OleFormat.Link" /> (0x00000001) or <see cref="OleFormat.File" />
+    ///     (0x00000002).
+    ///     Otherwise, the ObjectHeader structure is invalid
+    /// </summary>
+    public OleFormat Format { get; private set; }
+
+    /// <summary>
+    ///     This MUST be a LengthPrefixedAnsiString which contain a registered clipboard format name
+    /// </summary>
+    public string StringFormat { get; private set; }
+
+    /// <summary>
+    ///     This MUST be a LengthPrefixedAnsiString structure that contains a display name of the linked
+    ///     object or embedded object.
+    /// </summary>
+    public string AnsiUserType { get; private set; }
+
+    /// <summary>
+    ///     AnsiClipboardFormat (variable): This MUST be a ClipboardFormatOrAnsiString structure that contains the
+    ///     Clipboard Format of the linked object or embedded object.
+    /// </summary>
+    public OleClipboardFormat ClipboardFormat { get; private set; }
+
+    /// <summary>
+    ///     The filename
+    /// </summary>
+    public string FileName { get; private set; }
+
+    /// <summary>
+    ///     The path to the file before it was embedded
+    /// </summary>
+    public string FilePath { get; private set; }
+
+    /// <summary>
+    ///     The content of the embedded file
+    /// </summary>
+    public byte[] NativeData { get; private set; }
+    #endregion
+
     #region Constructor
     /// <summary>
     ///     Creates this object and sets all its properties
@@ -140,50 +181,8 @@ internal class Ole10Native
                 break;
 
             default:
-                throw new OEObjectTypeNotSupported(
-                    $"Unsupported OleNative AnsiUserType '{compObjStream.AnsiUserType}' found");
+                throw new OEObjectTypeNotSupported($"Unsupported OleNative AnsiUserType '{compObjStream.AnsiUserType}' found");
         }
     }
-    #endregion
-
-    #region Properties
-    /// <summary>
-    ///     This MUST be set to <see cref="OleFormat.Link" /> (0x00000001) or <see cref="OleFormat.File" />
-    ///     (0x00000002).
-    ///     Otherwise, the ObjectHeader structure is invalid
-    /// </summary>
-    public OleFormat Format { get; private set; }
-
-    /// <summary>
-    ///     This MUST be a LengthPrefixedAnsiString which contain a registered clipboard format name
-    /// </summary>
-    public string StringFormat { get; private set; }
-
-    /// <summary>
-    ///     This MUST be a LengthPrefixedAnsiString structure that contains a display name of the linked
-    ///     object or embedded object.
-    /// </summary>
-    public string AnsiUserType { get; private set; }
-
-    /// <summary>
-    ///     AnsiClipboardFormat (variable): This MUST be a ClipboardFormatOrAnsiString structure that contains the
-    ///     Clipboard Format of the linked object or embedded object.
-    /// </summary>
-    public OleClipboardFormat ClipboardFormat { get; private set; }
-
-    /// <summary>
-    ///     The filename
-    /// </summary>
-    public string FileName { get; private set; }
-
-    /// <summary>
-    ///     The path to the file before it was embedded
-    /// </summary>
-    public string FilePath { get; private set; }
-
-    /// <summary>
-    ///     The content of the embedded file
-    /// </summary>
-    public byte[] NativeData { get; private set; }
     #endregion
 }

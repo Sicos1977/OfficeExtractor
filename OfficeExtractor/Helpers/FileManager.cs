@@ -209,8 +209,7 @@ internal static class FileManager
             : fileName.Substring(fileName.LastIndexOf(".", StringComparison.Ordinal), fileName.Length - index);
     }
     #endregion
-
-
+    
     #region GetFileNameWithoutExtension
     /// <summary>
     ///     Returns the file name of the specified <paramref name="path" /> string without the extension

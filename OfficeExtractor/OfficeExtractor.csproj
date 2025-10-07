@@ -7,7 +7,8 @@
     <Copyright>(c)2013-2025 Kees van Spelde</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>office ole word excel powerpoint rtf</PackageTags>
-    <PackageReleaseNotes>- Updated nuget packages</PackageReleaseNotes>
+    <PackageReleaseNotes>- Updated nuget packages
+- Fixes for issue #35 and #36</PackageReleaseNotes>
     <PackageIcon>extract-icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Sicos1977/OfficeExtractor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
