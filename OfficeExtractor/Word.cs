@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using OfficeExtractor.Exceptions;
 using OfficeExtractor.Helpers;
@@ -36,7 +37,7 @@ namespace OfficeExtractor;
 /// <summary>
 ///     This class is used as a placeholder for all Word related methods
 /// </summary>
-internal class Word
+internal class Word : OfficeBase
 {
     #region Constants
     private const string Ole10Native = "Ole10Native";
@@ -47,31 +48,6 @@ internal class Word
     private const string PrefixObjectInfo = "\x0003";
     #endregion
     
-    #region Fields
-    /// <summary>
-    ///     <see cref="Extraction" />
-    /// </summary>
-    private Extraction _extraction;
-    #endregion
-
-    #region Properties
-    /// <summary>
-    ///     Returns a reference to the Extraction class when it already exists or creates a new one
-    ///     when it doesn't
-    /// </summary>
-    private Extraction Extraction
-    {
-        get
-        {
-            if (_extraction != null)
-                return _extraction;
-
-            _extraction = new Extraction();
-            return _extraction;
-        }
-    }
-    #endregion
-
     #region Extract
     /// <summary>
     ///     This method saves all the Word embedded binary objects from the <paramref name="inputFile" /> to the
@@ -79,10 +55,11 @@ internal class Word
     /// </summary>
     /// <param name="inputFile">The binary Word file</param>
     /// <param name="outputFolder">The output folder</param>
-    /// <param name="attachmentsOnly"></param>
+    /// <param name="attachmentsOnly">Sets whether solely attachements shall be extracted or regular OLE elements as well</param>
+    /// <param name="continueOnError">Sets whether the extraction should continue when an error, e.g. unsupported AnsiUserType, occurs</param>
     /// <returns></returns>
     /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile" /> is password protected</exception>
-    internal List<string> Extract(string inputFile, string outputFolder, bool attachmentsOnly = false)
+    internal List<string> Extract(string inputFile, string outputFolder, bool attachmentsOnly = false, bool continueOnError = false)
     {
         Logger.WriteToLog("The file is a binary Word document");
 
@@ -100,68 +77,75 @@ internal class Word
 
         foreach(var item in objectPool.EnumerateEntries())
         {
-            if (item.Type != EntryType.Storage) continue;
-
-            if(!objectPool.TryOpenStorage(item.Name, out var childStorage)) continue;
-            
-            string extractedFileName;
-
-            if (!childStorage.TryOpenStream(idOle10Native, out _))
+            try
             {
-                Logger.WriteToLog("Ole10Native stream found");
+                if (item.Type != EntryType.Storage) continue;
 
-                if (childStorage.TryOpenStream(idCompOb, out var compObj))
+                if (!objectPool.TryOpenStorage(item.Name, out var childStorage)) continue;
+
+                string extractedFileName;
+
+                if (!childStorage.TryOpenStream(idOle10Native, out _))
                 {
-                    Logger.WriteToLog("CompObj stream found");
+                    Logger.WriteToLog("Ole10Native stream found");
 
-                    var compObjStream = new CompObjStream(compObj);
-                    if (compObjStream.AnsiUserType == "OLE Package")
+                    if (childStorage.TryOpenStream(idCompOb, out var compObj))
                     {
-                        Logger.WriteToLog("CompObj is of the ansi user type 'OLE Package'");
-                        extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder, null);
-                        if (!string.IsNullOrEmpty(extractedFileName)) result.Add(extractedFileName);
-                        continue;
+                        Logger.WriteToLog("CompObj stream found");
+
+                        var compObjStream = new CompObjStream(compObj);
+                        if (compObjStream.AnsiUserType == "OLE Package")
+                        {
+                            Logger.WriteToLog("CompObj is of the ansi user type 'OLE Package'");
+                            extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder, null);
+                            if (!string.IsNullOrEmpty(extractedFileName)) result.Add(extractedFileName!);
+                            continue;
+                        }
+
+                        Logger.WriteToLog($"CompObj is of the ansi user type '{compObjStream.AnsiUserType}' ... ignoring");
                     }
 
-                    Logger.WriteToLog($"CompObj is of the ansi user type '{compObjStream.AnsiUserType}' ... ignoring");
-                }
+                    if (childStorage.TryOpenStream(idObjInfo, out var objInfo))
+                    {
+                        Logger.WriteToLog("ObjInfo stream found");
 
-                if (childStorage.TryOpenStream(idObjInfo, out var objInfo))
+                        var objInfoStream = new ObjInfoStream(objInfo);
+                        // We don't want to export linked objects and objects that are not shown as an icon... 
+                        // because these objects are already visible on the Word document
+                        if (objInfoStream.Link || !objInfoStream.Icon)
+                        {
+                            if (objInfoStream.Link)
+                                Logger.WriteToLog("ObjInfo stream is a link ... ignoring");
+
+                            if (objInfoStream.Icon)
+                                Logger.WriteToLog("ObjInfo stream is an icon ... ignoring");
+
+                            continue;
+                        }
+                    }
+
+                    extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder, null);
+                }
+                else
                 {
                     Logger.WriteToLog("ObjInfo stream found");
 
+                    // Get the objInfo stream to check if this is a linked file... if so then ignore it
+                    if (!childStorage.TryOpenStream(idObjInfo, out var objInfo)) continue;
                     var objInfoStream = new ObjInfoStream(objInfo);
+
                     // We don't want to export linked objects and objects that are not shown as an icon... 
                     // because these objects are already visible on the Word document
-                    if (objInfoStream.Link || !objInfoStream.Icon)
-                    {
-                        if (objInfoStream.Link)
-                            Logger.WriteToLog("ObjInfo stream is a link ... ignoring");
-
-                        if (objInfoStream.Icon)
-                            Logger.WriteToLog("ObjInfo stream is an icon ... ignoring");
-
-                        continue;
-                    }
+                    if (objInfoStream.Link || !objInfoStream.Icon) continue;
+                    extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder);
                 }
 
-                extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder, null);
+                if (!string.IsNullOrEmpty(extractedFileName)) result.Add(extractedFileName!);
             }
-            else
+            catch (Exception ex)
             {
-                Logger.WriteToLog("ObjInfo stream found");
-
-                // Get the objInfo stream to check if this is a linked file... if so then ignore it
-                if(!childStorage.TryOpenStream(idObjInfo, out var objInfo)) continue;
-                var objInfoStream = new ObjInfoStream(objInfo);
-
-                // We don't want to export linked objects and objects that are not shown as an icon... 
-                // because these objects are already visible on the Word document
-                if (objInfoStream.Link || !objInfoStream.Icon) continue;
-                extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder);
+                HandleException(ex, "Word", shallThrow: !continueOnError);
             }
-
-            if (!string.IsNullOrEmpty(extractedFileName)) result.Add(extractedFileName);
         }
 
         return result;

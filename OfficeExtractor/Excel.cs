@@ -40,33 +40,8 @@ namespace OfficeExtractor;
 /// <summary>
 ///     This class is used as a placeholder for all Excel related methods
 /// </summary>
-internal class Excel
+internal class Excel : OfficeBase
 {
-    #region Fields
-    /// <summary>
-    ///     <see cref="Extraction" />
-    /// </summary>
-    private Extraction _extraction;
-    #endregion
-
-    #region Properties
-    /// <summary>
-    ///     Returns a reference to the Extraction class when it already exists or creates a new one
-    ///     when it doesn't
-    /// </summary>
-    private Extraction Extraction
-    {
-        get
-        {
-            if (_extraction != null)
-                return _extraction;
-
-            _extraction = new Extraction();
-            return _extraction;
-        }
-    }
-    #endregion
-
     #region Extract
     /// <summary>
     ///     This method saves all the Excel embedded binary objects from the <paramref name="inputFile" /> to the
@@ -77,7 +52,7 @@ internal class Excel
     /// <returns></returns>
     /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile" /> is password protected</exception>
     /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
-    internal List<string> Extract(string inputFile, string outputFolder)
+    internal List<string> Extract(string inputFile, string outputFolder, bool continueOnError = false)
     {
         Logger.WriteToLog("The file is a binary Excel sheet");
 
@@ -86,10 +61,17 @@ internal class Excel
 
         foreach (var item in compoundFile.EnumerateEntries())
         {
-            if (!item.Name.StartsWith("MBD")) continue;
-            if (!compoundFile.TryOpenStorage(item.Name, out var storage)) continue;
-            var extractedFileName = Extraction.SaveFromStorageNode(storage, outputFolder);
-            if (extractedFileName != null) result.Add(extractedFileName);
+            try
+            {
+                if (!item.Name.StartsWith("MBD")) continue;
+                if (!compoundFile.TryOpenStorage(item.Name, out var storage)) continue;
+                var extractedFileName = Extraction.SaveFromStorageNode(storage, outputFolder);
+                if (extractedFileName != null) result.Add(extractedFileName);
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex, "Excel", shallThrow: !continueOnError);
+            }
         }
 
         return result;

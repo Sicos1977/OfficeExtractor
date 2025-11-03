@@ -146,6 +146,7 @@ public class Extractor
     /// <param name="outputFolder">The output folder</param>
     /// <param name="logStream">When set then logging is written to this stream</param>
     /// <param name="attachmentsOnly">Sets whether all OLE objects shall be extracted or only attachment-like ones </param>
+    /// <param name="continueOnError">Allows to continue extracting objects even if one (ore more) fail, e.g. for being unsupported or corrupt.</param>
     /// <returns>List with files or en empty list when there are nog embedded files</returns>
     /// <exception cref="ArgumentNullException">
     ///     Raised when the <paramref name="inputFile" /> or
@@ -156,7 +157,7 @@ public class Extractor
     /// <exception cref="OEFileIsCorrupt">Raised when the <paramref name="inputFile" /> is corrupt</exception>
     /// <exception cref="OEFileTypeNotSupported">Raised when the <paramref name="inputFile" /> is not supported</exception>
     /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile" /> is password protected</exception>
-    public List<string> Extract(string inputFile, string outputFolder, Stream logStream = null, bool attachmentsOnly = false)
+    public List<string> Extract(string inputFile, string outputFolder, Stream logStream = null, bool attachmentsOnly = false, bool continueOnError = false)
     {
         if (logStream != null)
             Logger.LogStream = logStream;
@@ -190,7 +191,7 @@ public class Extractor
                         ThrowPasswordProtected(inputFile);
 
                     // Word 97 - 2003
-                    result = Word.Extract(inputFile, outputFolder, attachmentsOnly);
+                    result = Word.Extract(inputFile, outputFolder, attachmentsOnly, continueOnError);
                     break;
 
                 case ".DOCM":
@@ -201,7 +202,7 @@ public class Extractor
                         ThrowPasswordProtected(inputFile);
 
                     // Word 2007 - 2013
-                    result = ExtractFromOfficeOpenXmlFormat(inputFile, "/word/embeddings/", outputFolder, "Word");
+                    result = ExtractFromOfficeOpenXmlFormat(inputFile, "/word/embeddings/", outputFolder, "Word", continueOnError);
                     break;
 
                 case ".RTF":
@@ -227,7 +228,7 @@ public class Extractor
                         ThrowPasswordProtected(inputFile);
 
                     // Excel 2007 - 2013
-                    result = ExtractFromOfficeOpenXmlFormat(inputFile, "/xl/embeddings/", outputFolder, "Excel");
+                    result = ExtractFromOfficeOpenXmlFormat(inputFile, "/xl/embeddings/", outputFolder, "Excel", continueOnError);
                     break;
 
                 case ".POT":
@@ -250,7 +251,7 @@ public class Extractor
                         ThrowPasswordProtected(inputFile);
 
                     // PowerPoint 2007 - 2013
-                    result = ExtractFromOfficeOpenXmlFormat(inputFile, "/ppt/embeddings/", outputFolder, "PowerPoint");
+                    result = ExtractFromOfficeOpenXmlFormat(inputFile, "/ppt/embeddings/", outputFolder, "PowerPoint", continueOnError);
                     break;
 
                 default:
@@ -287,9 +288,10 @@ public class Extractor
     /// <param name="embeddingPartString">The folder in the Office Open XML format (zip) file</param>
     /// <param name="outputFolder">The output folder</param>
     /// <param name="program"></param>
+    /// <param name="continueOnError">Allows to continue extracting objects even if one (ore more) fail, e.g. for being unsupported or corrupt.</param>
     /// <returns>List with files or an empty list when there are nog embedded files</returns>
     /// <exception cref="OEFileIsPasswordProtected">Raised when the Microsoft Office file is password protected</exception>
-    private List<string> ExtractFromOfficeOpenXmlFormat(string inputFile, string embeddingPartString, string outputFolder, string program)
+    private List<string> ExtractFromOfficeOpenXmlFormat(string inputFile, string embeddingPartString, string outputFolder, string program, bool continueOnError = false)
     {
         Logger.WriteToLog($"The {program} file is of the type 'Open XML format'");
 
@@ -302,32 +304,43 @@ public class Extractor
 
             // Get the embedded files names. 
             foreach (var packagePart in package.GetParts())
-                if (packagePart.Uri.ToString().StartsWith(embeddingPartString))
-                    using (var packagePartStream = packagePart.GetStream())
-                    using (var packagePartMemoryStream = new MemoryStream())
-                    {
-                        packagePartStream.CopyTo(packagePartMemoryStream);
-
-                        var fileName = outputFolder +
-                                       packagePart.Uri.ToString().Remove(0, embeddingPartString.Length);
-
-                        if (fileName.ToUpperInvariant().Contains("OLEOBJECT"))
+            {
+                try
+                {
+                    if (packagePart.Uri.ToString().StartsWith(embeddingPartString))
+                        using (var packagePartStream = packagePart.GetStream())
+                        using (var packagePartMemoryStream = new MemoryStream())
                         {
-                            Logger.WriteToLog("OLEOBJECT found");
+                            packagePartStream.CopyTo(packagePartMemoryStream);
 
-                            using var compoundFile = RootStorage.Open(packagePartMemoryStream);
-                            var resultFileName = Extraction.SaveFromStorageNode(compoundFile, outputFolder);
-                            if (resultFileName != null)
-                                result.Add(resultFileName);
-                            //result.Add(ExtractFileFromOle10Native(packagePartMemoryStream.ToArray(), outputFolder));
+                            var fileName = outputFolder +
+                                           packagePart.Uri.ToString().Remove(0, embeddingPartString.Length);
+
+                            if (fileName.ToUpperInvariant().Contains("OLEOBJECT"))
+                            {
+                                Logger.WriteToLog("OLEOBJECT found");
+
+                                using var compoundFile = RootStorage.Open(packagePartMemoryStream);
+                                var resultFileName = Extraction.SaveFromStorageNode(compoundFile, outputFolder);
+                                if (resultFileName != null)
+                                    result.Add(resultFileName);
+                                //result.Add(ExtractFileFromOle10Native(packagePartMemoryStream.ToArray(), outputFolder));
+                            }
+                            else
+                            {
+                                fileName = FileManager.FileExistsMakeNew(fileName);
+                                File.WriteAllBytes(fileName, packagePartMemoryStream.ToArray());
+                                result.Add(fileName);
+                            }
                         }
-                        else
-                        {
-                            fileName = FileManager.FileExistsMakeNew(fileName);
-                            File.WriteAllBytes(fileName, packagePartMemoryStream.ToArray());
-                            result.Add(fileName);
-                        }
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteToLog($"Error extracting embedded object from part '{packagePart.Uri}': {ex.Message}");
+                    if (!continueOnError)
+                        throw ex;
+                }
+            }
 
             package.Close();
 
