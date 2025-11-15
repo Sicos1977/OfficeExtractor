@@ -27,7 +27,7 @@
     <PackageReference Include="MsgReader" Version="6.0.5" />
     <PackageReference Include="OpenMcdf" Version="3.0.3" />
     <PackageReference Include="PasswordProtectedChecker" Version="2.1.1" />
-    <PackageReference Include="SharpCompress" Version="0.40.0" />
+    <PackageReference Include="SharpCompress" Version="0.41.0" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
   </ItemGroup>
 
