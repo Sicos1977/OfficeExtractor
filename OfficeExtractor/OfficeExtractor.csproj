@@ -13,7 +13,7 @@
     <RepositoryUrl>https://github.com/Sicos1977/OfficeExtractor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/Sicos1977/OfficeExtractor</PackageProjectUrl>
-    <SignAssembly>False</SignAssembly>
+    <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>OfficeExtractor.snk</AssemblyOriginatorKeyFile>
     <AssemblyVersion>2.0.3.0</AssemblyVersion>
     <FileVersion>2.0.3.0</FileVersion>
