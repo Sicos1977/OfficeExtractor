@@ -38,32 +38,8 @@ namespace OfficeExtractor;
 /// <summary>
 ///     This class is used as a placeholder for all RTF related methods
 /// </summary>
-internal class Rtf
+internal class Rtf : OfficeBase
 {
-    #region Fields
-    /// <summary>
-    ///     <see cref="Extraction" />
-    /// </summary>
-    private Extraction _extraction;
-    #endregion
-
-    #region Properties
-    /// <summary>
-    ///     Returns a reference to the Extraction class when it already exists or creates a new one
-    ///     when it doesn't
-    /// </summary>
-    private Extraction Extraction
-    {
-        get
-        {
-            if (_extraction != null)
-                return _extraction;
-
-            _extraction = new Extraction();
-            return _extraction;
-        }
-    }
-    #endregion
 
     #region Extract
     /// <summary>
@@ -73,7 +49,7 @@ internal class Rtf
     /// <param name="inputFile">The RTF file</param>
     /// <param name="outputFolder">The output folder</param>
     /// <returns>List with files or en empty list when there are nog embedded files</returns>
-    internal List<string> Extract(string inputFile, string outputFolder)
+    internal List<string> Extract(string inputFile, string outputFolder, bool continueOnError = false)
     {
         var result = new List<string>();
 
@@ -82,25 +58,32 @@ internal class Rtf
         var enumerator = rtfReader.Read().GetEnumerator();
         while (enumerator.MoveNext())
         {
-            if (enumerator.Current?.Text != "object") continue;
-            if (!Reader.MoveToNextControlWord(enumerator, "objclass")) continue;
-            var className = Reader.GetNextText(enumerator);
-
-            if (!Reader.MoveToNextControlWord(enumerator, "objdata")) continue;
-            var data = Reader.GetNextTextAsByteArray(enumerator);
-            using var stream = new MemoryStream(data);
-            switch (className)
+            try
             {
-                case "Outlook.FileAttach":
-                case "MailMsgAtt":
-                    result.Add(ExtractOutlookAttachmentObject(stream, outputFolder));
-                    break;
+                if (enumerator.Current?.Text != "object") continue;
+                if (!Reader.MoveToNextControlWord(enumerator, "objclass")) continue;
+                var className = Reader.GetNextText(enumerator);
 
-                default:
-                    var fileName = ExtractOle10(stream, outputFolder);
-                    if (!string.IsNullOrWhiteSpace(fileName))
-                        result.Add(fileName);
-                    break;
+                if (!Reader.MoveToNextControlWord(enumerator, "objdata")) continue;
+                var data = Reader.GetNextTextAsByteArray(enumerator);
+                using var stream = new MemoryStream(data);
+                switch (className)
+                {
+                    case "Outlook.FileAttach":
+                    case "MailMsgAtt":
+                        result.Add(ExtractOutlookAttachmentObject(stream, outputFolder));
+                        break;
+
+                    default:
+                        var fileName = ExtractOle10(stream, outputFolder);
+                        if (!string.IsNullOrWhiteSpace(fileName))
+                            result.Add(fileName);
+                        break;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                HandleException(ex, "RTF", shallThrow: !continueOnError);
             }
         }
 
