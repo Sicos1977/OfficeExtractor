@@ -37,7 +37,7 @@ internal class CLSID
 {
     #region Constructor
     /// <summary>
-    ///     Creatis this object and sets all it properties
+    ///     Creates this object and sets all it properties
     /// </summary>
     /// <param name="binaryReader"></param>
     internal CLSID(BinaryReader binaryReader)

@@ -19,7 +19,7 @@
     <FileVersion>2.0.5.0</FileVersion>
     <Description>Extracts embedded OLE objects from Word, Excel, PowerPoint and Open Office files without needing the original programs.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>13.0</LangVersion>
     <DelaySign>False</DelaySign>
   </PropertyGroup>
 
