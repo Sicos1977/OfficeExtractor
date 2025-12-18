@@ -143,6 +143,19 @@ namespace OfficeExtractorTest
             Assert.HasCount(1, files);
             Assert.EndsWith("unicode-___.zip", files[0]);
         }
+        /// <summary>
+        /// Ensures inserted images are extracted correctly
+        /// </summary>
+        [TestMethod]
+        public void DocxWithPaintBrushImage()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new Extractor();
+
+            var files = extractor.Extract("TestFiles\\A DOCX with embedded paintbrush ole.docx",
+                outputFolder);
+            Assert.HasCount(2, files);
+        }
 
         [TestMethod]
         public void DocxWithPassword()

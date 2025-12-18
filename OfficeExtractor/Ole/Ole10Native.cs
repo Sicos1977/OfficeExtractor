@@ -145,7 +145,8 @@ internal class Ole10Native
                 if (pbBrushSize <= 0)
                     break;
                 var pbBrushData = new byte[pbBrushSize];
-                _ = ole10Native.Read(pbBrushData, 4, pbBrushSize);
+                ole10Native.Position = 4;
+                _ = ole10Native.Read(pbBrushData, 0, pbBrushSize);
                 FileName = "Embedded PBrush image.bmp";
                 Format = OleFormat.File;
                 NativeData = pbBrushData;
