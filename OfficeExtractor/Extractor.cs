@@ -16,7 +16,7 @@ using FileFormatException = OpenMcdf.FileFormatException;
 //
 // Author: Kees van Spelde <sicos2002@hotmail.com>
 //
-// Copyright (c) 2013-2025 Magic-Sessions. (www.magic-sessions.com)
+// Copyright (c) 2013-2026 Kees van Spelde. (www.magic-sessions.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -525,7 +525,7 @@ public class Extractor
         Logger.WriteToLog($"The {program} file is of the type 'Open document format'");
 
         var result = new List<string>();
-        using var zipFile = ZipArchive.Open(inputFile);
+        using var zipFile = ZipArchive.OpenArchive(inputFile);
         // Check if the file is password protected
         var manifestEntry = FindEntryByName(zipFile, "META-INF/manifest.xml");
         if (manifestEntry != null)
