@@ -1,0 +1,3 @@
+<FileList Redist="System.ValueTuple" Name="System.ValueTuple" RuntimeVersion="4.5" ToolsVersion="4.0" ShortName="ValueTuple">
+    <File AssemblyName="System.ValueTuple" Version="4.0.5.0" PublicKeyToken="cc7b13ffcd2ddd51" Culture="neutral" ProcessorArchitecture="MSIL" InGac="true"/>
+</FileList>

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.6</Version>
+    <Version>2.0.7</Version>
     <Copyright>(c)2013-2026 Kees van Spelde</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>office ole word excel powerpoint rtf</PackageTags>
@@ -12,10 +12,9 @@
     <RepositoryUrl>https://github.com/Sicos1977/OfficeExtractor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/Sicos1977/OfficeExtractor</PackageProjectUrl>
-    <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>OfficeExtractor.snk</AssemblyOriginatorKeyFile>
-    <AssemblyVersion>2.0.6.0</AssemblyVersion>
-    <FileVersion>2.0.6.0</FileVersion>
+    <SignAssembly>False</SignAssembly>
+    <AssemblyVersion>2.0.7.0</AssemblyVersion>
+    <FileVersion>2.0.7.0</FileVersion>
     <Description>Extracts embedded OLE objects from Word, Excel, PowerPoint and Open Office files without needing the original programs.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <LangVersion>13.0</LangVersion>
@@ -26,8 +25,8 @@
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.4.1" />
     <PackageReference Include="MsgReader" Version="6.0.7" />
     <PackageReference Include="OpenMcdf" Version="3.1.0" />
-    <PackageReference Include="PasswordProtectedChecker" Version="2.1.1" />
-    <PackageReference Include="SharpCompress" Version="0.46.1" />
+    <PackageReference Include="PasswordProtectedChecker" Version="2.1.3" />
+    <PackageReference Include="SharpCompress" Version="0.46.2" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
   </ItemGroup>
 

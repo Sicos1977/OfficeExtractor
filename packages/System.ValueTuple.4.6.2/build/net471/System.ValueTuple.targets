@@ -1,0 +1,23 @@
+<Project>
+
+  <!-- Add a RedistList containing ValueTuple.  This will cause MSBuild to auto-unify to the version in this list. -->
+  <ItemGroup>
+    <RedistList Include="$(MSBuildThisFileDirectory)ValueTupleFrameworkList.xml" />
+  </ItemGroup>
+
+  <!-- Add the ValueTuple facade directory to the target framework directories.
+       This lets MSBuild find the unified assembly and treat it as a reference assembly, like other facades.
+       This is done in a target rather than statically setting DesignTimeFacadeDirectories so that we can
+       place the new directory at the end, and avoid additional probing for normal framework assemblies. -->
+  <Target Name="_AddValueTupleFrameworkDirectory" AfterTargets="GetReferenceAssemblyPaths">
+    <PropertyGroup>
+      <ValueTupleFacadeDirectory>$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..', '..', 'lib', 'net47'))</ValueTupleFacadeDirectory>
+      <TargetFrameworkDirectory>$(TargetFrameworkDirectory);$(ValueTupleFacadeDirectory)</TargetFrameworkDirectory>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <DesignTimeFacadeDirectories Include="$(ValueTupleFacadeDirectory)" />
+    </ItemGroup>
+  </Target>
+
+</Project>
