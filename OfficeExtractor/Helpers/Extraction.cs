@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using OfficeExtractor.Ole;
 using OpenMcdf;
-using SharpCompress.Archives;
 using Version = OpenMcdf.Version;
 
 // ReSharper disable VariableLengthStringHexEscapeSequence
@@ -97,13 +96,13 @@ internal class Extraction
     /// </summary>
     /// <param name="zipEntry"></param>
     /// <returns></returns>
-    internal string GetFileNameFromObjectReplacementFile(IArchiveEntry zipEntry)
+    internal string GetFileNameFromObjectReplacementFile(ZipArchiveEntry zipEntry)
     {
         Logger.WriteToLog("Trying to get original filename from ObjectReplacement file");
 
         try
         {
-            using var zipEntryStream = zipEntry.OpenEntryStream();
+            using var zipEntryStream = zipEntry.Open();
             using var zipEntryMemoryStream = new MemoryStream();
             zipEntryStream.CopyTo(zipEntryMemoryStream);
             zipEntryMemoryStream.Position = 0x4470;
@@ -111,13 +110,11 @@ internal class Extraction
             while (binaryReader.BaseStream.Position != binaryReader.BaseStream.Length)
             {
                 var value = binaryReader.ReadUInt16();
-
                 // We have found the start position from where we are going to read
                 // the original filename
                 if (value != 0x8000 || binaryReader.PeekChar() != 0x46) continue;
                 // Skip the peeked char
                 zipEntryMemoryStream.Position += 2;
-
                 // Read until we find the next 0x46 value
                 while (binaryReader.BaseStream.Position != binaryReader.BaseStream.Length)
                 {
@@ -125,13 +122,10 @@ internal class Extraction
                     if (value != 0x46) continue;
                     // Skip the next 6 bytes
                     binaryReader.ReadBytes(6);
-
                     // Get the length of name string
                     var length = binaryReader.ReadUInt16();
-
                     // Skip the next 2 bytes
                     zipEntryMemoryStream.Position += 2;
-
                     // Read the filename bytes
                     var fileNameBytes = binaryReader.ReadBytes(length);
                     var fileName = Encoding.Unicode.GetString(fileNameBytes);
@@ -145,7 +139,6 @@ internal class Extraction
         {
             return null;
         }
-
         return null;
     }
     #endregion

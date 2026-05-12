@@ -4,7 +4,6 @@ using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OfficeExtractor;
 using OfficeExtractor.Exceptions;
-using PasswordProtectedChecker.Exceptions;
 
 //
 // ExtractionTest.cs
