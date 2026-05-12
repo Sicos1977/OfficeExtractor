@@ -140,7 +140,7 @@ namespace OfficeExtractorTest
             var files = extractor.Extract("TestFiles\\A DOCX word document with embedding Zip with UNICODE Sign.docx",
                 outputFolder);
             Assert.HasCount(1, files);
-            Assert.EndsWith("unicode-___.zip", files[0]);
+            Assert.EndsWith("unicode-单一码.zip", files[0]);
         }
         /// <summary>
         /// Ensures inserted images are extracted correctly
