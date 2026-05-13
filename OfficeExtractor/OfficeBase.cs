@@ -26,12 +26,12 @@ internal abstract class OfficeBase
 
     #endregion
 
-    protected void HandleException(System.Exception ex, string extractionFile, bool shallThrow = true)
+    protected void HandleException(System.Exception exception, string extractionFile, bool shallThrow = true)
     {
-        Logger.WriteToLog($"An error occurred while extracting an embedded object from the {extractionFile} document: {ex}");
+        Logger.WriteToLog($"An error occurred while extracting an embedded object from the {extractionFile} document: {exception}");
         // It may well be that a document contains more than one embedded objects
         // and we want to extract as much as possible
         if (shallThrow)
-            throw ex;
+            throw exception;
     }
 }

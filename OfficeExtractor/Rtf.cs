@@ -81,9 +81,9 @@ internal class Rtf : OfficeBase
                         break;
                 }
             }
-            catch (System.Exception ex)
+            catch (System.Exception exception)
             {
-                HandleException(ex, "RTF", shallThrow: !continueOnError);
+                HandleException(exception, "RTF", shallThrow: !continueOnError);
             }
         }
 

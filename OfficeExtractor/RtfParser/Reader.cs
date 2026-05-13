@@ -282,8 +282,7 @@ internal class Reader
 
         while (enumerator.MoveNext())
         {
-            var rtfText = enumerator.Current as Text;
-            if (rtfText == null) continue;
+            if (enumerator.Current is not Text rtfText) continue;
             var bytes = new List<byte>();
 
             for (var i = 0; i < rtfText.Text.Length; i += 2)

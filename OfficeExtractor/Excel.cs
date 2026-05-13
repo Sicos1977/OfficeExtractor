@@ -49,7 +49,8 @@ internal class Excel : OfficeBase
     /// </summary>
     /// <param name="inputFile">The binary Excel file</param>
     /// <param name="outputFolder">The output folder</param>
-    /// <returns></returns>
+    /// <param name="continueOnError">Indicates whether to continue extraction on error</param>
+    /// <returns>A list of extracted files</returns>
     /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile" /> is password protected</exception>
     /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
     internal List<string> Extract(string inputFile, string outputFolder, bool continueOnError = false)
@@ -99,27 +100,26 @@ internal class Excel : OfficeBase
 
         try
         {
+            // Open only the BinaryReader to scan the stream structure
             using (var binaryReader = new BinaryReader(stream, Encoding.Default, leaveOpen: true))
-            using (var binaryWriter = new BinaryWriter(stream, Encoding.Default, leaveOpen: true))
             {
                 var recordType = binaryReader.ReadUInt16();
+
                 while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
                 {
                     var recordStartPos = binaryReader.BaseStream.Position;
-
                     var recordLength = binaryReader.ReadUInt16();
-
                     var grbit = binaryReader.ReadBytes(2);
+
                     if (recordType == 0x3D) // Window1 record
                     {
                         // Skip xWn, yWn, dxWn, dyWn (4 × 2 bytes)
-                        binaryReader.ReadUInt16(); // xWn
-                        binaryReader.ReadUInt16(); // yWn
-                        binaryReader.ReadUInt16(); // dxWn
-                        binaryReader.ReadUInt16(); // dyWn
+                        binaryReader.ReadUInt16(); 
+                        binaryReader.ReadUInt16(); 
+                        binaryReader.ReadUInt16(); 
+                        binaryReader.ReadUInt16(); 
 
                         var grbitPos = binaryReader.BaseStream.Position;
-
                         var bitArray = new BitArray(grbit);
 
                         if (bitArray.Get(0))
@@ -128,14 +128,20 @@ internal class Excel : OfficeBase
 
                             var modified = new byte[2];
                             bitArray.CopyTo(modified, 0);
-                            binaryWriter.BaseStream.Position = grbitPos;
-                            binaryWriter.Write(modified);
+
+                            // CRUCIAL .NET 10 FIX: 
+                            // Bypass BinaryWriter entirely and write directly to the raw stream.
+                            // This avoids the modern .NET expandable-validation check.
+                            var originalPosition = stream.Position;
+                            stream.Position = grbitPos;
+                            stream.Write(modified, 0, modified.Length); 
+                            stream.Position = originalPosition; // Restore stream alignment for reader
                         }
 
                         break;
                     }
 
-                    binaryReader.BaseStream.Position = recordStartPos + 4 + recordLength; // Skip this record
+                    binaryReader.BaseStream.Position = recordStartPos + 4 + recordLength; 
                 }
             }
 
@@ -156,26 +162,34 @@ internal class Excel : OfficeBase
     {
         try
         {
-            using var spreadsheetDocument = SpreadsheetDocument.Open(spreadSheetDocument, true);
-            // ReSharper disable PossibleNullReferenceException
-            var bookViews = spreadsheetDocument.WorkbookPart.Workbook.BookViews;
-            foreach (var bookView in bookViews)
-            {
-                var workBookView = (WorkbookView)bookView;
-                if (workBookView.Visibility.Value == VisibilityValues.Hidden ||
-                    workBookView.Visibility.Value == VisibilityValues.VeryHidden)
-                    workBookView.Visibility.Value = VisibilityValues.Visible;
-            }
+            var expandableStream = new MemoryStream();
+            spreadSheetDocument.Position = 0;
+            spreadSheetDocument.CopyTo(expandableStream);
+            expandableStream.Position = 0;
 
-            spreadsheetDocument.WorkbookPart.Workbook.Save();
-            // ReSharper restore PossibleNullReferenceException
+            using var spreadsheetDocument = SpreadsheetDocument.Open(expandableStream, true);
+            var bookViews = spreadsheetDocument.WorkbookPart?.Workbook?.BookViews;
 
-            return spreadSheetDocument;
+            if (bookViews != null)
+                foreach (var bookView in bookViews)
+                {
+                    var workBookView = (WorkbookView)bookView;
+                    if (workBookView.Visibility != null && (workBookView.Visibility.Value == VisibilityValues.Hidden ||
+                                                            workBookView.Visibility.Value == VisibilityValues.VeryHidden))
+                    {
+                        workBookView.Visibility.Value = VisibilityValues.Visible;
+                    }
+                }
+
+            spreadsheetDocument.WorkbookPart?.Workbook?.Save();
+
+            // Return the fresh expandable stream containing the saved changes
+            expandableStream.Position = 0;
+            return expandableStream;
         }
         catch (Exception exception)
         {
-            throw new OEFileIsCorrupt("Could not check workbook visibility because the file seems to be corrupt",
-                exception);
+            throw new OEFileIsCorrupt("Could not check workbook visibility because the file seems to be corrupt", exception);
         }
     }
     #endregion
