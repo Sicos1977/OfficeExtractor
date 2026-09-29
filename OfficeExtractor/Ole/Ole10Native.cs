@@ -92,7 +92,11 @@ internal class Ole10Native
     ///     Creates this object and sets all its properties
     /// </summary>
     /// <param name="storage">The OLE version 2.0 object as a <see cref="Storage" /></param>
-    internal Ole10Native(Storage storage)
+    /// <param name="skipPaintbrushObjects">
+    ///     Sets whether a Paintbrush (PBrush) object shall be skipped. When skipped, <see cref="Format" /> is left
+    ///     at <see cref="OleFormat.NotSet" /> and <see cref="NativeData" /> is not read
+    /// </param>
+    internal Ole10Native(Storage storage, bool skipPaintbrushObjects)
     {
         if (storage == null)
             throw new ArgumentNullException(nameof(storage));
@@ -141,15 +145,20 @@ internal class Ole10Native
             case "PBrush":
             case "Paintbrush-Bild":
             case "Paintbrush-afbeelding":
-                var pbBrushSize = (int)ole10Native.Length - 4;
-                if (pbBrushSize <= 0)
+                if (skipPaintbrushObjects)
+                {
+                    // Format stays NotSet, so the object is ignored by the caller
+                    Logger.WriteToLog($"Ignoring Ole10Native type '{compObjStream.AnsiUserType}' because skipping Paintbrush objects is requested");
                     break;
-                var pbBrushData = new byte[pbBrushSize];
-                ole10Native.Position = 4;
-                _ = ole10Native.Read(pbBrushData, 0, pbBrushSize);
+                }
+
+                var pbBrushData = ReadNativeData(ole10Native);
+                if (pbBrushData == null)
+                    break;
+
                 FileName = "Embedded PBrush image.bmp";
                 Format = OleFormat.File;
-                NativeData = pbBrushData;
+                NativeData = RepairBitmapFileSize(pbBrushData);
                 break;
 
             case "Pakket":
@@ -184,6 +193,117 @@ internal class Ole10Native
             default:
                 throw new OEObjectTypeNotSupported($"Unsupported OleNative AnsiUserType '{compObjStream.AnsiUserType}' found");
         }
+    }
+    #endregion
+
+    #region ReadNativeData
+    /// <summary>
+    ///     Reads the native data from an <c>\x0001Ole10Native</c> stream that does not contain a package,
+    ///     e.g. the one of a Paintbrush object.
+    /// </summary>
+    /// <remarks>
+    ///     The stream starts with a 4-byte little-endian unsigned integer that holds the size of the native
+    ///     data that follows it. The stream itself can be longer than that because of padding, so only the
+    ///     declared number of bytes is returned. When the declared size is missing or larger than the
+    ///     available data, all the data after the size field is returned instead.
+    /// </remarks>
+    /// <param name="stream">The <c>\x0001Ole10Native</c> stream</param>
+    /// <returns>The native data or <c>null</c> when the stream contains no data</returns>
+    private static byte[] ReadNativeData(Stream stream)
+    {
+        const int sizeFieldLength = 4;
+
+        var available = stream.Length - sizeFieldLength;
+        if (available <= 0)
+            return null;
+
+        stream.Position = 0;
+        var sizeField = ReadBytes(stream, sizeFieldLength);
+        var declaredSize = BitConverter.ToUInt32(sizeField, 0);
+
+        long size;
+        if (declaredSize == 0 || declaredSize > available)
+        {
+            Logger.WriteToLog($"Ole10Native declared size '{declaredSize}' is invalid, using the available size '{available}' instead");
+            size = available;
+        }
+        else
+            size = declaredSize;
+
+        return ReadBytes(stream, (int)size);
+    }
+
+    /// <summary>
+    ///     Reads exactly <paramref name="count" /> bytes from the current position of the <paramref name="stream" />
+    /// </summary>
+    /// <param name="stream">The stream to read from</param>
+    /// <param name="count">The number of bytes to read</param>
+    /// <returns>The read bytes</returns>
+    /// <exception cref="EndOfStreamException">Raised when the stream ends before all bytes are read</exception>
+    private static byte[] ReadBytes(Stream stream, int count)
+    {
+        var buffer = new byte[count];
+        var offset = 0;
+
+        while (offset < count)
+        {
+            var read = stream.Read(buffer, offset, count - offset);
+            if (read == 0)
+                throw new EndOfStreamException($"Expected {count} bytes but the stream ended after {offset} bytes");
+            offset += read;
+        }
+
+        return buffer;
+    }
+    #endregion
+
+    #region RepairBitmapFileSize
+    /// <summary>
+    ///     Makes sure the file size in the BITMAPFILEHEADER of a BMP file matches the real length of the file.
+    /// </summary>
+    /// <remarks>
+    ///     Paintbrush objects store a complete BMP file as native data, but the data can be padded, and so be
+    ///     longer than the file size in the header. Strict decoders like ImageMagick reject a BMP file when the
+    ///     two values differ ("length and filesize do not match").
+    ///     <list type="bullet">
+    ///         <item>
+    ///             When the data is longer than the header says and the header value still covers the
+    ///             pixel data offset, the trailing bytes are removed.
+    ///         </item>
+    ///         <item>In every other case of a mismatch, the header is set to the length of the data.</item>
+    ///     </list>
+    ///     Data that is not a BMP file is returned unchanged.
+    /// </remarks>
+    /// <param name="data">The bitmap data, including the BITMAPFILEHEADER</param>
+    /// <returns>The data with a consistent file size</returns>
+    private static byte[] RepairBitmapFileSize(byte[] data)
+    {
+        // BITMAPFILEHEADER: bfType (2), bfSize (4), bfReserved1 (2), bfReserved2 (2), bfOffBits (4)
+        const int fileHeaderLength = 14;
+        const int sizeOffset = 2;
+        const int pixelDataOffset = 10;
+
+        if (data.Length < fileHeaderLength || data[0] != 'B' || data[1] != 'M')
+            return data;
+
+        var headerSize = BitConverter.ToUInt32(data, sizeOffset);
+        if (headerSize == data.Length)
+            return data;
+
+        var pixelOffset = BitConverter.ToUInt32(data, pixelDataOffset);
+
+        if (headerSize < data.Length && headerSize > pixelOffset && pixelOffset >= fileHeaderLength)
+        {
+            Logger.WriteToLog($"Removing {data.Length - headerSize} padding bytes after the bitmap data");
+            var trimmed = new byte[headerSize];
+            Array.Copy(data, trimmed, trimmed.Length);
+            return trimmed;
+        }
+
+        Logger.WriteToLog($"Correcting the bitmap file size in the header from '{headerSize}' to '{data.Length}'");
+        var lengthBytes = BitConverter.GetBytes((uint)data.Length);
+        Array.Copy(lengthBytes, 0, data, sizeOffset, lengthBytes.Length);
+        return data;
     }
     #endregion
 }

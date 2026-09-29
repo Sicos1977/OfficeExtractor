@@ -45,9 +45,11 @@ namespace OfficeExtractor
         /// </summary>
         /// <param name="inputFile">The binary PowerPoint file</param>
         /// <param name="outputFolder">The output folder</param>
+        /// <param name="continueOnError">Indicates whether to continue extraction on error</param>
+        /// <param name="skipPaintbrushObjects">Sets whether embedded Paintbrush (PBrush) objects shall be skipped</param>
         /// <returns></returns>
         /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile"/> is password protected</exception>
-        internal List<string> Extract(string inputFile, string outputFolder, bool continueOnError = false)
+        internal List<string> Extract(string inputFile, string outputFolder, bool continueOnError = false, bool skipPaintbrushObjects = false)
         {
             Logger.WriteToLog("The file is a binary PowerPoint document");
 
@@ -84,7 +86,7 @@ namespace OfficeExtractor
 
                             // Check if the ole object is another compound storage node with a package stream
                             if (Extraction.IsCompoundFile(bytes))
-                                result.Add(Extraction.SaveFromStorageNode(bytes, outputFolder));
+                                result.Add(Extraction.SaveFromStorageNode(bytes, outputFolder, null, skipPaintbrushObjects));
                             else
                             {
                                 var fileName = outputFolder + Extraction.DefaultEmbeddedObjectName;
@@ -121,7 +123,7 @@ namespace OfficeExtractor
 
                             // Check if the ole object is another compound storage node with a package stream
                             if (Extraction.IsCompoundFile(decompressedBytes))
-                                extractedFileName = Extraction.SaveFromStorageNode(decompressedBytes, outputFolder);
+                                extractedFileName = Extraction.SaveFromStorageNode(decompressedBytes, outputFolder, null, skipPaintbrushObjects);
                             else
                             {
                                 var fileName = outputFolder + Extraction.DefaultEmbeddedObjectName;

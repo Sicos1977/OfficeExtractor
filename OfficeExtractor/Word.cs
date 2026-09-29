@@ -57,9 +57,10 @@ internal class Word : OfficeBase
     /// <param name="outputFolder">The output folder</param>
     /// <param name="attachmentsOnly">Sets whether solely attachements shall be extracted or regular OLE elements as well</param>
     /// <param name="continueOnError">Sets whether the extraction should continue when an error, e.g. unsupported AnsiUserType, occurs</param>
+    /// <param name="skipPaintbrushObjects">Sets whether embedded Paintbrush (PBrush) objects shall be skipped</param>
     /// <returns></returns>
     /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile" /> is password protected</exception>
-    internal List<string> Extract(string inputFile, string outputFolder, bool attachmentsOnly = false, bool continueOnError = false)
+    internal List<string> Extract(string inputFile, string outputFolder, bool attachmentsOnly = false, bool continueOnError = false, bool skipPaintbrushObjects = false)
     {
         Logger.WriteToLog("The file is a binary Word document");
 
@@ -97,7 +98,7 @@ internal class Word : OfficeBase
                         if (compObjStream.AnsiUserType == "OLE Package")
                         {
                             Logger.WriteToLog("CompObj is of the ansi user type 'OLE Package'");
-                            extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder, null);
+                            extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder, null, skipPaintbrushObjects);
                             if (!string.IsNullOrEmpty(extractedFileName)) result.Add(extractedFileName!);
                             continue;
                         }
@@ -124,7 +125,7 @@ internal class Word : OfficeBase
                         }
                     }
 
-                    extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder, null);
+                    extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder, null, skipPaintbrushObjects);
                 }
                 else
                 {
@@ -137,7 +138,7 @@ internal class Word : OfficeBase
                     // We don't want to export linked objects and objects that are not shown as an icon... 
                     // because these objects are already visible on the Word document
                     if (objInfoStream.Link || !objInfoStream.Icon) continue;
-                    extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder);
+                    extractedFileName = Extraction.SaveFromStorageNode(childStorage, outputFolder, null, skipPaintbrushObjects);
                 }
 
                 if (!string.IsNullOrEmpty(extractedFileName)) result.Add(extractedFileName!);

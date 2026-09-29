@@ -48,8 +48,13 @@ internal class Rtf : OfficeBase
     /// </summary>
     /// <param name="inputFile">The RTF file</param>
     /// <param name="outputFolder">The output folder</param>
+    /// <param name="continueOnError">Indicates whether to continue extraction on error</param>
+    /// <param name="skipPaintbrushObjects">
+    ///     Sets whether Paintbrush (PBrush) objects nested in embedded compound files shall be skipped. Paintbrush
+    ///     objects that are embedded directly in the RTF file are always skipped
+    /// </param>
     /// <returns>List with files or en empty list when there are nog embedded files</returns>
-    internal List<string> Extract(string inputFile, string outputFolder, bool continueOnError = false)
+    internal List<string> Extract(string inputFile, string outputFolder, bool continueOnError = false, bool skipPaintbrushObjects = false)
     {
         var result = new List<string>();
 
@@ -75,7 +80,7 @@ internal class Rtf : OfficeBase
                         break;
 
                     default:
-                        var fileName = ExtractOle10(stream, outputFolder);
+                        var fileName = ExtractOle10(stream, outputFolder, skipPaintbrushObjects);
                         if (!string.IsNullOrWhiteSpace(fileName))
                             result.Add(fileName);
                         break;
@@ -97,7 +102,8 @@ internal class Rtf : OfficeBase
     /// </summary>
     /// <param name="stream"></param>
     /// <param name="outputFolder">The output folder</param>
-    private string ExtractOle10(Stream stream, string outputFolder)
+    /// <param name="skipPaintbrushObjects">Sets whether Paintbrush (PBrush) objects nested in embedded compound files shall be skipped</param>
+    private string ExtractOle10(Stream stream, string outputFolder, bool skipPaintbrushObjects)
     {
         var ole10 = new Ole10(stream);
 
@@ -123,7 +129,7 @@ internal class Rtf : OfficeBase
 
             default:
                 if (Extraction.IsCompoundFile(ole10.NativeData))
-                    return Extraction.SaveFromStorageNode(ole10.NativeData, outputFolder, ole10.ItemName);
+                    return Extraction.SaveFromStorageNode(ole10.NativeData, outputFolder, ole10.ItemName, skipPaintbrushObjects);
 
                 throw new OEObjectTypeNotSupported($"Unsupported OleNative ClassName '{ole10.ClassName}' found");
         }
