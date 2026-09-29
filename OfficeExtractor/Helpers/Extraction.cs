@@ -268,69 +268,40 @@ internal class Extraction
     /// </summary>
     /// <param name="bytes">The <see cref="RootStorage" /> as a byte array</param>
     /// <param name="outputFolder">The outputFolder</param>
-    /// <returns></returns>
-    /// <exception cref="Exceptions.OEFileIsPasswordProtected">
-    ///     Raised when a WordDocument, WorkBook or PowerPoint Document
-    ///     stream is password protected
-    /// </exception>
-    internal string SaveFromStorageNode(byte[] bytes, string outputFolder)
-    {
-        using var memoryStream = new MemoryStream(bytes);
-        using var compoundFile = RootStorage.Open(memoryStream);
-        return SaveFromStorageNode(compoundFile, outputFolder, null);
-    }
-
-    /// <summary>
-    ///     This method will extract and save the data from the given <see cref="RootStorage" /> node to the
-    ///     <paramref name="outputFolder" />
-    /// </summary>
-    /// <param name="bytes">The <see cref="RootStorage" /> as a byte array</param>
-    /// <param name="outputFolder">The outputFolder</param>
     /// <param name="fileName">The fileName to use, null when the fileName is unknown</param>
-    /// <returns></returns>
-    /// <exception cref="Exceptions.OEFileIsPasswordProtected">
-    ///     Raised when a WordDocument, WorkBook or PowerPoint Document
-    ///     stream is password protected
-    /// </exception>
-    internal string SaveFromStorageNode(byte[] bytes, string outputFolder, string fileName)
-    {
-        using var memoryStream = new MemoryStream(bytes);
-        using var compoundFile = RootStorage.Open(memoryStream);
-        return SaveFromStorageNode(compoundFile, outputFolder, fileName);
-    }
-
-    /// <summary>
-    ///     This method will extract and save the data from the given <paramref name="storage" /> node to the
-    ///     <paramref name="outputFolder" />
-    /// </summary>
-    /// <param name="storage">The <see cref="Storage" /> node</param>
-    /// <param name="outputFolder">The outputFolder</param>
-    /// <returns></returns>
-    /// <exception cref="Exceptions.OEFileIsPasswordProtected">
-    ///     Raised when a WordDocument, WorkBook or PowerPoint Document
-    ///     stream is password protected
-    /// </exception>
-    internal string SaveFromStorageNode(Storage storage, string outputFolder)
-    {
-        return SaveFromStorageNode(storage, outputFolder, null);
-    }
-
-    /// <summary>
-    ///     This method will extract and save the data from the given <paramref name="storage" /> node to the
-    ///     <paramref name="outputFolder" />
-    /// </summary>
-    /// <param name="storage">The <see cref="Storage" /> node</param>
-    /// <param name="outputFolder">The outputFolder</param>
-    /// <param name="fileName">The fileName to use, null when the fileName is unknown</param>
+    /// <param name="skipPaintbrushObjects">Sets whether embedded Paintbrush (PBrush) objects shall be skipped</param>
     /// <returns>
-    ///     Returns the name of the created file that or null if there was nothing to export within the given
+    ///     Returns the name of the created file or null if there was nothing to export within the given
+    ///     <paramref name="bytes" />.
+    /// </returns>
+    /// <exception cref="Exceptions.OEFileIsPasswordProtected">
+    ///     Raised when a WordDocument, WorkBook or PowerPoint Document
+    ///     stream is password protected
+    /// </exception>
+    internal string SaveFromStorageNode(byte[] bytes, string outputFolder, string fileName, bool skipPaintbrushObjects)
+    {
+        using var memoryStream = new MemoryStream(bytes);
+        using var compoundFile = RootStorage.Open(memoryStream);
+        return SaveFromStorageNode(compoundFile, outputFolder, fileName, skipPaintbrushObjects);
+    }
+
+    /// <summary>
+    ///     This method will extract and save the data from the given <paramref name="storage" /> node to the
+    ///     <paramref name="outputFolder" />
+    /// </summary>
+    /// <param name="storage">The <see cref="Storage" /> node</param>
+    /// <param name="outputFolder">The outputFolder</param>
+    /// <param name="fileName">The fileName to use, null when the fileName is unknown</param>
+    /// <param name="skipPaintbrushObjects">Sets whether embedded Paintbrush (PBrush) objects shall be skipped</param>
+    /// <returns>
+    ///     Returns the name of the created file or null if there was nothing to export within the given
     ///     <paramref name="storage" /> node.
     /// </returns>
     /// <exception cref="Exceptions.OEFileIsPasswordProtected">
     ///     Raised when a WordDocument, WorkBook or PowerPoint Document
     ///     stream is password protected
     /// </exception>
-    public string SaveFromStorageNode(Storage storage, string outputFolder, string fileName)
+    public string SaveFromStorageNode(Storage storage, string outputFolder, string fileName, bool skipPaintbrushObjects)
     {
         Logger.WriteToLog($"Saving CFStorage to output folder '{outputFolder}' with file name {fileName}");
 
@@ -393,7 +364,7 @@ internal class Extraction
         {
             Logger.WriteToLog("Ole10Native stream found");
 
-            var ole10Native = new Ole10Native(storage);
+            var ole10Native = new Ole10Native(storage, skipPaintbrushObjects);
             Logger.WriteToLog($"Ole10Native stream format is '{ole10Native.Format}'");
 
             if (ole10Native.Format == OleFormat.File)

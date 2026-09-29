@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OfficeExtractor;
 using OfficeExtractor.Exceptions;
@@ -154,6 +155,76 @@ namespace OfficeExtractorTest
             var files = extractor.Extract("TestFiles\\A DOCX with embedded paintbrush ole.docx",
                 outputFolder);
             Assert.HasCount(2, files);
+        }
+
+        /// <summary>
+        ///     Ensures that an extracted Paintbrush image is a well-formed BMP file, i.e. that the file size
+        ///     stored in the BITMAPFILEHEADER matches the real length of the file. Strict decoders (e.g. ImageMagick)
+        ///     reject the file with "length and filesize do not match" otherwise.
+        /// </summary>
+        [TestMethod]
+        public void DocxWithPaintBrushImage_ExtractsWellFormedBitmap()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new Extractor();
+
+            var files = extractor.Extract("TestFiles\\A DOCX with embedded paintbrush ole.docx", outputFolder);
+
+            Assert.HasCount(2, files);
+            foreach (var file in files)
+            {
+                var data = File.ReadAllBytes(file);
+                Assert.IsGreaterThanOrEqualTo(14, data.Length, $"'{file}' is too small to contain a BMP file header");
+                Assert.AreEqual((byte)'B', data[0], $"'{file}' does not start with the BMP signature");
+                Assert.AreEqual((byte)'M', data[1], $"'{file}' does not start with the BMP signature");
+                Assert.AreEqual((uint)data.Length, BitConverter.ToUInt32(data, 2), $"The BMP header file size of '{file}' does not match its length");
+            }
+        }
+
+        /// <summary>
+        ///     Ensures that Paintbrush OLE objects are not extracted when skipping them is requested
+        /// </summary>
+        [TestMethod]
+        public void DocxWithPaintBrushImage_SkipPaintbrushObjects()
+        {
+            var outputFolder = CreateTemporaryFolder();
+            var extractor = new Extractor();
+
+            var files = extractor.Extract("TestFiles\\A DOCX with embedded paintbrush ole.docx", outputFolder,
+                skipPaintbrushObjects: true);
+
+            Assert.IsEmpty(files);
+        }
+
+        /// <summary>
+        ///     Ensures that extractions running in parallel with different Paintbrush settings do not influence
+        ///     each other
+        /// </summary>
+        [TestMethod]
+        public void DocxWithPaintBrushImage_SkipPaintbrushObjectsInParallel()
+        {
+            const int runs = 20;
+            var inputFiles = new string[runs];
+            var outputFolders = new string[runs];
+
+            // Every run gets its own copy of the input file, because the password protection check
+            // opens the input file exclusively
+            for (var i = 0; i < runs; i++)
+            {
+                inputFiles[i] = Path.Combine(CreateTemporaryFolder(), "input.docx");
+                File.Copy("TestFiles\\A DOCX with embedded paintbrush ole.docx", inputFiles[i]);
+                outputFolders[i] = CreateTemporaryFolder();
+            }
+
+            var fileCounts = new int[runs];
+            Parallel.For(0, runs, i =>
+            {
+                var extractor = new Extractor();
+                fileCounts[i] = extractor.Extract(inputFiles[i], outputFolders[i], skipPaintbrushObjects: i % 2 == 0).Count;
+            });
+
+            for (var i = 0; i < runs; i++)
+                Assert.AreEqual(i % 2 == 0 ? 0 : 2, fileCounts[i], $"Unexpected number of files in run {i}");
         }
 
         [TestMethod]

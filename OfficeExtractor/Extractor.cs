@@ -146,6 +146,12 @@ public class Extractor
     /// <param name="logStream">When set then logging is written to this stream</param>
     /// <param name="attachmentsOnly">Sets whether all OLE objects shall be extracted or only attachment-like ones </param>
     /// <param name="continueOnError">Allows to continue extracting objects even if one (ore more) fail, e.g. for being unsupported or corrupt.</param>
+    /// <param name="skipPaintbrushObjects">
+    ///     Sets whether embedded Paintbrush (PBrush) objects shall be skipped instead of being extracted as a bitmap
+    ///     file. A Paintbrush object is always accompanied by a preview image that the hosting document uses to display
+    ///     it, so extracting the bitmap itself is often not needed. Paintbrush objects that are embedded directly in an
+    ///     RTF file are always skipped.
+    /// </param>
     /// <returns>List with files or en empty list when there are nog embedded files</returns>
     /// <exception cref="ArgumentNullException">
     ///     Raised when the <paramref name="inputFile" /> or
@@ -156,7 +162,7 @@ public class Extractor
     /// <exception cref="OEFileIsCorrupt">Raised when the <paramref name="inputFile" /> is corrupt</exception>
     /// <exception cref="OEFileTypeNotSupported">Raised when the <paramref name="inputFile" /> is not supported</exception>
     /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile" /> is password protected</exception>
-    public List<string> Extract(string inputFile, string outputFolder, Stream logStream = null, bool attachmentsOnly = false, bool continueOnError = false)
+    public List<string> Extract(string inputFile, string outputFolder, Stream logStream = null, bool attachmentsOnly = false, bool continueOnError = false, bool skipPaintbrushObjects = false)
     {
         if (logStream != null)
             Logger.LogStream = logStream;
@@ -181,7 +187,7 @@ public class Extractor
                     if (_passwordProtectedChecker.IsFileProtected(inputFile).Protected)
                         ThrowPasswordProtected(inputFile);
 
-                    result = ExtractFromOpenDocumentFormat(inputFile, outputFolder, "OpenOffice");
+                    result = ExtractFromOpenDocumentFormat(inputFile, outputFolder, "OpenOffice", skipPaintbrushObjects);
                     break;
 
                 case ".DOC":
@@ -190,7 +196,7 @@ public class Extractor
                         ThrowPasswordProtected(inputFile);
 
                     // Word 97 - 2003
-                    result = Word.Extract(inputFile, outputFolder, attachmentsOnly, continueOnError);
+                    result = Word.Extract(inputFile, outputFolder, attachmentsOnly, continueOnError, skipPaintbrushObjects);
                     break;
 
                 case ".DOCM":
@@ -201,11 +207,11 @@ public class Extractor
                         ThrowPasswordProtected(inputFile);
 
                     // Word 2007 - 2013
-                    result = ExtractFromOfficeOpenXmlFormat(inputFile, "/word/embeddings/", outputFolder, "Word", continueOnError);
+                    result = ExtractFromOfficeOpenXmlFormat(inputFile, "/word/embeddings/", outputFolder, "Word", continueOnError, skipPaintbrushObjects);
                     break;
 
                 case ".RTF":
-                    result = Rtf.Extract(inputFile, outputFolder);
+                    result = Rtf.Extract(inputFile, outputFolder, skipPaintbrushObjects: skipPaintbrushObjects);
                     break;
 
                 case ".XLS":
@@ -215,7 +221,7 @@ public class Extractor
                         ThrowPasswordProtected(inputFile);
 
                     // Excel 97 - 2003
-                    result = Excel.Extract(inputFile, outputFolder);
+                    result = Excel.Extract(inputFile, outputFolder, skipPaintbrushObjects: skipPaintbrushObjects);
                     break;
 
                 case ".XLSB":
@@ -227,7 +233,7 @@ public class Extractor
                         ThrowPasswordProtected(inputFile);
 
                     // Excel 2007 - 2013
-                    result = ExtractFromOfficeOpenXmlFormat(inputFile, "/xl/embeddings/", outputFolder, "Excel", continueOnError);
+                    result = ExtractFromOfficeOpenXmlFormat(inputFile, "/xl/embeddings/", outputFolder, "Excel", continueOnError, skipPaintbrushObjects);
                     break;
 
                 case ".POT":
@@ -237,7 +243,7 @@ public class Extractor
                         ThrowPasswordProtected(inputFile);
 
                     // PowerPoint 97 - 2003
-                    result = PowerPoint.Extract(inputFile, outputFolder);
+                    result = PowerPoint.Extract(inputFile, outputFolder, skipPaintbrushObjects: skipPaintbrushObjects);
                     break;
 
                 case ".POTM":
@@ -250,7 +256,7 @@ public class Extractor
                         ThrowPasswordProtected(inputFile);
 
                     // PowerPoint 2007 - 2013
-                    result = ExtractFromOfficeOpenXmlFormat(inputFile, "/ppt/embeddings/", outputFolder, "PowerPoint", continueOnError);
+                    result = ExtractFromOfficeOpenXmlFormat(inputFile, "/ppt/embeddings/", outputFolder, "PowerPoint", continueOnError, skipPaintbrushObjects);
                     break;
 
                 default:
@@ -288,9 +294,10 @@ public class Extractor
     /// <param name="outputFolder">The output folder</param>
     /// <param name="program"></param>
     /// <param name="continueOnError">Allows to continue extracting objects even if one (ore more) fail, e.g. for being unsupported or corrupt.</param>
+    /// <param name="skipPaintbrushObjects">Sets whether embedded Paintbrush (PBrush) objects shall be skipped</param>
     /// <returns>List with files or an empty list when there are nog embedded files</returns>
     /// <exception cref="OEFileIsPasswordProtected">Raised when the Microsoft Office file is password protected</exception>
-    private List<string> ExtractFromOfficeOpenXmlFormat(string inputFile, string embeddingPartString, string outputFolder, string program, bool continueOnError = false)
+    private List<string> ExtractFromOfficeOpenXmlFormat(string inputFile, string embeddingPartString, string outputFolder, string program, bool continueOnError, bool skipPaintbrushObjects)
     {
         Logger.WriteToLog($"The {program} file is of the type 'Open XML format'");
 
@@ -318,7 +325,7 @@ public class Extractor
                         Logger.WriteToLog("OLEOBJECT found");
 
                         using var compoundFile = RootStorage.Open(packagePartMemoryStream);
-                        var resultFileName = Extraction.SaveFromStorageNode(compoundFile, outputFolder);
+                        var resultFileName = Extraction.SaveFromStorageNode(compoundFile, outputFolder, null, skipPaintbrushObjects);
                         if (resultFileName != null)
                             result.Add(resultFileName);
                         //result.Add(ExtractFileFromOle10Native(packagePartMemoryStream.ToArray(), outputFolder));
@@ -490,9 +497,10 @@ public class Extractor
     /// <param name="inputFile">The OpenDocument format file</param>
     /// <param name="outputFolder">The output folder</param>
     /// <param name="program"></param>
+    /// <param name="skipPaintbrushObjects">Sets whether embedded Paintbrush (PBrush) objects shall be skipped</param>
     /// <returns>List with files or en empty list when there are nog embedded files</returns>
     /// <exception cref="OEFileIsPasswordProtected">Raised when the OpenDocument format file is password protected</exception>
-    private List<string> ExtractFromOpenDocumentFormat(string inputFile, string outputFolder, string program)
+    private List<string> ExtractFromOpenDocumentFormat(string inputFile, string outputFolder, string program, bool skipPaintbrushObjects)
     {
         Logger.WriteToLog($"The {program} file is of the type 'Open document format'");
         var result = new List<string>();
@@ -542,7 +550,7 @@ public class Extractor
             zipEntryMemoryStream.Position = 0;
 
             using var compoundFile = RootStorage.Open(zipEntryMemoryStream);
-            result.Add(Extraction.SaveFromStorageNode(compoundFile, outputFolder, fileName));
+            result.Add(Extraction.SaveFromStorageNode(compoundFile, outputFolder, fileName, skipPaintbrushObjects));
         }
 
         return result;

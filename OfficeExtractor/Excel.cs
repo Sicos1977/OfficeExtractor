@@ -50,10 +50,11 @@ internal class Excel : OfficeBase
     /// <param name="inputFile">The binary Excel file</param>
     /// <param name="outputFolder">The output folder</param>
     /// <param name="continueOnError">Indicates whether to continue extraction on error</param>
+    /// <param name="skipPaintbrushObjects">Sets whether embedded Paintbrush (PBrush) objects shall be skipped</param>
     /// <returns>A list of extracted files</returns>
     /// <exception cref="OEFileIsPasswordProtected">Raised when the <paramref name="inputFile" /> is password protected</exception>
     /// <exception cref="OEFileIsCorrupt">Raised when the file is corrupt</exception>
-    internal List<string> Extract(string inputFile, string outputFolder, bool continueOnError = false)
+    internal List<string> Extract(string inputFile, string outputFolder, bool continueOnError = false, bool skipPaintbrushObjects = false)
     {
         Logger.WriteToLog("The file is a binary Excel sheet");
 
@@ -66,7 +67,7 @@ internal class Excel : OfficeBase
             {
                 if (!item.Name.StartsWith("MBD")) continue;
                 if (!compoundFile.TryOpenStorage(item.Name, out var storage)) continue;
-                var extractedFileName = Extraction.SaveFromStorageNode(storage, outputFolder);
+                var extractedFileName = Extraction.SaveFromStorageNode(storage, outputFolder, null, skipPaintbrushObjects);
                 if (extractedFileName != null) result.Add(extractedFileName);
             }
             catch (Exception ex)
